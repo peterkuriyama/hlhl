@@ -1,14 +1,43 @@
-setwd("/Users/peterkuriyama/School/Research/hlsimulator")
+setwd("/Users/peterkuriyama/School/Research")
 
 library(devtools)
+
+
+load_all('hlsimulator')
+
+#--------------------------------------------------------------------------------------------
+#Test Package installation
+
+
+install_github('peterkuriyama/hlsimulator')
+library(hlsimulator)
+
+
+
 library(plyr)
 library(dplyr)
 library(reshape2)
 library(ggplot2)
 # install_github('peterkuriyama/hlsimulator')
-load_all('../hlsimulator')
+
+
 library(hlsimulator)
 
+#-------------------------------------------------------------------------------------------
+#Check that conduct_survey works
+
+init <- initialize_population(numrow = 10, numcol = 10, nfish = 10000, distribute = 'uniform',
+                                percent = .3, seed = 301)
+
+xx <- conduct_survey(fish_area = init, location_list = list(c(4, 10),
+                                                        c(8, 2),
+                                                        c(3, 3)), scope = 1, nhooks = 15, ndrops = 5,
+ process = 'equal_prob')
+
+#Make sure that process is included in conduct_survey example. 
+
+
+xx <- conduct_survey(fish_area = tt, location_list = list)
 #--------------------------------------------------------------------------------------------
 ##TO DO
 
@@ -23,7 +52,7 @@ library(hlsimulator)
 #number of fish
 #percentage of distributed fish (if patchy distribution)
 
-#-------------------------------------------------------------------------------------------
+
 
 
 
