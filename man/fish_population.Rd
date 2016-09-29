@@ -22,4 +22,13 @@ fish_population(fish_area, location, scope = 1, nhooks, ndrops, ...)
 \description{
 Function to fish the population
 }
+\examples{
+
+init <- initialize_population(numrow = 10, numcol = 10, nfish = 10000, distribute = 'uniform',
+                               percent = .3, seed = 301)
+
+fish_population(fish_area = init, location = data.frame(vessel = c(1, 1, 2), x = c(3, 3, 8), 
+ y = c(3, 5, 8)),
+ scope = 2, nhooks = 5, ndrops = 3, process = "equal_prob")
+}
 
