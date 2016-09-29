@@ -12,13 +12,13 @@ conduct_survey(fish_area, location_list, scope, nhooks, ndrops, ...)
 \arguments{
 \item{fish_area}{Matrix with the distribution of fish}
 
-\item{location_list}{list specifying rows and columns to survey in}
-
 \item{scope}{the scope of fishing movement, default to 1 so fish in surrounding 1 cells can move in}
 
 \item{nhooks}{number of hooks at the smallest sampling size}
 
 \item{ndrops}{number of drops, default is 5 following hook and line protocol}
+
+\item{location}{Data frame of locations with column for vessel, rows, and columns of fish are to fish in.}
 
 \item{process}{specify process by which fish are sampled, options are 'multinomial' and 'hypergeometric'}
 }
@@ -31,6 +31,12 @@ This function initializes the spatial distribution of the fish population
 \examples{
 put example here dude
 
+init <- initialize_population(numrow = 10, numcol = 10, nfish = 10000, distribute = 'uniform',
+                               percent = .3, seed = 301)
+xx <- conduct_survey(fish_area = init, location_list = list(c(4, 10),
+                                                       c(8, 2),
+                                                       c(3, 3)), 
+                     scope = 1, nhooks = 15, ndrops = 5, process = 'equal_prob')
 }
 \keyword{survey}
 
