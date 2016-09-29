@@ -1,27 +1,25 @@
-setwd("/Users/peterkuriyama/School/Research")
+setwd("/Users/peterkuriyama/School/Research/hlsimulator")
 
 library(devtools)
-
-
-load_all('hlsimulator')
-
-#--------------------------------------------------------------------------------------------
-#Test Package installation
-
-
-install_github('peterkuriyama/hlsimulator')
-library(hlsimulator)
-
-
-
 library(plyr)
 library(dplyr)
 library(reshape2)
 library(ggplot2)
-# install_github('peterkuriyama/hlsimulator')
+#--------------------------------------------------------------------------------------------
+#Options to load the package
 
-
+#From github straight
+install_github('peterkuriyama/hlsimulator')
 library(hlsimulator)
+
+#Locally
+# load_all()
+
+#Install from local
+# install()
+
+#-------------------------------------------------------------------------------------------
+
 
 #-------------------------------------------------------------------------------------------
 #Check that conduct_survey works
@@ -29,10 +27,12 @@ library(hlsimulator)
 init <- initialize_population(numrow = 10, numcol = 10, nfish = 10000, distribute = 'uniform',
                                 percent = .3, seed = 301)
 
-xx <- conduct_survey(fish_area = init, location_list = list(c(4, 10),
-                                                        c(8, 2),
-                                                        c(3, 3)), scope = 1, nhooks = 15, ndrops = 5,
- process = 'equal_prob')
+
+
+data.frame(vessel = c(1, 1, 2), x = c(3, 3, 8), y = c(3, 5, 8))
+
+xx <- conduct_survey(fish_area = init, location = data.frame(vessel = c(1, 1, 2), x = c(3, 3, 8), 
+  y = c(3, 5, 8)), scope = 1, nhooks = 15, ndrops = 5, process = 'equal_prob')
 
 #Make sure that process is included in conduct_survey example. 
 
