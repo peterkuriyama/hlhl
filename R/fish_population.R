@@ -63,7 +63,7 @@ fish_population <- function(fish_area, location, scope = 1, nhooks, ndrops,
     col_range <- col_range[col_range %in% 1:ncol(fish_area)]
 
     #Define range to fish
-    fish_area_melted <- melt(fish_area)
+    fish_area_melted <- reshape2::melt(fish_area)
 
     #Use melted matrix because fish_area is easier to subset
     fish_range_melted <- subset(fish_area_melted, Var1 %in% row_range & Var2 %in% col_range)
