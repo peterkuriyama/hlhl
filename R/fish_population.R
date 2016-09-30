@@ -35,22 +35,8 @@ fish_population <- function(fish_area, ctl){
   ndrops <- control$ndrops
   process <- control$process
 
-  # dots <- list(...)    
-  # process <- dots$process
-
   if(class(location) != "data.frame") stop("location must be a data frame")
-  #Count fish within the range
-
-  #If fishing location is on border of fishArea
   
-  # lapply(location, function(x) print(x))
-  # aa <- lapply(location, function(x) (x[1] - scope):(x[1] + scope))  
-
-  # #rewrite this as a for loop
-  
-  # for(ii in 1:length(location)){
-  #   row_range <- location[[ii]][, 1]
-  # }
 
   #Add on samples for each drop into location data frame  
   add_ons <- as.data.frame(matrix(999, nrow = nrow(location), ncol = ndrops))
@@ -58,8 +44,6 @@ fish_population <- function(fish_area, ctl){
 
   location <- cbind(location, add_ons)
 
-  #Look at just the first row of location, 
-  #NEED TO EXPAND THIS INTO A FOR LOOP EVENTUALLYs
   for(ii in 1:nrow(location)){
 
     row_range <- (location[ii, 'x'] - scope):(location[ii, 'x'] + scope)
