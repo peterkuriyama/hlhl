@@ -28,7 +28,7 @@ initialize_population <- function(ctl){
   maxfish <- ctl$maxfish
   percent <- ctl$percent
   seed <- ctl$seed
-  area <- control$area
+  area <- ctl$area
 
   #initial check
   if(distribute %in% c('area', 'patchy', 'uniform') == FALSE){
