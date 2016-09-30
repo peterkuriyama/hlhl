@@ -32,9 +32,15 @@
 
 #' @export
 
-initialize_population <- function(numrow, numcol, nfish = 100, seed = 300, distribute,  
-  maxfish = 10, area = 'upperleft', percent = .1, ...){
-# browser()
+initialize_population <- function(ctl){
+  numrow <- ctl$numrow
+  numcol <- ctl$numcol
+  nfish <- ctl$nfish
+  distribute <- ctl$distribute
+  maxfish <- ctl$maxfish
+  percent <- ctl$percent
+  seed <- ctl$seed
+
   #initial check
   if(distribute %in% c('area', 'patchy', 'uniform') == FALSE){
     stop('specify distribute as area, patchy, or uniform')
