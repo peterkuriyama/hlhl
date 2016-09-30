@@ -26,12 +26,12 @@
 #   ...){
 
 fish_population <- function(fish_area, ctl){
-  location <- control$location
-  scope <- control$scope
-  nhooks <- control$nhooks
-  ndrops <- control$ndrops
-  process <- control$process
-  p0 <- control$p0
+  location <- ctl$location
+  scope <- ctl$scope
+  nhooks <- ctl$nhooks
+  ndrops <- ctl$ndrops
+  process <- ctl$process
+  p0 <- ctl$p0
 
   if(class(location) != "data.frame") stop("location must be a data frame")
   
