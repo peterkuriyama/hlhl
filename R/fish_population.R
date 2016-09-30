@@ -25,11 +25,18 @@
 
 #also play with sampling probabilities and movements
 
-fish_population <- function(fish_area, location, scope = 1, nhooks, ndrops,
-  ...){
+# fish_population <- function(fish_area, location, scope = 1, nhooks, ndrops,
+#   ...){
 
-  dots <- list(...)    
-  process <- dots$process
+fish_population <- function(fish_area, ctl){
+  location <- control$location
+  scope <- control$scope
+  nhooks <- control$nhooks
+  ndrops <- control$ndrops
+  process <- control$process
+
+  # dots <- list(...)    
+  # process <- dots$process
 
   if(class(location) != "data.frame") stop("location must be a data frame")
   #Count fish within the range
