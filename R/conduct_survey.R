@@ -24,8 +24,9 @@
 #'                                                        c(3, 3)), 
 #'                      scope = 1, nhooks = 15, ndrops = 5, process = 'equal_prob')
 
-conduct_survey <- function(fish_area, location, scope, nhooks, ndrops, 
-  ...){
+conduct_survey <- function(fish_area, ctl){
+  # location, scope, nhooks, ndrops, 
+  # ...){
 
   #keep initial population matrix
   init_area <- fish_area
@@ -33,9 +34,10 @@ conduct_survey <- function(fish_area, location, scope, nhooks, ndrops,
   ####Make sure to set seed#####
 
   #Convert all the list structure into data frame structure
-  temp <- fish_population(fish_area = fish_area, location = location, scope = scope, 
-    nhooks = nhooks, ndrops = ndrops, ...)
+  temp <- fish_population(fish_area = fish_area, ctl = ctl)
 
+  nhooks <- ctl$nhooks
+  
   #calculate cpue based on number of hooks
   cpue <- temp$samples[, grep('drop', names(temp$samples))] / nhooks
   cpue <- cbind(temp$samples[, 1:3], cpue)
