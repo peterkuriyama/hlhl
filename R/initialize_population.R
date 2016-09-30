@@ -1,35 +1,23 @@
 #' Initialize Population
 #'
-#' This function initializes the spatial distribution of the fish population
-#' @param numrow Number of rows in matrix
-#' @param numcol Number of columns in matrix
-#' @param nfish Number of fish to allocate among matrix
-#' @param seed Set seed if distribute == random, defaults to 300
-#' @param distribute Specify fish distribution to be 'uniform', 'patchy', or 'area' specific
-#' @param maxfish Maximum number of fish that can be sampled at a time
-#' @param percent percentage of area to sample. Only necessary if distribute == 'patchy'
-#' @param area Specify area to distribute fish, options are 'upperleft', 'upperright', 'lowerleft', 'lowerright',#' 'upperhalf', 'lowerhalf', 'righthalf', 'lefthalf'  Only necessary if distribute == 'area'
-#' @keywords initialize
-#' @examples 
+#' Initialize the spatial distribution of the fish population
+#' @param ctl List of control parameters from make_ctl function, description of arguments in 
+#' make_ctl function
 
-#' 
+
+#' @examples 
 #' Uniformly distribute fish
-#' initialize_population(numrow = 10, numcol = 10, nfish = 1000, distribute = 'uniform')
-#' 
+#' control <- make_ctl()
+#' initialize_population(ctl = control)
+
 #' Distribute fish in upper right quadrant only
-#' initialize_population(numrow = 10, numcol = 10, nfish = 1000, distribute = 'area',
-#'                             area = 'upperright')
-#'
-#' Distribute fish in upper half
-#' initialize_population(numrow = 10, numcol = 10, nfish = 1000, distribute = 'area',
-#'                             area = 'upperhalf')
+#' control <- make_ctl(distribute = 'area', area = 'upperright')
+#' initialize_population(ctl = control)
 #'
 #' Patchily distribute fish
-#' initialize_population(numrow = 10, numcol = 10, nfish = 100, distribute = 'patchy',
-#'   percent = .2)
+#' control <- make_ctl(distribute = 'patchy')
+#' initialize_population(ctl = control)
 #'
-#' 
-
 #' @export
 
 initialize_population <- function(ctl){
@@ -40,6 +28,7 @@ initialize_population <- function(ctl){
   maxfish <- ctl$maxfish
   percent <- ctl$percent
   seed <- ctl$seed
+  area <- control$area
 
   #initial check
   if(distribute %in% c('area', 'patchy', 'uniform') == FALSE){
@@ -53,7 +42,7 @@ initialize_population <- function(ctl){
   samp.df <- expand.grid(1:numrow, 1:numcol) #rows and columns are set depending on arguments
   names(samp.df) <- c('x', 'y')
 
-  #Set Seed
+  #Set Seed, should apply to all downstream sampling function
   set.seed(seed)
   #---------------------------------------------------------------------------------------------------------
   # Uniformly populate matrix, work on this

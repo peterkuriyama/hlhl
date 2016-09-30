@@ -4,47 +4,26 @@
 \alias{initialize_population}
 \title{Initialize Population}
 \usage{
-initialize_population(numrow, numcol, nfish = 100, seed = 300, distribute,
-  maxfish = 10, area = "upperleft", percent = 0.1, ...)
+initialize_population(ctl)
 }
 \arguments{
-\item{numrow}{Number of rows in matrix}
-
-\item{numcol}{Number of columns in matrix}
-
-\item{nfish}{Number of fish to allocate among matrix}
-
-\item{seed}{Set seed if distribute == random, defaults to 300}
-
-\item{distribute}{Specify fish distribution to be 'uniform', 'patchy', or 'area' specific}
-
-\item{maxfish}{Maximum number of fish that can be sampled at a time}
-
-\item{area}{Specify area to distribute fish, options are 'upperleft', 'upperright', 'lowerleft', 'lowerright',#' 'upperhalf', 'lowerhalf', 'righthalf', 'lefthalf'  Only necessary if distribute == 'area'}
-
-\item{percent}{percentage of area to sample. Only necessary if distribute == 'patchy'}
+\item{ctl}{List of control parameters from make_ctl function, description of arguments in 
+make_ctl function}
 }
 \description{
-This function initializes the spatial distribution of the fish population
+Initialize the spatial distribution of the fish population
 }
 \examples{
-
 Uniformly distribute fish
-initialize_population(numrow = 10, numcol = 10, nfish = 1000, distribute = 'uniform')
-
+control <- make_ctl()
+initialize_population(ctl = control)
 Distribute fish in upper right quadrant only
-initialize_population(numrow = 10, numcol = 10, nfish = 1000, distribute = 'area',
-                            area = 'upperright')
-
-Distribute fish in upper half
-initialize_population(numrow = 10, numcol = 10, nfish = 1000, distribute = 'area',
-                            area = 'upperhalf')
+control <- make_ctl(distribute = 'area', area = 'upperright')
+initialize_population(ctl = control)
 
 Patchily distribute fish
-initialize_population(numrow = 10, numcol = 10, nfish = 100, distribute = 'patchy',
-  percent = .2)
-
+control <- make_ctl(distribute = 'patchy')
+initialize_population(ctl = control)
 
 }
-\keyword{initialize}
 

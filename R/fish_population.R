@@ -1,22 +1,19 @@
 #'Fish the Population
 #'
 #'Function to fish the population
-#'@param fish_area Matrix with the distribution of fish
-#'@param location Data frame of locations with column for vessel, rows, and columns of fish are to fish in. 
-# '@param location list of locations specifying rows and columns of fish_area to fish in. The length of the list will correspond to the number of vessels
-#'@param scope the scope of fishing movement, default to 1 so fish in surrounding 1 cells can move in
-#'@param nhooks number of hooks at the smallest sampling size
-#'@param ndrops number of drops, default is 5 following hook and line protocol
-#'@param process specify process by which fish are sampled, options are 'multinomial', 'hypergeometric', and 'equal_prob'
+# #'@param fish_area Matrix with the distribution of fish
+# #'@param location Data frame of locations with column for vessel, rows, and columns of fish are to fish in. 
+# # '@param location list of locations specifying rows and columns of fish_area to fish in. The length of the list will correspond to the number of vessels
+# #'@param scope the scope of fishing movement, default to 1 so fish in surrounding 1 cells can move in
+# #'@param nhooks number of hooks at the smallest sampling size
+# #'@param ndrops number of drops, default is 5 following hook and line protocol
+# #'@param process specify process by which fish are sampled, options are 'multinomial', 'hypergeometric', and 'equal_prob'
 #'@examples
 
+#' control <- make_ctl()
+#' init <- initialize_population(control)
+#' fish_population(fish_area = init, ctl = control)
 #'
-#'init <- initialize_population(numrow = 10, numcol = 10, nfish = 10000, distribute = 'uniform',
-#'                                percent = .3, seed = 301)
-#'
-#'fish_population(fish_area = init, location = data.frame(vessel = c(1, 1, 2), x = c(3, 3, 8), 
-#'  y = c(3, 5, 8)),
-#'  scope = 2, nhooks = 5, ndrops = 3, process = "equal_prob")
 
 #'@export
 #may need to add angler specifications in at each time
@@ -34,6 +31,7 @@ fish_population <- function(fish_area, ctl){
   nhooks <- control$nhooks
   ndrops <- control$ndrops
   process <- control$process
+  p0 <- control$p0
 
   if(class(location) != "data.frame") stop("location must be a data frame")
   
@@ -117,7 +115,7 @@ fish_population <- function(fish_area, ctl){
     if(process == 'equal_prob'){
       samples <- vector(length = ndrops)
       
-      phook <- hook_probs(nfish = fish_to_catch) #probability of catching number of fish
+      phook <- hook_probs(nfish = fish_to_catch, p0 = p0) #probability of catching number of fish
       #For loop for number of 
 
       samples <- vector(length = ndrops)
@@ -133,9 +131,8 @@ fish_population <- function(fish_area, ctl){
       
         #add if statement so that samples[qq] cannot exceed fish_to_catch
         if(fish_to_catch < 0) fish_to_catch <- 0
-    
       }
-      # p0 <- dots$p0 
+      
     }
 
     #--------Hypergeometric

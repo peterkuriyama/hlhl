@@ -4,20 +4,7 @@
 \alias{fish_population}
 \title{Fish the Population}
 \usage{
-fish_population(fish_area, location, scope = 1, nhooks, ndrops, ...)
-}
-\arguments{
-\item{fish_area}{Matrix with the distribution of fish}
-
-\item{location}{Data frame of locations with column for vessel, rows, and columns of fish are to fish in.}
-
-\item{scope}{the scope of fishing movement, default to 1 so fish in surrounding 1 cells can move in}
-
-\item{nhooks}{number of hooks at the smallest sampling size}
-
-\item{ndrops}{number of drops, default is 5 following hook and line protocol}
-
-\item{process}{specify process by which fish are sampled, options are 'multinomial', 'hypergeometric', and 'equal_prob'}
+fish_population(fish_area, ctl)
 }
 \description{
 Function to fish the population
