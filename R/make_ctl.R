@@ -18,6 +18,7 @@
 #'@param process specify process by which fish are sampled, options are 'multinomial', 'hypergeometric', and 'equal_prob'. 
 #' 'equal_prob' is based on CIE comments from 2012. 
 #'@param p0 Probability that fish detects gear, used in the hook_prob function
+#' @param nyear Number of years in survey
 
 #' @examples
 #' make_ctl(p0 = .2)
@@ -39,12 +40,13 @@ make_ctl <- function(numrow = 10, numcol = 10, nfish = 10000, #initial number of
   nhooks = 5,
   ndrops = 5, 
   process = 'equal_prob',
-  p0 = .4 #probability that fish are attracted to gear 
+  p0 = .4, #probability that fish are attracted to gear 
+  nyear = 10 #number of times to repeat fish_population
   ){
-
+# browser()
   control <- list(numrow = numrow, numcol = numcol, nfish = nfish, distribute = distribute,
     maxfish = maxfish, percent = percent, area = area, seed = seed, location = location, scope = scope,
-    nhooks = nhooks, ndrops = ndrops, process = process, p0 = p0)
+    nhooks = nhooks, ndrops = ndrops, process = process, p0 = p0, nyear = nyear)
 
   return(control)
 
