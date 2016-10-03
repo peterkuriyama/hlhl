@@ -64,8 +64,8 @@ conduct_survey <- function(ctl){
   cpue <- cbind(to_bind, cpue)
 
   fished_areas[[nyear + 1]] <- init_area
-  names(fished_areas[[nyear + 1]]) <- 'init_area'
-
+  names(fished_areas) <- c(paste0('year', 1:nyear), 'year0')
+  
   #define output list
   out <- list(fished_areas = fished_areas, angler_samples = angler_samples,
     samples = samples, cpue = cpue)
