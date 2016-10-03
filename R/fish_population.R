@@ -41,6 +41,7 @@ fish_population <- function(fish_area, ctl){
   names(add_ons) <- paste0('drop', 1:ndrops)
 
   location <- cbind(location, add_ons)
+  location_angler <- vector('list', length = nrow(location))
 
   for(ii in 1:nrow(location)){
 
@@ -84,16 +85,13 @@ fish_population <- function(fish_area, ctl){
     fish_df <- melt(fish_range)
     fish_df$prob <- melt(probs)$value
 
-    # if(sum(is.na(fish_df$prob)) > 0) browser()
-
     #If there are no fish within scope, set movement probabilities to 0
     if(nfish_outside == 0){
       fish_df$prob <- 0
-    }
+    } 
 
     #Stop fishing if there are no fish (return 0s for samples)
     if(sum(fish_df$value) == 0){
-      # browser()
       return(list(updated_area = fish_area, samples = rep(0, ndrops)))
     }
 
@@ -111,20 +109,46 @@ fish_population <- function(fish_area, ctl){
     #Now fish in specified cell, called zero.index
     fish_to_catch <- fish_df[zero_index, 'moved']
 
+    #specify number of anglers
+    if(nhooks %% 5 != 0) stop('number of hooks must be multiple of 5')
+    nang <- nhooks / 5 #number of anglers
+
+    #format angler samples
+    angler_samples <- as.data.frame(matrix(nrow = ndrops, ncol = 1 + nang))
+    names(angler_samples) <- c(paste0('angler', 1:nang), 'drop')
+    angler_samples$drop <- 1:ndrops
+
+    
     #--------Equal hook probabilities
     if(process == 'equal_prob'){
       samples <- vector(length = ndrops)
       
       phook <- hook_probs(nfish = fish_to_catch, p0 = p0) #probability of catching number of fish
-      #For loop for number of 
 
-      samples <- vector(length = ndrops)
-
+      #For loop for number of drops and anglers
       for(qq in 1:ndrops){
-        samp_temp <- rmultinom(1, 1, phook) #probabilities defined in phook
-        samp <- data.frame(nfish = 0:5, pick = samp_temp)
+        
+        #Loop through anglers here,
+        #maybe add in ability to modify the probabilities of certain anglers
+        # samples_ang <- rep('999', length = nang)
+        
+        #Sample fish for each angler
+        samp_temp <- rmultinom(nang, 1, phook) #probabilities defined in phook
+        samp <- data.frame(nfish = 0:5, pick = samp_temp)    
+        samp <- melt(samp, id.vars = 'nfish') #melt into columns
+        
+        samples_ang <- samp[which(samp$value == 1), 'nfish'] #need to track these also
 
-        samples[qq] <- samp[which(samp$pick == 1), 'nfish']
+
+        #format and store angler samples
+        # angang <- as.data.frame(t(as.data.frame(samples_ang)))
+        # row.names(angang) <- NULL
+        # names(angang) <- paste0('angler', 1:nang)
+        # angang$drop <- qq
+
+        #Store Samples
+        angler_samples[qq, 1:nang] <- samples_ang
+        samples[qq] <- sum(samples_ang)
 
         # samples[qq] <- sample_equal_prob(nfish = fish_to_catch, nhooks = nhooks, p0 = dots$p0)  
         fish_to_catch <- fish_to_catch - samples[qq]
@@ -132,7 +156,6 @@ fish_population <- function(fish_area, ctl){
         #add if statement so that samples[qq] cannot exceed fish_to_catch
         if(fish_to_catch < 0) fish_to_catch <- 0
       }
-      
     }
 
     #--------Hypergeometric
@@ -190,7 +213,7 @@ fish_population <- function(fish_area, ctl){
 
       # if(is.na(sum(mult_prob))) mult_prob <- rep(0, length(move_back_probs))
       # Sample from multinomial distribution
-      # if(fish_df[zero_index, 'fished'] < 0) browser()
+      
 
       moved_back <- as.vector(rmultinom(1, size = fish_df[zero_index, 'fished'],
                                         prob = mult_prob))
@@ -206,11 +229,29 @@ fish_population <- function(fish_area, ctl){
     fish_area[row_range, col_range] <- matrix(fish_df$final,
       nrow = nrow(fish_range), ncol = ncol(fish_range))
 
+ 
+    # angler_samples()
+    # angler_samples$vessel <- location
+    # location
+
     first_drop <- which(names(location) == 'drop1')
     location[ii, first_drop:ncol(location)] <- samples #Store Samples
+
+    #Add locations to angler samples, then store in a list
+    
+    angler_samples$vessel <- location[ii, 'vessel']
+    angler_samples$x <- location[ii, 'x']
+    angler_samples$y <- location[ii, 'y']
+  
+    angler_samples$drop <- 1:ndrops
+  
+    angler_samples <- angler_samples[, c('vessel', 'x', 'y', 'drop',
+                        names(angler_samples)[grep('angler', names(angler_samples))])]
+    location_angler[[ii]] <- angler_samples
     
   }
 
-  return(list(updated_area = fish_area, samples = location))
+  location_angler <- ldply(location_angler)
 
+  return(list(updated_area = fish_area, angler_samples = samples, samples = location))
 }
