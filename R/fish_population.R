@@ -26,6 +26,7 @@
 #   ...){
 
 fish_population <- function(fish_area, ctl){
+
   location <- ctl$location
   scope <- ctl$scope
   nhooks <- ctl$nhooks
@@ -35,7 +36,6 @@ fish_population <- function(fish_area, ctl){
 
   if(class(location) != "data.frame") stop("location must be a data frame")
   
-
   #Add on samples for each drop into location data frame  
   add_ons <- as.data.frame(matrix(999, nrow = nrow(location), ncol = ndrops))
   names(add_ons) <- paste0('drop', 1:ndrops)
@@ -122,8 +122,13 @@ fish_population <- function(fish_area, ctl){
     #--------Equal hook probabilities
     if(process == 'equal_prob'){
       samples <- vector(length = ndrops)
-      
+# browser()
       phook <- hook_probs(nfish = fish_to_catch, p0 = p0) #probability of catching number of fish
+      #take absolute value of phook due to rounding errors letting it get negative
+      phook <- abs(phook)
+
+      #If phook doesn't sum to 1, throw error
+      if(sum(phook) != 1) stop('hook probabilities do not sum to 1')
 
       #For loop for number of drops and anglers
       for(qq in 1:ndrops){
@@ -134,6 +139,7 @@ fish_population <- function(fish_area, ctl){
         
         #Sample fish for each angler
         samp_temp <- rmultinom(nang, 1, phook) #probabilities defined in phook
+
         samp <- data.frame(nfish = 0:5, pick = samp_temp)    
         samp <- melt(samp, id.vars = 'nfish') #melt into columns
         
@@ -213,8 +219,6 @@ fish_population <- function(fish_area, ctl){
 
       # if(is.na(sum(mult_prob))) mult_prob <- rep(0, length(move_back_probs))
       # Sample from multinomial distribution
-      
-
       moved_back <- as.vector(rmultinom(1, size = fish_df[zero_index, 'fished'],
                                         prob = mult_prob))
 
@@ -228,7 +232,6 @@ fish_population <- function(fish_area, ctl){
     #Update fish_area matrix
     fish_area[row_range, col_range] <- matrix(fish_df$final,
       nrow = nrow(fish_range), ncol = ncol(fish_range))
-
  
     # angler_samples()
     # angler_samples$vessel <- location
