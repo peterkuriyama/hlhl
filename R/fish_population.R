@@ -253,5 +253,5 @@ fish_population <- function(fish_area, ctl){
 
   location_angler <- ldply(location_angler)
 
-  return(list(updated_area = fish_area, angler_samples = samples, samples = location))
+  return(list(updated_area = fish_area, angler_samples = location_angler, samples = location))
 }
