@@ -17,4 +17,9 @@ straight average by year.}
 Calculate CPUE
 Function to calculate cpue
 }
+\examples{
+ctl <- make_ctl(nhooks = 15, seed = 200, nfish = 10000, nyear = 50)
+out <- conduct_survey(ctl)
+cpue <- calc_cpue(out, ctl = ctl)
+}
 
