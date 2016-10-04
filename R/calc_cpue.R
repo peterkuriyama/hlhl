@@ -1,4 +1,8 @@
 #Calculate CPUE
+#'Calculate CPUE
+
+#' Function to calculate cpue
+
 #'@param survey_res Output from conduct_survey function
 #'@param cpue_method Method of calculating CPUE. Options are 'average' for calculating
 #' straight average by year.
