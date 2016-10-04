@@ -2,6 +2,8 @@
 #'@param survey_res Output from conduct_survey function
 #'@param cpue_method Method of calculating CPUE. Options are 'average' for calculating
 #' straight average by year.
+#'@export
+
 
 calc_cpue <- function(survey_res, ctl){
   cpue_method <- ctl$cpue_method
