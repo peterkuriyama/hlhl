@@ -12,13 +12,97 @@ library(ggplot2)
 install_github('peterkuriyama/hlsimulator')
 library(hlsimulator)
 
+
+
 #Locally
 # load_all()
 
-#Install from local
-# install()
+#-------------------------------------------------------------------------------------------
+#work on conducting survey for number of years
+
+#Check Number of fish
+ctl <- make_ctl(nhooks = 15, seed = 200, nfish = 10000, nyear = 50)
+out <- conduct_survey(ctl)
+cpue <- calc_cpue(out, ctl = ctl)
+
+
+plot(annual_catch$nfish, annual_catch$avg_cpue, type = 'l', xlab = )
+
+
+melt(out$fished_areas$year0)
+
+sapply(out$fished_areas, FUN = sum)
+
+
+
+
+
+check1 <- sum(test1$fished_areas$year50) + sum(test1$samples[, 5:9])
+check2 <- sum(test1$fished_areas$year0)
+
+
+
+#
+
+
+plot(sum(abs(hook_probs(nfish = 4, p0 = .4))))
+
+xx <- melt(test1$samples, id.vars = c('year', 'vessel', 'x', 'y'))
+
+
+xx %>% group_by(year) %>% summarize(avg_fish = mean(value))
+
+test1$samples %>% group_by(year) %>% summarize
+
 
 #-------------------------------------------------------------------------------------------
+#See how p0 affects cpue
+p0_vec <- seq(.1, 1, by = 0.1)
+cpue_out <- vector('list', length = length(p0_vec))
+
+
+for(ii in 1:length(p0_vec)){
+  temp_ctl <- make_ctl(p0 = p0_vec[ii], nfish = 1000, seed = 500)
+  temp_init <- initialize_population(ctl = temp_ctl)
+
+  cpue_out[[ii]] <- fish_population(fish_area = temp_init, ctl = temp_ctl)$samples
+
+}
+
+names(cpue_out) <- p0_vec
+cpue_out <- ldply(cpue_out)
+
+#-------------------------------------------------------------------------------------------
+#Things to work on
+xx <- make_ctl(p0 = .2)
+
+#Things for initialize population
+control <- list(
+  #arguments for initializing the fish population in a matrix
+  numrow = 10,
+  numcol = 10,
+  nfish = 10000, #initial number of fish
+  distribute = 'uniform', #distribution of fish, could be uniform, or patchy
+  maxfish = 10,
+  percent = .3, #percentage of area to sample, only necessary if distribute = 'patchy'
+  seed = 300,
+
+  #Arguments for function that fishes population
+  location = data.frame(vessel = c(1, 1, 2),
+                        x = c(3, 3, 8),
+                        y = c(3, 5, 8)),
+  scope = 2,
+  nhooks = 5,
+  ndrops = 3, 
+  process = 'equal_prob',
+  p0 = .4 #probability that fish are attracted to gear
+)     
+
+xx <- initialize_population(ctl = control)
+fish_population(xx, ctl = control)
+
+conduct_survey(xx, ctl = control)
+
 
 
 #-------------------------------------------------------------------------------------------
