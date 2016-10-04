@@ -50,7 +50,8 @@ make_ctl <- function(numrow = 10, numcol = 10, nfish = 10000, #initial number of
 # browser()
   control <- list(numrow = numrow, numcol = numcol, nfish = nfish, distribute = distribute,
     maxfish = maxfish, percent = percent, area = area, seed = seed, location = location, scope = scope,
-    nhooks = nhooks, ndrops = ndrops, process = process, p0 = p0, nyear = nyear, browser = browser)
+    nhooks = nhooks, ndrops = ndrops, process = process, p0 = p0, nyear = nyear, browser = browser,
+    cpue_method = cpue_method)
 
   return(control)
 
