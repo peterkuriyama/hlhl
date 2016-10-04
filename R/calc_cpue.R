@@ -7,7 +7,10 @@
 #'@param cpue_method Method of calculating CPUE. Options are 'average' for calculating
 #' straight average by year.
 #'@export
-
+#'@example
+#' ctl <- make_ctl(nhooks = 15, seed = 200, nfish = 10000, nyear = 50)
+#' out <- conduct_survey(ctl)
+#' cpue <- calc_cpue(out, ctl = ctl)
 
 calc_cpue <- function(survey_res, ctl){
   cpue_method <- ctl$cpue_method

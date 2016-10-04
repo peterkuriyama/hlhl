@@ -2,6 +2,8 @@
 % Please edit documentation in R/calc_cpue.R
 \name{calc_cpue}
 \alias{calc_cpue}
+\title{Calculate CPUE
+Function to calculate cpue}
 \usage{
 calc_cpue(survey_res, ctl)
 }
@@ -10,5 +12,9 @@ calc_cpue(survey_res, ctl)
 
 \item{cpue_method}{Method of calculating CPUE. Options are 'average' for calculating
 straight average by year.}
+}
+\description{
+Calculate CPUE
+Function to calculate cpue
 }
 
