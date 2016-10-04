@@ -37,17 +37,21 @@ conduct_survey <- function(ctl){
 
   #Loop over years of survey, specified in ctl
   for(kk in 2:nyear){
+print(kk)
+if(kk == 9) ctl$browser <- TRUE    
     temp <- fish_population(fish_area = temp_area, ctl = ctl)
+
+# if(is.null(temp$angler_samples)) ctl$browser <- TRUE
+
     survey_samples[[kk]] <- temp$samples
     angler_samples[[kk]] <- temp$angler_samples
     fished_areas[[kk]] <- temp$updated_area
 
     #Redefine the fishing area
     temp_area <- temp$updated_area
-
   }
 
-  #manipulate samples
+  #manipulate samples  
   samples <- ldply(survey_samples)
   names(samples)[1] <- 'year'
 

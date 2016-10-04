@@ -33,6 +33,7 @@ fish_population <- function(fish_area, ctl){
   ndrops <- ctl$ndrops
   process <- ctl$process
   p0 <- ctl$p0
+  browser <- ctl$browser
 
   if(class(location) != "data.frame") stop("location must be a data frame")
   
@@ -44,7 +45,8 @@ fish_population <- function(fish_area, ctl){
   location_angler <- vector('list', length = nrow(location))
 
   for(ii in 1:nrow(location)){
-
+# if(browser == TRUE & ii == 2) browser()            
+    
     row_range <- (location[ii, 'x'] - scope):(location[ii, 'x'] + scope)
    
     row_range <- row_range[row_range %in% 1:nrow(fish_area)] #If there's a border case maybe?
@@ -91,9 +93,9 @@ fish_population <- function(fish_area, ctl){
     } 
 
     #Stop fishing if there are no fish (return 0s for samples)
-    if(sum(fish_df$value) == 0){
-      return(list(updated_area = fish_area, samples = rep(0, ndrops)))
-    }
+    # if(sum(fish_df$value) == 0){
+    #   return(list(updated_area = fish_area, samples = rep(0, ndrops)))
+    # }
 
     fish_df[zero_index, 'prob'] <- 0
 
@@ -118,34 +120,43 @@ fish_population <- function(fish_area, ctl){
     names(angler_samples) <- c(paste0('angler', 1:nang), 'drop')
     angler_samples$drop <- 1:ndrops
 
-    
     #--------Equal hook probabilities
     if(process == 'equal_prob'){
       samples <- vector(length = ndrops)
-# browser()
-      phook <- hook_probs(nfish = fish_to_catch, p0 = p0) #probability of catching number of fish
-      #take absolute value of phook due to rounding errors letting it get negative
-      phook <- abs(phook)
 
       #If phook doesn't sum to 1, throw error
-      if(sum(phook) != 1) stop('hook probabilities do not sum to 1')
-
+    #       if(sum(phook) != 1){
+      #take absolute value of phook due to rounding errors letting it get negative
+    
       #For loop for number of drops and anglers
       for(qq in 1:ndrops){
+
+        #Have to redefine probabilities and check that catches don't exceed number of fish
+        #available
         
+        #Redefine probabilities
+        phook <- hook_probs(nfish = fish_to_catch, p0 = p0) #probability of catching number of fish
+        phook <- round(phook, digits = 10) #Rounding errors with the probabilities, round to 10 decimal places
+
         #Loop through anglers here,
         #maybe add in ability to modify the probabilities of certain anglers
         # samples_ang <- rep('999', length = nang)
         
         #Sample fish for each angler
         samp_temp <- rmultinom(nang, 1, phook) #probabilities defined in phook
-
+        
         samp <- data.frame(nfish = 0:5, pick = samp_temp)    
         samp <- melt(samp, id.vars = 'nfish') #melt into columns
         
         samples_ang <- samp[which(samp$value == 1), 'nfish'] #need to track these also
-
-
+        
+        #Loop through samp temp to make sure only 
+        #fish_to_catch can be caught
+        if(sum(samples_ang) > fish_to_catch) {
+          temp_samp <- cumsum(samples_ang)
+          samples_ang[which(temp_samp > fish_to_catch)] <- 0          
+        }
+      
         #format and store angler samples
         # angang <- as.data.frame(t(as.data.frame(samples_ang)))
         # row.names(angang) <- NULL
@@ -160,7 +171,8 @@ fish_population <- function(fish_area, ctl){
         fish_to_catch <- fish_to_catch - samples[qq]
       
         #add if statement so that samples[qq] cannot exceed fish_to_catch
-        if(fish_to_catch < 0) fish_to_catch <- 0
+        # if(fish_to_catch < 0) fish_to_catch <- 0
+        if(fish_to_catch < 0) stop('negative fish')
       }
     }
 
@@ -206,7 +218,11 @@ fish_population <- function(fish_area, ctl){
 
     #Two conditions:
     #No fish left, return empty cells
-    if(fish_to_catch == 0) fish_df$final <- fish_df$fished
+
+    if(fish_to_catch == 0) {
+# cat(ii, 'inside fish=', fish_to_catch, '\n' )      
+      fish_df$final <- fish_df$fished
+    }
 
     #if there are fish that can move back, move them
     if(fish_to_catch != 0){
@@ -229,19 +245,16 @@ fish_population <- function(fish_area, ctl){
       fish_df[zero_index, 'final'] <- fish_df[zero_index, 'delta']
     }
 
+
+
     #Update fish_area matrix
     fish_area[row_range, col_range] <- matrix(fish_df$final,
       nrow = nrow(fish_range), ncol = ncol(fish_range))
  
-    # angler_samples()
-    # angler_samples$vessel <- location
-    # location
-
     first_drop <- which(names(location) == 'drop1')
     location[ii, first_drop:ncol(location)] <- samples #Store Samples
 
     #Add locations to angler samples, then store in a list
-    
     angler_samples$vessel <- location[ii, 'vessel']
     angler_samples$x <- location[ii, 'x']
     angler_samples$y <- location[ii, 'y']
@@ -251,10 +264,11 @@ fish_population <- function(fish_area, ctl){
     angler_samples <- angler_samples[, c('vessel', 'x', 'y', 'drop',
                         names(angler_samples)[grep('angler', names(angler_samples))])]
     location_angler[[ii]] <- angler_samples
-    
+
   }
 
-  location_angler <- ldply(location_angler)
+  # print(angler_samples)
+  location_angler <- plyr::ldply(location_angler)
 
   return(list(updated_area = fish_area, angler_samples = location_angler, samples = location))
 }
