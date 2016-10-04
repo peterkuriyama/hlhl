@@ -19,6 +19,8 @@
 #' 'equal_prob' is based on CIE comments from 2012. 
 #'@param p0 Probability that fish detects gear, used in the hook_prob function
 #' @param nyear Number of years in survey
+#' @param browser Switch to turn on browser for debugging
+#' @param cpue_method Method of aggregating cpue. For use in calc_cpue function
 
 #' @examples
 #' make_ctl(p0 = .2)
@@ -41,12 +43,14 @@ make_ctl <- function(numrow = 10, numcol = 10, nfish = 10000, #initial number of
   ndrops = 5, 
   process = 'equal_prob',
   p0 = .4, #probability that fish are attracted to gear 
-  nyear = 10 #number of times to repeat fish_population
+  nyear = 10, #number of times to repeat fish_population
+  browser = FALSE,
+  cpue_method = 'average'
   ){
 # browser()
   control <- list(numrow = numrow, numcol = numcol, nfish = nfish, distribute = distribute,
     maxfish = maxfish, percent = percent, area = area, seed = seed, location = location, scope = scope,
-    nhooks = nhooks, ndrops = ndrops, process = process, p0 = p0, nyear = nyear)
+    nhooks = nhooks, ndrops = ndrops, process = process, p0 = p0, nyear = nyear, browser = browser)
 
   return(control)
 
