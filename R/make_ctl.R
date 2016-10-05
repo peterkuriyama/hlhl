@@ -20,7 +20,8 @@
 #'@param p0 Probability that fish detects gear, used in the hook_prob function
 #' @param nyear Number of years in survey
 #' @param browser Switch to turn on browser for debugging
-#' @param cpue_method Method of aggregating cpue. For use in calc_cpue function
+#' @param cpue_method Method of aggregating cpue. For use in calc_cpue function. Currently
+#' options are 'average', '75hooks' to aggregate by hooks, and 'weighted_average' is in development
 
 #' @examples
 #' make_ctl(p0 = .2)
