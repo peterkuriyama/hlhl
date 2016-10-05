@@ -8,7 +8,8 @@ make_ctl(numrow = 10, numcol = 10, nfish = 10000,
   distribute = "uniform", maxfish = 10, percent = 0.3, area = NULL,
   seed = 300, location = data.frame(vessel = c(1, 1, 2), x = c(3, 3, 8), y =
   c(3, 5, 8)), scope = 1, nhooks = 5, ndrops = 5,
-  process = "equal_prob", p0 = 0.4)
+  process = "equal_prob", p0 = 0.4, nyear = 10, browser = FALSE,
+  cpue_method = "average")
 }
 \arguments{
 \item{numrow}{Number of rows in matrix}
@@ -40,6 +41,13 @@ make_ctl(numrow = 10, numcol = 10, nfish = 10000,
 'equal_prob' is based on CIE comments from 2012.}
 
 \item{p0}{Probability that fish detects gear, used in the hook_prob function}
+
+\item{nyear}{Number of years in survey}
+
+\item{browser}{Switch to turn on browser for debugging}
+
+\item{cpue_method}{Method of aggregating cpue. For use in calc_cpue function. Currently
+options are 'average', '75hooks' to aggregate by hooks, and 'weighted_average' is in development}
 }
 \description{
 Define arguments for hook and line simulations
