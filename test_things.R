@@ -12,21 +12,279 @@ library(ggplot2)
 install_github('peterkuriyama/hlsimulator')
 library(hlsimulator)
 
-
-
 #Locally
 # load_all()
 
+ctl <- make_ctl(distribute = 'patchy')
+out <- conduct_survey(ctl = ctl)
+
+#distance from port, rec fishing impacts
+#incorporated in pop dy 
+
+
+#when to hit saturation point, when on slope
+#Depths of hook, can be informed by actual survey data
+#bocaccio agression,
+  #number of bocaccio vs other species caught on 
+  #each line
+#-------------------------------------------------------------------------------------------
+#Evaluate effect of number of fishing locations with uniform distribution
+#Random Sampling Locations
+get_rand_locs <- function(seed = 3, numrow = 10, numcol = 10,
+  nlocs = 20){
+  set.seed(seed)
+  x <- sample(1:numrow, nlocs, replace = T)
+  y <- sample(1:numrow, nlocs, replace = T)
+
+  locs <- vector('list', length = nlocs)
+  locs_df <- data.frame(vessel = 1, x = x, y = y)
+  
+  #Check to make sure there are no duplicate sites
+  while(sum(duplicated(locs_df)) != 0){
+    x <- sample(1:numrow, nlocs, replace = T)
+    y <- sample(1:numrow, nlocs, replace = T)
+  
+    #Increase this up to 10 locations
+    locs_df <- data.frame(vessel = 1, x = x, y = y)
+    # print('still going')
+  }
+
+  for(ii in 1:nlocs){
+    locs[[ii]] <- locs_df[1:ii, ]
+  }
+
+  return(locs)
+}
+
+rand_locs <- get_rand_locs()
+
+res <- lapply(rand_locs, FUN = function(x) run_sim(nhooks = 15, seed = 200, nfish = 10000,
+  nyear = 15, distribute = 'uniform', percent = .5, cpue_method = '75hooks', location = x))
+names(res) <- 1:length(rand_locs)
+for_plot <- ldply(lapply(res, FUN = function(x) return(x$cpue)))
+for_plot[, 1] <- as.factor(for_plot[, 1])
+levels(for_plot[, 1]) <- 1:20
+
+ggplot(for_plot) + geom_line(aes(x = nfish, y = avg_cpue, colour = .id), size = 2) + theme_bw() + 
+  scale_color_hue(h = c(0, 1)) + facet_wrap(~ .id)
+
+#Plot the locations also
+names(locs) <- 1:20
+locs <- ldply(locs)
+locs$.id <- factor(locs$.id, levels = 1:20)
+
+ggplot(locs) + geom_point(aes(x = x, y = y)) + facet_wrap(~ .id)
+
+#-------------------------------------------------------------------------------------------
+#Uniform, but with quadrant based location sampling
+expand.grid(x = 1:10, y = 1:10)
+1:10
+
+
+
+#Strong local depletion with only 1000 fish
+#A little less with 5000 fish
+
+#-------------------------------------------------------------------------------------------
+#Number of fish with some patch distribution
+#change number of fish
+outs <- as.list(seq(1000, 10000, 1000))
+
+nfish_res <- lapply(outs, FUN = function(x) run_sim(nhooks = 15, seed = 200, nfish = x, 
+  nyear = 15, distribute = 'patchy', percent = .5, cpue_method = '75hooks'))
+names(nfish_res) <- outs
+
+for_plot <- ldply(lapply(nfish_res, FUN = function(x) return(x$cpue)))
+ggplot(for_plot) + geom_line(aes(x = nfish, y = avg_cpue, colour = .id))
+
+
+#Weigh averages by number of fish in each location
+
+#-------------------------------------------------------------------------------------------
+#Include all the arguments that go into ctl
+
+
+
+
+#-------------------------------------------------------------------------------------------
+#Uniformly distributed fish
+p0_vec <- seq(.1, 1, .1)
+outs <- vector('list', length = length(p0_vec))
+
+for(dd in 1:length(p0_vec)){
+  ctl <- make_ctl(nhooks = 15, seed = 200, nfish = 10000, nyear = 50, distribute = 'uniform', 
+    p0 = p0_vec[dd])
+  outs[[dd]] <- conduct_survey(ctl)
+}
+
+cpue_avg_list <- lapply(outs, FUN = function(x) calc_cpue(x, ctl = ctl))
+names(cpue_avg_list) <- as.character(p0_vec)
+cpue_avg <- ldply(cpue_avg_list)
+names(cpue_avg)[1] <- 'p0'
+
+png(width = 11, height = 9, units = 'in', res = 150, file = 'figs/p0_vec.png')
+ggplot(cpue_avg) + geom_line(aes(x = nfish, y = avg_cpue, colour = p0), size = 1.5) + theme(text = element_text(size = 24)) + 
+  labs(x = 'True Number of Fish', y = "CPUE (nfish / nhooks)")
+dev.off()
+
+#-------------------------------------------------------------------------------------------
+#Fish in the best spots, 
+#50% of fish are distributed, fish in all those spots
+ctl <- make_ctl(nhooks = 15, seed = 200, nfish = 10000, nyear = 50, distribute = 'patchy', 
+  percent = .5)
+find_spots <- initialize_population(ctl = ctl)
+find_spots <- melt(find_spots) %>% arrange(desc(value))
+
+site_percent <- seq(.1, 1, .1)
+
+outs <- vector('list', length = length(site_percent))
+
+for(dd in 1:length(site_percent)){
+  max_row <- site_percent[dd] * nrow(find_spots)
+  locs <- data.frame(vessel = rep(1, max_row), x = find_spots[1:max_row, 'Var1'],
+    y = find_spots[1:max_row, 'Var2'])
+  ctl <- make_ctl(nhooks = 15, seed = 200, nfish = 10000, nyear = 15, distribute = 'patchy',
+    percent = .5, location = locs)
+
+  outs[[dd]] <- conduct_survey(ctl)
+  # out <- conduct_survey(ctl)
+  # site_cpue[[dd]] <- calc_cpue(out, ctl = ctl)
+  print(dd)
+}
+
+#Check that this is working right
+outs[[10]]$fished_areas$year2
+# str(outs[[1]])
+
+#Calculate CPUE it with all average
+ctl <- make_ctl(nhooks = 15, seed = 200, nfish = 10000, nyear = 15, distribute = 'patchy',
+    percent = .5, location = locs) 
+cpue_avg_list <- lapply(outs, FUN = function(x) calc_cpue(x, ctl = ctl))
+names(cpue_avg_list) <- as.character(site_percent)
+cpue_avg <- ldply(cpue_avg_list)
+names(cpue_avg)[1] <- 'percent'
+
+#Calculate CPUE with 75 hooks instead
+ctl <- make_ctl(nhooks = 15, seed = 200, nfish = 10000, nyear = 15, distribute = 'patchy',
+    percent = .5, location = locs, cpue_method = '75hooks') 
+cpue_75_list <- lapply(outs, FUN = function(x) calc_cpue(x, ctl = ctl))
+names(cpue_75_list) <- as.character(site_percent)
+cpue_75 <- ldply(cpue_75_list)
+names(cpue_75)[1] <- 'percent'
+
+
+#Compare the two in plots
+cpue_avg$method <- 'average'
+cpue_avg$avg_catch <- NULL
+cpue_75$method <- '75hooks'
+
+#Add in my own label
+cpue_avg[cpue_avg$percent == 0.1, 'percent'] <- '20%'
+cpue_avg[cpue_avg$percent == 0.2, 'percent'] <- '40%'
+cpue_avg[cpue_avg$percent == 0.3, 'percent'] <- '60%'
+cpue_avg[cpue_avg$percent == 0.4, 'percent'] <- '80%'
+cpue_avg[cpue_avg$percent == 0.5, 'percent'] <- '100%'
+
+cpue_avg[cpue_avg$percent == 0.6, 'percent'] <- '50% good, 10% bad'
+cpue_avg[cpue_avg$percent == 0.7, 'percent'] <- '50% good, 20% bad'
+cpue_avg[cpue_avg$percent == 0.8, 'percent'] <- '50% good, 30% bad'
+cpue_avg[cpue_avg$percent == 0.9, 'percent'] <- '50% good, 40% bad'
+cpue_avg[cpue_avg$percent == 1.0, 'percent'] <- '50% good, 50% bad'
+
+cpue_avg$percent <- factor(cpue_avg$percent, levels = c('20%', '40%', '60%', '80%', '100%'))
+
+png(width = 9, height = 8, units = 'in', res = 150, file = 'figs/best_sites.png')
+cpue_avg[grep('%', cpue_avg$percent), ] %>% ggplot(aes(x = nfish, y = avg_cpue,
+  colour = percent)) + geom_line(size = 1.5) + 
+  theme(text = element_text(size = 15)) + labs(x = 'True Number of Fish', y = "Average CPUE (nfish / nhooks)")
+dev.off()
+
+
+png(width = 9, height = 8, units = 'in', res = 150, file = 'figs/good_bad_sites.png')
+cpue_avg[grep('good', cpue_avg$percent), ] %>% ggplot(aes(x = nfish, y = avg_cpue)) + geom_line(size = 1.5) + 
+  theme(text = element_text(size = 15)) + labs(x = 'True Number of Fish', y = "Average CPUE (nfish / nhooks)") + 
+  facet_wrap(~ percent)
+dev.off()
+
+
+
+
+pdf(width = 12, height = 9, file = "cpue_best_sites.pdf")
+cpue_avg %>% filter(percent <= 0.5) %>% ggplot(aes(x = nfish, y = avg_cpue)) + geom_line(size = 1.5) +
+  theme_bw() + facet_wrap(~ percent) + theme(text = element_text(size = 15)) + xlab("True Number of Fish") + 
+  ylab('Average CPUE (nfish/nhooks)')
+dev.off()
+
+pdf(width = 12, height = 9, file = "cpue_all_sites.pdf")
+cpue_avg %>% filter(percent > 0.5) %>% ggplot(aes(x = nfish, y = avg_cpue)) + geom_line(size = 1.5) +
+  theme_bw() + facet_wrap(~ percent) + theme(text = element_text(size = 15)) + xlab("True Number of Fish") + 
+  ylab('Average CPUE (nfish/nhooks)')
+dev.off()
+
+pdf(width = 12, height = 9, file = "cpue_example.pdf")
+ggplot(aes(x = nfish, y = avg_cpue)) + geom_line(size = 1.5) +
+  theme_bw() + facet_wrap(~ percent) + theme(text = element_text(size = 15)) + xlab("True Number of Fish") + 
+  ylab('Average CPUE (nfish/nhooks)')
+dev.off()
+
+comp_cpue <- rbind(cpue_avg, cpue_75)
+
+cpue_75$avg_cpue 
+
+
+cpue_avg$avg_cpue
+
+
+
+names(site_cpue) <- site_percent
+
+site_cpue <- ldply(site_cpue)
+names(site_cpue)[1] <- 'percent'
+
+#add column based on percentage of sites samples
+site_cpue$group <- 'all'
+site_cpue[site_cpue$percent <= 0.5, 'group'] <- 'best'
+
+#Average number of fish in each year / 15 hooks
+ggplot(site_cpue) + geom_line(aes(x = nfish, y = avg_cpue, colour = percent), size = 1.5) + theme_bw() + 
+  scale_colour_manual(values = gray.colors(n = 10)) + facet_grid(~ group) + 
+  theme(text = element_text(size = 15)) + xlab("True Number of Fish") + 
+  ylab('Average CPUE (nfish/nhooks)')
+
+#Average number of fish per 75 hooks at each site
+
+
+
+
+location <- 
+
+
+
 #-------------------------------------------------------------------------------------------
 #work on conducting survey for number of years
+ctl <- make_ctl(nhooks = 15, seed = 201, nfish = 10010, nyear = 50, distribute = 'patchy',
+  percent = .01)
+out <- conduct_survey(ctl)
+out$fished_areas$year0
+
+
+cpue <- calc_cpue(out, ctl = ctl)
+plot(cpue$nfish, cpue$avg_cpue, type = 'l')
+
+
+
+initialize_population(ctl)
+
 
 #Check Number of fish
 ctl <- make_ctl(nhooks = 15, seed = 200, nfish = 10000, nyear = 50)
 out <- conduct_survey(ctl)
 cpue <- calc_cpue(out, ctl = ctl)
 
+plot(cpue$nfish, cpue$avg_cpue, type = 'l')
+#strata size weighted average
 
-plot(annual_catch$nfish, annual_catch$avg_cpue, type = 'l', xlab = )
+plot(annual_catch$nfish, annual_catch$avg_cpue, type = 'l')
 
 
 melt(out$fished_areas$year0)
