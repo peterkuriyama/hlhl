@@ -27,63 +27,90 @@ out <- conduct_survey(ctl = ctl)
 #bocaccio agression,
   #number of bocaccio vs other species caught on 
   #each line
+
+#Strong local depletion effect over 15 years and 10000 fish uniformly distributed
+
 #-------------------------------------------------------------------------------------------
 #Evaluate effect of number of fishing locations with uniform distribution
 #Random Sampling Locations
-get_rand_locs <- function(seed = 3, numrow = 10, numcol = 10,
-  nlocs = 20){
-  set.seed(seed)
-  x <- sample(1:numrow, nlocs, replace = T)
-  y <- sample(1:numrow, nlocs, replace = T)
-
-  locs <- vector('list', length = nlocs)
-  locs_df <- data.frame(vessel = 1, x = x, y = y)
-  
-  #Check to make sure there are no duplicate sites
-  while(sum(duplicated(locs_df)) != 0){
-    x <- sample(1:numrow, nlocs, replace = T)
-    y <- sample(1:numrow, nlocs, replace = T)
-  
-    #Increase this up to 10 locations
-    locs_df <- data.frame(vessel = 1, x = x, y = y)
-    # print('still going')
-  }
-
-  for(ii in 1:nlocs){
-    locs[[ii]] <- locs_df[1:ii, ]
-  }
-
-  return(locs)
-}
-
 rand_locs <- get_rand_locs()
+# rand_locs <- rand_locs[1:10]
 
 res <- lapply(rand_locs, FUN = function(x) run_sim(nhooks = 15, seed = 200, nfish = 10000,
   nyear = 15, distribute = 'uniform', percent = .5, cpue_method = '75hooks', location = x))
 names(res) <- 1:length(rand_locs)
 for_plot <- ldply(lapply(res, FUN = function(x) return(x$cpue)))
-for_plot[, 1] <- as.factor(for_plot[, 1])
-levels(for_plot[, 1]) <- 1:20
+for_plot[, 1] <- as.numeric(for_plot[, 1])
 
-ggplot(for_plot) + geom_line(aes(x = nfish, y = avg_cpue, colour = .id), size = 2) + theme_bw() + 
+# for_plot[, 1] <- as.factor(for_plot[, 1])
+# levels(for_plot[, 1]) <- 1:20
+
+ggplot(for_plot) + geom_point(aes(x = nfish, y = avg_cpue), size = 2) + theme_bw() + 
   scale_color_hue(h = c(0, 1)) + facet_wrap(~ .id)
-
-#Plot the locations also
-names(locs) <- 1:20
-locs <- ldply(locs)
-locs$.id <- factor(locs$.id, levels = 1:20)
-
-ggplot(locs) + geom_point(aes(x = x, y = y)) + facet_wrap(~ .id)
 
 #-------------------------------------------------------------------------------------------
 #Uniform, but with quadrant based location sampling
-expand.grid(x = 1:10, y = 1:10)
-1:10
+same_locs <- expand.grid(x = 1:5, y = 1:5)
+same_locs <- data.frame(vessel = 1, same_locs)
 
+locs <- vector('list', length = 20)
 
+for(ii in 1:20){
+  locs[[ii]] <- same_locs[1:ii, ]
+}
+
+same_res <- lapply(locs, FUN = function(x) run_sim(nhooks = 15, seed = 200, nfish = 10000,
+  nyear = 15, distribute = 'uniform', percent = .5, cpue_method = '75hooks', location = x))
+
+names(same_res) <- 1:20
+for_plot <- ldply(lapply(same_res, FUN = function(x) return(x$cpue)))
+for_plot[, 1] <- as.numeric(for_plot[, 1])
+
+#save figures
+ggplot(for_plot) + geom_line(aes(x = nfish, y = avg_cpue), colour = 'gray') + 
+  theme_bw() + geom_point(aes(x = nfish, y = avg_cpue), size = 2) + facet_wrap(~ .id) 
 
 #Strong local depletion with only 1000 fish
 #A little less with 5000 fish
+
+#-------------------------------------------------------------------------------------------
+#Specify Locations to fish in and see effect of number of fish
+
+
+
+
+#Local Depletion occurs
+
+
+
+
+#-------------------------------------------------------------------------------------------
+#specify patchy distribution
+ctl <- make_ctl(numrow = 10, numcol = 10)
+
+
+initialize_population
+run_sim()
+
+
+locs <- vector('list', length = 20)
+
+for(ii in 1:20){
+  locs[[ii]] <- same_locs[1:ii, ]
+}
+
+same_res <- lapply(locs, FUN = function(x) run_sim(nhooks = 15, seed = 200, nfish = 10000,
+  nyear = 15, distribute = 'uniform', percent = .5, cpue_method = '75hooks', location = x))
+
+names(same_res) <- 1:20
+for_plot <- ldply(lapply(same_res, FUN = function(x) return(x$cpue)))
+for_plot[, 1] <- as.numeric(for_plot[, 1])
+
+#save figures
+ggplot(for_plot) + geom_line(aes(x = nfish, y = avg_cpue), colour = 'gray') + 
+  theme_bw() + geom_point(aes(x = nfish, y = avg_cpue), size = 2) + facet_wrap(~ .id) 
+
+
 
 #-------------------------------------------------------------------------------------------
 #Number of fish with some patch distribution
