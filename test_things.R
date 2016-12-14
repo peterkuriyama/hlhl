@@ -45,9 +45,10 @@ for_plot[, 1] <- as.numeric(for_plot[, 1])
 # for_plot[, 1] <- as.factor(for_plot[, 1])
 # levels(for_plot[, 1]) <- 1:20
 
+png(width = 7, height = 7, units = 'in', res = 200, file = 'figs/random_fishing.png')
 ggplot(for_plot) + geom_point(aes(x = nfish, y = avg_cpue), size = 2) + theme_bw() + 
-  scale_color_hue(h = c(0, 1)) + facet_wrap(~ .id)
-
+  scale_color_hue(h = c(0, 1)) + facet_wrap(~ .id) + ggtitle("Random fishing locations")
+dev.off()
 #-------------------------------------------------------------------------------------------
 #Uniform, but with quadrant based location sampling
 same_locs <- expand.grid(x = 1:5, y = 1:5)
@@ -66,51 +67,106 @@ names(same_res) <- 1:20
 for_plot <- ldply(lapply(same_res, FUN = function(x) return(x$cpue)))
 for_plot[, 1] <- as.numeric(for_plot[, 1])
 
-#save figures
+png(width = 7, height = 7, units = 'in', res = 200, file = 'figs/quadrant_fishing.png')
 ggplot(for_plot) + geom_line(aes(x = nfish, y = avg_cpue), colour = 'gray') + 
-  theme_bw() + geom_point(aes(x = nfish, y = avg_cpue), size = 2) + facet_wrap(~ .id) 
+  theme_bw() + geom_point(aes(x = nfish, y = avg_cpue), size = 2) + facet_wrap(~ .id) +
+  labs(ggtitle("Fishing in same area"))
+dev.off()
 
 #Strong local depletion with only 1000 fish
 #A little less with 5000 fish
 
 #-------------------------------------------------------------------------------------------
 #Specify Locations to fish in and see effect of number of fish
+rand_locs <- get_rand_locs()
+rand_locs_df <- rand_locs
+names(rand_locs_df) <- 1:20
+rand_locs_df <- ldply(rand_locs_df)
+rand_locs_df[, 1] <- as.numeric(rand_locs_df[, 1])
+ggplot(rand_locs_df) + geom_point(aes(x = x, y = y)) + facet_wrap(~ .id)
+
+loc <- rand_locs[[12]]
+
+nfish <- seq(1000, 30000, by = 1000)
+fish_res <- lapply(nfish, FUN = function(x) run_sim(nhooks = 15, seed = 200, nfish = x,
+  nyear = 15, distribute = 'uniform', cpue_method = '75hooks', location = loc))
+names(fish_res) <- nfish
+for_plot <- ldply(lapply(fish_res, FUN = function(x) return(x$cpue)))
+for_plot[, 1] <- as.numeric(for_plot[, 1])
+
+png(width = 7, height = 7, units = 'in', res = 200, file = 'figs/nfish_uniform.png')
+ggplot(for_plot) + geom_line(aes(x = nfish, y = avg_cpue), colour = 'gray') + 
+  theme_bw() + geom_point(aes(x = nfish, y = avg_cpue), size = 2) + facet_wrap(~ .id) +
+  ggtitle("Number of fish increasing, uniformly distributed")
+dev.off()
+
+#Number of fish ch
+#-------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------
+#Look at effect of different probabilities of being attracted to hook
+p0s <- seq(.1, 1, .1)
 
+#15,000 fish uniformly distributed
+p0_res <- lapply(p0s, FUN = function(x) run_sim(nhooks = 15, seed = 200, nfish = 15000,
+  nyear = 15, distribute = 'uniform', cpue_method = '75hooks', location = loc, p0 = x))
+names(p0_res) <- p0s
+p0_plots <- ldply(lapply(p0_res, FUN = function(x) return(x$cpue)))
+p0_plots[, 1] <- as.numeric(p0_plots[, 1])
 
-#Local Depletion occurs
+png(width = 7, height = 7, units = 'in', res = 200, file = 'figs/p0_15000.png')
+ggplot(p0_plots) + geom_line(aes(x = nfish, y = avg_cpue, group = .id, colour = .id)) + 
+ labs(ggtitle('Vary p0; 15,000 fish '))
+dev.off()
 
+###############
+#10,000 fish uniformly distributed
+p0_res <- lapply(p0s, FUN = function(x) run_sim(nhooks = 15, seed = 200, nfish = 10000,
+  nyear = 15, distribute = 'uniform', cpue_method = '75hooks', location = loc, p0 = x))
+names(p0_res) <- p0s
+p0_plots <- ldply(lapply(p0_res, FUN = function(x) return(x$cpue)))
+p0_plots[, 1] <- as.numeric(p0_plots[, 1])
+
+png(width = 7, height = 7, units = 'in', res = 200, file = 'figs/p0_10000.png')
+ggplot(p0_plots) + geom_line(aes(x = nfish, y = avg_cpue, group = .id, colour = .id)) + 
+  labs(ggtitle("Vary p0; 10,000 fish"))
+dev.off()
+
+###############
+#5,000 fish uniformly distributed
+p0_res <- lapply(p0s, FUN = function(x) run_sim(nhooks = 15, seed = 200, nfish = 5000,
+  nyear = 15, distribute = 'uniform', cpue_method = '75hooks', location = loc, p0 = x))
+names(p0_res) <- p0s
+p0_plots <- ldply(lapply(p0_res, FUN = function(x) return(x$cpue)))
+p0_plots[, 1] <- as.numeric(p0_plots[, 1])
+
+png(width = 7, height = 7, units = 'in', res = 200, file = 'figs/p0_5000.png')
+ggplot(p0_plots) + geom_line(aes(x = nfish, y = avg_cpue, group = .id, colour = .id)) + 
+  labs(ggtitle("Vary p0; 5,000 fish"))
+dev.off()
 
 
 
 #-------------------------------------------------------------------------------------------
 #specify patchy distribution
-ctl <- make_ctl(numrow = 10, numcol = 10)
+one_patch <- run_sim(nhooks = 15, seed = 200, nfish = 15000, nyear = 15, distribute = 'patchy', 
+  location = loc, percent = .5)
+init <- one_patch$out$fished_areas$year0
+init <- melt(init)
+names(init)[c(1, 2)] <- c('x', 'y')
+
+#Compare fish distributions and fishing site locations
 
 
-initialize_population
-run_sim()
 
+ggplot() + geom_tile(data = init, aes(x = x, y = y, fill = value)) + 
+  scale_fill_gradient(low = 'white', high = 'red') + theme_bw() + 
+  geom_point(data = loc, aes(x = x, y = y), size = 4)
 
-locs <- vector('list', length = 20)
+ggplot(one_patch$cpue) + geom_point(aes(x = nfish, y = avg_cpue), size = 3)
 
-for(ii in 1:20){
-  locs[[ii]] <- same_locs[1:ii, ]
-}
-
-same_res <- lapply(locs, FUN = function(x) run_sim(nhooks = 15, seed = 200, nfish = 10000,
-  nyear = 15, distribute = 'uniform', percent = .5, cpue_method = '75hooks', location = x))
-
-names(same_res) <- 1:20
-for_plot <- ldply(lapply(same_res, FUN = function(x) return(x$cpue)))
-for_plot[, 1] <- as.numeric(for_plot[, 1])
-
-#save figures
-ggplot(for_plot) + geom_line(aes(x = nfish, y = avg_cpue), colour = 'gray') + 
-  theme_bw() + geom_point(aes(x = nfish, y = avg_cpue), size = 2) + facet_wrap(~ .id) 
-
-
+#Are they fishing in the areas with the most fish?
 
 #-------------------------------------------------------------------------------------------
 #Number of fish with some patch distribution
