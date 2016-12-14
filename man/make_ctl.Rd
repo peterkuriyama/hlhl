@@ -20,9 +20,9 @@ make_ctl(numrow = 10, numcol = 10, nfish = 10000,
 
 \item{distribute}{Specify fish distribution to be 'uniform', 'patchy', or 'area' specific}
 
-\item{maxfish}{Maximum number of fish that can be sampled at a time}
+\item{maxfish}{Maximum number of fish that can be sampled at a time; default is 10}
 
-\item{percent}{percentage of area to sample. Only necessary if distribute == 'patchy'}
+\item{percent}{percentage of area to sample. Only necessary if distribute == 'patchy'; default is 0.3}
 
 \item{area}{Specify area to distribute fish, options are 'upperleft', 'upperright', 'lowerleft', 
 'lowerright', 'upperhalf', 'lowerhalf', 'righthalf', 'lefthalf'  Only necessary if distribute == 'area'}
@@ -31,18 +31,18 @@ make_ctl(numrow = 10, numcol = 10, nfish = 10000,
 
 \item{location}{Data frame of locations with column for vessel, rows, and columns of fish are to fish in.}
 
-\item{scope}{the scope of fishing movement, default to 1 so fish in surrounding 1 cells can move in}
+\item{scope}{the scope of fishing movement, default to 1 so fish in surrounding 1 cells can move in; default is 1}
 
-\item{nhooks}{number of hooks at the smallest sampling size}
+\item{nhooks}{number of hooks at the smallest sampling size; default is 5}
 
-\item{ndrops}{number of drops, default is 5 following hook and line protocol}
+\item{ndrops}{number of drops, default is 5 following hook and line protocol; default is 5}
 
 \item{process}{specify process by which fish are sampled, options are 'multinomial', 'hypergeometric', and 'equal_prob'. 
 'equal_prob' is based on CIE comments from 2012.}
 
-\item{p0}{Probability that fish detects gear, used in the hook_prob function}
+\item{p0}{Probability that fish detects gear, used in the hook_prob function; default is 0.4}
 
-\item{nyear}{Number of years in survey}
+\item{nyear}{Number of years in survey; default is 10}
 
 \item{browser}{Switch to turn on browser for debugging}
 
