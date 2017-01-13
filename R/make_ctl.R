@@ -21,6 +21,7 @@
 #' @param nyear Number of years in survey; default is 10
 #' @param browser Switch to turn on browser for debugging
 #' @param cpue_method Method of aggregating cpue. For use in calc_cpue function. Currently
+#' @param mortality Natural mortality values, can be input as single value or matrix
 #' options are 'average', '75hooks' to aggregate by hooks, and 'weighted_average' is in development
 
 #' @examples
@@ -46,13 +47,15 @@ make_ctl <- function(numrow = 10, numcol = 10, nfish = 10000, #initial number of
   p0 = .4, #probability that fish are attracted to gear 
   nyear = 10, #number of times to repeat fish_population
   browser = FALSE,
-  cpue_method = 'average'
+  cpue_method = 'average',
+  mortality
   ){
 # browser()
   control <- list(numrow = numrow, numcol = numcol, nfish = nfish, distribute = distribute,
-    maxfish = maxfish, percent = percent, area = area, seed = seed, location = location, scope = scope,
-    nhooks = nhooks, ndrops = ndrops, process = process, p0 = p0, nyear = nyear, browser = browser,
-    cpue_method = cpue_method)
+    maxfish = maxfish, percent = percent, area = area, seed = seed, location = location, 
+    scope = scope, nhooks = nhooks, ndrops = ndrops, process = process, p0 = p0, 
+    nyear = nyear, browser = browser,
+    cpue_method = cpue_method, mortality = mortality)
 
   return(control)
 
