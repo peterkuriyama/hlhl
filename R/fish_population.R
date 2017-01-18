@@ -264,10 +264,20 @@ fish_population <- function(fish_area, ctl){
     fish_area[row_range, col_range] <- matrix(fish_df$final,
       nrow = nrow(fish_range), ncol = ncol(fish_range))
   
+    #If mortality is a single value do this
     #Add in rounded mortality numbers
-    inst_mort <- exp(mortality) / 100 #convert continuous to instantaneous
 
-    fish_area <- fish_area - round(fish_area * inst_morg)
+    #If single mortality value for entire matrix
+    if(length(mortality) == 1){
+      inst_mort <- exp(mortality) / 100 #convert continuous to instantaneous
+      fish_area <- fish_area - round(fish_area * inst_mort)
+    }
+    
+    if(length(mortality) != 1){
+      inst_mort <- exp(mortality) / 100
+      fish_area <- fish_area - round(fish_area * inst_mort)
+    }
+
 
     first_drop <- which(names(location) == 'drop1')
     location[ii, first_drop:ncol(location)] <- samples #Store Samples
