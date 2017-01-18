@@ -265,7 +265,9 @@ fish_population <- function(fish_area, ctl){
       nrow = nrow(fish_range), ncol = ncol(fish_range))
   
     #Add in rounded mortality numbers
-    fish_area <- fish_area - round(fish_area * mortality)
+    inst_mort <- exp(mortality) / 100 #convert continuous to instantaneous
+
+    fish_area <- fish_area - round(fish_area * inst_morg)
 
     first_drop <- which(names(location) == 'drop1')
     location[ii, first_drop:ncol(location)] <- samples #Store Samples
