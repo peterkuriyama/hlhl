@@ -27,6 +27,10 @@
 
 fish_population <- function(fish_area, ctl){
 
+  ##---------------------------------------------------------------------------------------
+  #Unpack Ctl File
+  ##---------------------------------------------------------------------------------------
+
   location <- ctl$location
   scope <- ctl$scope
   nhooks <- ctl$nhooks
@@ -34,6 +38,7 @@ fish_population <- function(fish_area, ctl){
   process <- ctl$process
   p0 <- ctl$p0
   browser <- ctl$browser
+  mortality <- ctl$mortality
 
   if(class(location) != "data.frame") stop("location must be a data frame")
   
@@ -44,9 +49,11 @@ fish_population <- function(fish_area, ctl){
   location <- cbind(location, add_ons)
   location_angler <- vector('list', length = nrow(location))
 
-  for(ii in 1:nrow(location)){
-# if(browser == TRUE & ii == 2) browser()            
-    
+  ##---------------------------------------------------------------------------------------
+  #Fish in Locations
+  ##---------------------------------------------------------------------------------------
+
+  for(ii in 1:nrow(location)){    
     row_range <- (location[ii, 'x'] - scope):(location[ii, 'x'] + scope)
    
     row_range <- row_range[row_range %in% 1:nrow(fish_area)] #If there's a border case maybe?
@@ -70,9 +77,9 @@ fish_population <- function(fish_area, ctl){
     #define number of fish outside
     nfish_outside <- sum(fish_range) - fish_in_loc
 
-    #------------------------------------------------------------------------------------------------------------
-    ##Fish Movement
-
+    ##---------------------------------------------------------------------------------------
+    #Move Fish
+    ##---------------------------------------------------------------------------------------
     #Move fish to specified location
 
     #Calculate movement probabilities
@@ -107,7 +114,10 @@ fish_population <- function(fish_area, ctl){
     fish_df$moved <- fish_df$value - fish_df$moving #moved column indicates nfish after movement
     fish_df[zero_index, 'moved'] <- fish_df[zero_index, 'value'] + sum(fish_df$moving)
 
-    #------------------------------------------------------
+    ##---------------------------------------------------------------------------------------
+    #Fish in Specific Areas
+    ##---------------------------------------------------------------------------------------
+
     #Now fish in specified cell, called zero.index
     fish_to_catch <- fish_df[zero_index, 'moved']
 
@@ -211,7 +221,9 @@ fish_population <- function(fish_area, ctl){
      }
     }
 
-    #------------------------------------------------------
+    ##---------------------------------------------------------------------------------------
+    #Update numbers in each cell after fishing 
+    ##---------------------------------------------------------------------------------------
     #Update number of fish in each cell
     fish_df$fished <- fish_df$moved
     fish_df[zero_index, 'fished'] <- fish_to_catch
@@ -220,7 +232,6 @@ fish_population <- function(fish_area, ctl){
     #No fish left, return empty cells
 
     if(fish_to_catch == 0) {
-# cat(ii, 'inside fish=', fish_to_catch, '\n' )      
       fish_df$final <- fish_df$fished
     }
 
@@ -245,12 +256,17 @@ fish_population <- function(fish_area, ctl){
       fish_df[zero_index, 'final'] <- fish_df[zero_index, 'delta']
     }
 
-
-
+    ##---------------------------------------------------------------------------------------
+    #Add mortality
+    ##---------------------------------------------------------------------------------------
+    
     #Update fish_area matrix
     fish_area[row_range, col_range] <- matrix(fish_df$final,
       nrow = nrow(fish_range), ncol = ncol(fish_range))
- 
+  
+    #Add in rounded mortality numbers
+    fish_area <- fish_area - round(fish_area * mortality)
+
     first_drop <- which(names(location) == 'drop1')
     location[ii, first_drop:ncol(location)] <- samples #Store Samples
 
