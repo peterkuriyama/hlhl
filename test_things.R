@@ -5,6 +5,7 @@ library(plyr)
 library(dplyr)
 library(reshape2)
 library(ggplot2)
+
 #--------------------------------------------------------------------------------------------
 #Options to load the package
 
@@ -15,8 +16,12 @@ library(hlsimulator)
 #Locally
 # load_all()
 
-ctl <- make_ctl(distribute = 'patchy')
+ctl <- make_ctl(distribute = 'patchy', mortality = .1)
 out <- conduct_survey(ctl = ctl)
+
+ctl <- make_ctl(distribute = 'patchy', mortality = matrix(rep(c(.1, .2), 100), nrow = 10, ncol = 10, byrow = TRUE))
+
+
 
 #distance from port, rec fishing impacts
 #incorporated in pop dy 
@@ -29,6 +34,21 @@ out <- conduct_survey(ctl = ctl)
   #each line
 
 #Strong local depletion effect over 15 years and 10000 fish uniformly distributed
+
+#-------------------------------------------------------------------------------------------
+#Add in two species
+
+#Need to break fish_population into smaller functions
+  #Modular approach will help with effect of order on processes
+#Maybe with competition coefficient in ctl 
+#sampling will have to occur for both species simultaneously
+
+
+
+
+
+
+
 
 #-------------------------------------------------------------------------------------------
 #Evaluate effect of number of fishing locations with uniform distribution
@@ -100,7 +120,30 @@ ggplot(for_plot) + geom_line(aes(x = nfish, y = avg_cpue), colour = 'gray') +
   ggtitle("Number of fish increasing, uniformly distributed")
 dev.off()
 
-#Number of fish ch
+#Number of fish when it's patchy, fish only in loc
+nfish <- seq(1000, 30000, by = 1000)
+patch_res <- lapply(nfish, FUN = function(x) run_sim(nhooks = 15, seed = 200, nfish = x,
+  nyear = 15, distribute = 'patchy', percent = .3 , cpue_method = '75hooks', location = loc))
+names(patch_res) <- nfish
+patch_plot <- ldply(lapply(patch_res, FUN = function(x) return(x$cpue)))
+patch_plot[, 1] <- as.numeric(patch_plot[, 1])
+
+png(width = 7, height = 7, units = 'in', res = 200, file = 'figs/nfish_patchy.png')
+ggplot(patch_plot) + geom_line(aes(x = nfish, y = avg_cpue), colour = 'gray') + 
+  theme_bw() + geom_point(aes(x = nfish, y = avg_cpue), size = 2) + facet_wrap(~ .id) +
+  ggtitle("Number of fish increasing, patchily distributed")
+dev.off()
+
+#Look at how the patches change
+patch_res[[1]]$out$fished_areas$year0
+
+init_patches <- lapply(patch_res, FUN = function(x) return(x$out$fished_areas$year0))
+
+
+
+
+
+
 #-------------------------------------------------------------------------------------------
 
 
@@ -157,8 +200,6 @@ init <- melt(init)
 names(init)[c(1, 2)] <- c('x', 'y')
 
 #Compare fish distributions and fishing site locations
-
-
 
 ggplot() + geom_tile(data = init, aes(x = x, y = y, fill = value)) + 
   scale_fill_gradient(low = 'white', high = 'red') + theme_bw() + 

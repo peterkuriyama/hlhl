@@ -55,7 +55,6 @@ fish_population <- function(fish_area, ctl){
 
   for(ii in 1:nrow(location)){    
     row_range <- (location[ii, 'x'] - scope):(location[ii, 'x'] + scope)
-   
     row_range <- row_range[row_range %in% 1:nrow(fish_area)] #If there's a border case maybe?
 
     col_range <- (location[ii, 'y'] - scope):(location[ii, 'y'] + scope)
@@ -143,7 +142,7 @@ fish_population <- function(fish_area, ctl){
 
         #Have to redefine probabilities and check that catches don't exceed number of fish
         #available
-        
+          
         #Redefine probabilities
         phook <- hook_probs(nfish = fish_to_catch, p0 = p0) #probability of catching number of fish
         phook <- round(phook, digits = 10) #Rounding errors with the probabilities, round to 10 decimal places
