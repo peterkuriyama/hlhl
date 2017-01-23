@@ -26,11 +26,15 @@
 #   ...){
 
 fish_population <- function(fish_area, ctl){
+  #Should have Four steps or so
+  #Move Fish
+  #Catch Fish
+  #Fish Die
+  #Move Fish again
 
   ##---------------------------------------------------------------------------------------
   #Unpack Ctl File
   ##---------------------------------------------------------------------------------------
-
   location <- ctl$location
   scope <- ctl$scope
   nhooks <- ctl$nhooks
@@ -49,178 +53,66 @@ fish_population <- function(fish_area, ctl){
   location <- cbind(location, add_ons)
   location_angler <- vector('list', length = nrow(location))
 
+  #convert to list
+  fish_area_list <- lapply(fish_area, FUN = function(x) melt(x))
+
   ##---------------------------------------------------------------------------------------
   #Fish in Locations
   ##---------------------------------------------------------------------------------------
+  #write this in apply
+  #Define 
+  
+  #Apply over fishing locations
+  #But also apply function to each location
+  
+  ff <- fish_area[[1]]
 
+   <- move_fish_loop(location = location, ff = fish_area[[1]])
+  
+
+
+
+
+
+
+
+
+  ll <- location[1, ]
+
+
+  
+# browser()
   for(ii in 1:nrow(location)){    
-    row_range <- (location[ii, 'x'] - scope):(location[ii, 'x'] + scope)
-   
-    row_range <- row_range[row_range %in% 1:nrow(fish_area)] #If there's a border case maybe?
+    #Define range of fish movement
+    # row_range <- (location[ii, 'x'] - scope):(location[ii, 'x'] + scope)
+    # row_range <- row_range[row_range %in% 1:nrow(fish_area)] #If there's a border case maybe?
 
-    col_range <- (location[ii, 'y'] - scope):(location[ii, 'y'] + scope)
-    col_range <- col_range[col_range %in% 1:ncol(fish_area)]
+    # col_range <- (location[ii, 'y'] - scope):(location[ii, 'y'] + scope)
+    # col_range <- col_range[col_range %in% 1:ncol(fish_area)]
 
-    #Define range to fish
-    fish_area_melted <- reshape2::melt(fish_area)
+    # #Define range to fish
+    # fish_area_melted <- reshape2::melt(fish_area)
 
-    #Use melted matrix because fish_area is easier to subset
-    fish_range_melted <- subset(fish_area_melted, Var1 %in% row_range & Var2 %in% col_range)
-    fish_location_melted <-subset(fish_area_melted, Var1 == location[ii, 'x'] & Var2 == location[ii, 'y'])
+    # #Use melted matrix because fish_area is easier to subset
+    # fish_range_melted <- subset(fish_area_melted, Var1 %in% row_range & Var2 %in% col_range)
+    # #Find the location of fishing
+    # fish_location_melted <- subset(fish_area_melted, Var1 == location[ii, 'x'] & Var2 == location[ii, 'y'])
 
-    #define zero index
-    zero_index <-  which(fish_range_melted$Var1 == location[ii, 'x'] & fish_range_melted$Var2 == location[ii, 'y'])
+    # #define zero index, this is the initial location of movement
+    # zero_index <-  which(fish_range_melted$Var1 == location[ii, 'x'] & fish_range_melted$Var2 == location[ii, 'y'])
 
-    fish_range <- matrix(fish_range_melted$value, nrow = length(row_range), ncol = length(col_range))
-    fish_in_loc <- fish_location_melted$value
+    # fish_range <- matrix(fish_range_melted$value, nrow = length(row_range), ncol = length(col_range))
+    # fish_in_loc <- fish_location_melted$value
 
     #define number of fish outside
-    nfish_outside <- sum(fish_range) - fish_in_loc
+    # nfish_outside <- sum(fish_range) - fish_in_loc
 
     ##---------------------------------------------------------------------------------------
-    #Move Fish
-    ##---------------------------------------------------------------------------------------
-    #Move fish to specified location
+    #Move fish with function move_fish
+    fish_df <- move_fish(fish_range1 = fish_range, nfish_outside1 = nfish_outside,
+      zero_index1 = zero_index)
 
-    #Calculate movement probabilities
-    #currently nothing goes out of specified location
-    #Movement probabilites depend on number of fish outside relative to
-    #total fish outside
-    probs <- fish_range / nfish_outside
-
-    #create data frame of fish_range [fish to catch] because
-      #easier to manipulate
-    #Can streamline this whole process here
-    fish_df <- melt(fish_range)
-    fish_df$prob <- melt(probs)$value
-
-    #If there are no fish within scope, set movement probabilities to 0
-    if(nfish_outside == 0){
-      fish_df$prob <- 0
-    } 
-
-    #Stop fishing if there are no fish (return 0s for samples)
-    # if(sum(fish_df$value) == 0){
-    #   return(list(updated_area = fish_area, samples = rep(0, ndrops)))
-    # }
-
-    fish_df[zero_index, 'prob'] <- 0
-
-    #Calculate number of moving fish with binomial distribution
-    fish_df$moving <- apply(fish_df, MAR = 1, FUN = function(x) rbinom(n = 1, size = x['value'],
-      prob = x['prob']))
-
-    #Now update fish
-    fish_df$moved <- fish_df$value - fish_df$moving #moved column indicates nfish after movement
-    fish_df[zero_index, 'moved'] <- fish_df[zero_index, 'value'] + sum(fish_df$moving)
-
-    ##---------------------------------------------------------------------------------------
-    #Fish in Specific Areas
-    ##---------------------------------------------------------------------------------------
-
-    #Now fish in specified cell, called zero.index
-    fish_to_catch <- fish_df[zero_index, 'moved']
-
-    #specify number of anglers
-    if(nhooks %% 5 != 0) stop('number of hooks must be multiple of 5')
-    nang <- nhooks / 5 #number of anglers
-
-    #format angler samples
-    angler_samples <- as.data.frame(matrix(nrow = ndrops, ncol = 1 + nang))
-    names(angler_samples) <- c(paste0('angler', 1:nang), 'drop')
-    angler_samples$drop <- 1:ndrops
-
-    #--------Equal hook probabilities
-    if(process == 'equal_prob'){
-      samples <- vector(length = ndrops)
-
-      #If phook doesn't sum to 1, throw error
-    #       if(sum(phook) != 1){
-      #take absolute value of phook due to rounding errors letting it get negative
-    
-      #For loop for number of drops and anglers
-      for(qq in 1:ndrops){
-
-        #Have to redefine probabilities and check that catches don't exceed number of fish
-        #available
-        
-        #Redefine probabilities
-        phook <- hook_probs(nfish = fish_to_catch, p0 = p0) #probability of catching number of fish
-        phook <- round(phook, digits = 10) #Rounding errors with the probabilities, round to 10 decimal places
-
-        #Loop through anglers here,
-        #maybe add in ability to modify the probabilities of certain anglers
-        # samples_ang <- rep('999', length = nang)
-        
-        #Sample fish for each angler
-        samp_temp <- rmultinom(nang, 1, phook) #probabilities defined in phook
-        
-        samp <- data.frame(nfish = 0:5, pick = samp_temp)    
-        samp <- melt(samp, id.vars = 'nfish') #melt into columns
-        
-        samples_ang <- samp[which(samp$value == 1), 'nfish'] #need to track these also
-        
-        #Loop through samp temp to make sure only 
-        #fish_to_catch can be caught
-        if(sum(samples_ang) > fish_to_catch) {
-          temp_samp <- cumsum(samples_ang)
-          samples_ang[which(temp_samp > fish_to_catch)] <- 0          
-        }
-      
-        #format and store angler samples
-        # angang <- as.data.frame(t(as.data.frame(samples_ang)))
-        # row.names(angang) <- NULL
-        # names(angang) <- paste0('angler', 1:nang)
-        # angang$drop <- qq
-
-        #Store Samples
-        angler_samples[qq, 1:nang] <- samples_ang
-        samples[qq] <- sum(samples_ang)
-
-        # samples[qq] <- sample_equal_prob(nfish = fish_to_catch, nhooks = nhooks, p0 = dots$p0)  
-        fish_to_catch <- fish_to_catch - samples[qq]
-      
-        #add if statement so that samples[qq] cannot exceed fish_to_catch
-        # if(fish_to_catch < 0) fish_to_catch <- 0
-        if(fish_to_catch < 0) stop('negative fish')
-      }
-    }
-
-    #--------Hypergeometric
-    if(process == 'hypergeometric'){
-      ###in rhyper
-      #n is number of failures
-      #m is number of successes (fish)
-      #k is number of samples, both n = k = nhooks
-      #nn is number of sampling events, maybe equal to ndrops
-
-      samples <- vector(length = ndrops)
-
-      for(qq in 1:ndrops){
-        samples[qq] <- rhyper(n = nhooks, m = fish_to_catch, k = nhooks, nn = 1)
-        fish_to_catch <- fish_to_catch - samples[qq] #remove caught fish
-      }
-    }
-
-    #--------Multinomial
-    #multinomial process is still really in development
-    if(process == 'multinomial'){
-      hookProbs <- rep(1 / (nhooks + 1), (nhooks + 1)) #All Hooks have equal probability
-      catches <- matrix(nrow = (nhooks + 1), ncol = nhooks)
-
-      for(zz in 1:nhooks){
-      catches[, zz] <- rmultinom(1, size = 1, prob = hookProbs)
-
-      rmultinom(1, size = fish_to_catch, prob = hookProbs)
-
-      #update hook probabilties if fish are caught
-      if (sum(catches[, zz]) == 1 & which(catches[, zz] == 1) != 1) {
-        hookProbs[1] <- hookProbs[1] + hookProbs[which(catches[, zz] == 1)]
-        hookProbs[which(catches[, zz] == 1)] <- 0
-      }
-     }
-    }
-
+   
     ##---------------------------------------------------------------------------------------
     #Update numbers in each cell after fishing 
     ##---------------------------------------------------------------------------------------
