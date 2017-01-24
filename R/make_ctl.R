@@ -4,7 +4,10 @@
 #' Used in initialize_population
 #' @param numrow Number of rows in matrix
 #' @param numcol Number of columns in matrix
-#' @param nfish Number of fish to allocate among matrix
+#' @param nfish1 Number of fish1 to allocate among matrix
+#' @param nfish2 Number of fish2 to allocate among matrix
+#' @param prob1 Probability of catching species 1
+#' @param prob2 Probability of catching species 2
 #' @param seed Set seed if distribute == random, defaults to 300
 #' @param distribute Specify fish distribution to be 'uniform', 'patchy', or 'area' specific
 #' @param maxfish Maximum number of fish that can be sampled at a time; default is 10
@@ -29,7 +32,10 @@
 
 #' @export
 
-make_ctl <- function(numrow = 10, numcol = 10, nfish = 10000, #initial number of fish
+make_ctl <- function(numrow = 10, numcol = 10, nfish1 = 10000, #initial number of fish
+  nfish2 = 0,
+  prob1 = .1, #Probability of catching species1
+  prob2 = 0, #Probability of catching species2
   distribute = 'uniform', #distribution of fish, could be uniform, or patchy
   maxfish = 10,
   percent = .3, #percentage of area to sample, only necessary if distribute = 'patchy'
@@ -51,7 +57,8 @@ make_ctl <- function(numrow = 10, numcol = 10, nfish = 10000, #initial number of
   mortality
   ){
 # browser()
-  control <- list(numrow = numrow, numcol = numcol, nfish = nfish, distribute = distribute,
+  control <- list(numrow = numrow, numcol = numcol, nfish1 = nfish1, nfish2 = nfish2, prob1 = prob1, 
+    prob2 = prob2,distribute = distribute,
     maxfish = maxfish, percent = percent, area = area, seed = seed, location = location, 
     scope = scope, nhooks = nhooks, ndrops = ndrops, process = process, p0 = p0, 
     nyear = nyear, browser = browser,

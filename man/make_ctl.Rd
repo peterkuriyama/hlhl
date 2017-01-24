@@ -4,19 +4,25 @@
 \alias{make_ctl}
 \title{Make Control}
 \usage{
-make_ctl(numrow = 10, numcol = 10, nfish = 10000,
-  distribute = "uniform", maxfish = 10, percent = 0.3, area = NULL,
-  seed = 300, location = data.frame(vessel = c(1, 1, 2), x = c(3, 3, 8), y =
-  c(3, 5, 8)), scope = 1, nhooks = 5, ndrops = 5,
-  process = "equal_prob", p0 = 0.4, nyear = 10, browser = FALSE,
-  cpue_method = "average")
+make_ctl(numrow = 10, numcol = 10, nfish1 = 10000, nfish2 = 0,
+  prob1 = 0.1, prob2 = 0, distribute = "uniform", maxfish = 10,
+  percent = 0.3, area = NULL, seed = 300, location = data.frame(vessel =
+  c(1, 1, 2), x = c(3, 3, 8), y = c(3, 5, 8)), scope = 1, nhooks = 5,
+  ndrops = 5, process = "equal_prob", p0 = 0.4, nyear = 10,
+  browser = FALSE, cpue_method = "average", mortality)
 }
 \arguments{
 \item{numrow}{Number of rows in matrix}
 
 \item{numcol}{Number of columns in matrix}
 
-\item{nfish}{Number of fish to allocate among matrix}
+\item{nfish1}{Number of fish1 to allocate among matrix}
+
+\item{nfish2}{Number of fish2 to allocate among matrix}
+
+\item{prob1}{Probability of catching species 1}
+
+\item{prob2}{Probability of catching species 2}
 
 \item{distribute}{Specify fish distribution to be 'uniform', 'patchy', or 'area' specific}
 
@@ -46,7 +52,9 @@ make_ctl(numrow = 10, numcol = 10, nfish = 10000,
 
 \item{browser}{Switch to turn on browser for debugging}
 
-\item{cpue_method}{Method of aggregating cpue. For use in calc_cpue function. Currently
+\item{cpue_method}{Method of aggregating cpue. For use in calc_cpue function. Currently}
+
+\item{mortality}{Natural mortality values, can be input as single value or matrix
 options are 'average', '75hooks' to aggregate by hooks, and 'weighted_average' is in development}
 }
 \description{
