@@ -13,6 +13,7 @@
 #'@export
 
 sample_exp <- function(nfish1, nfish2, prob1, prob2){
+
   #------------------------------------------------
   #Define probabilities based on number of fish
 
@@ -24,24 +25,24 @@ sample_exp <- function(nfish1, nfish2, prob1, prob2){
   #Probability of catching a fish
   hook_prob <- 1 - ((1 - p1) * (1 - p2))
 
+#Some error with binomial arguments
   fish <- rbinom(n = 1, size = 1,  prob = hook_prob)
   
   #------------------------------------------------
   # Which fish was caught?
+  #initially declare both as 0
+  fish1 <- 0
+  fish2 <- 0
+  
+  #If a fish was caught determine if it was fish1 or fish2
   if(fish == 1){
     p1a <- p1 / (p1 + p2)  
-    # p2a <- p2 / (p1 + p2)  
-    if(p2 == 0) p1a <- 1 #if there's no probability of catching species 2
     fish1 <- rbinom(n = 1, size = 1, prob = p1a)
   }
   
-  fish2 <- 0
-  if(fish1 == 0) fish2 <- 1
+  if(fish1 == 0 & fish == 1) fish2 <- 1
   
-  #If no fish caught, return zeroes
-  if(fish == 0) return(data.frame(fish1 = 0, fish2 = 0))
-
-  #Return values if a fish caught
-  if(fish != 0) return(data.frame(fish1 = fish1, fish2 = fish2))
+  #Return values as data frame
+  return(data.frame(fish1 = fish1, fish2 = fish2))
   
 }
