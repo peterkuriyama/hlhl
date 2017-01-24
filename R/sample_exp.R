@@ -9,11 +9,8 @@
 #'@param prob2 Probability of catching fish2
 
 #'@examples
-
 #' Put Example Here
-
 #'@export
-
 
 sample_exp <- function(nfish1, nfish2, prob1, prob2){
   #------------------------------------------------
@@ -34,7 +31,7 @@ sample_exp <- function(nfish1, nfish2, prob1, prob2){
   if(fish == 1){
     p1a <- p1 / (p1 + p2)  
     # p2a <- p2 / (p1 + p2)  
-
+    if(p2 == 0) p1a <- 1 #if there's no probability of catching species 2
     fish1 <- rbinom(n = 1, size = 1, prob = p1a)
   }
   
