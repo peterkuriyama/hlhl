@@ -8,7 +8,7 @@ make_ctl(numrow = 10, numcol = 10, nfish1 = 10000, nfish2 = 0,
   prob1 = 0.1, prob2 = 0, distribute = "uniform", maxfish = 10,
   percent = 0.3, area = NULL, seed = 300, location = data.frame(vessel =
   c(1, 1, 2), x = c(3, 3, 8), y = c(3, 5, 8)), scope = 1, nhooks = 5,
-  ndrops = 5, process = "equal_prob", p0 = 0.4, nyear = 10,
+  ndrops = 5, nangs = 3, process = "equal_prob", p0 = 0.4, nyear = 10,
   browser = FALSE, cpue_method = "average", mortality)
 }
 \arguments{
@@ -42,6 +42,8 @@ make_ctl(numrow = 10, numcol = 10, nfish1 = 10000, nfish2 = 0,
 \item{nhooks}{number of hooks at the smallest sampling size; default is 5}
 
 \item{ndrops}{number of drops, default is 5 following hook and line protocol; default is 5}
+
+\item{nangs}{number of anglers, Default is 3}
 
 \item{process}{specify process by which fish are sampled, options are 'multinomial', 'hypergeometric', and 'equal_prob'. 
 'equal_prob' is based on CIE comments from 2012.}

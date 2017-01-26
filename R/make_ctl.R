@@ -18,6 +18,7 @@
 #'@param scope the scope of fishing movement, default to 1 so fish in surrounding 1 cells can move in; default is 1
 #'@param nhooks number of hooks at the smallest sampling size; default is 5
 #'@param ndrops number of drops, default is 5 following hook and line protocol; default is 5
+#'@param nangs number of anglers, Default is 3
 #'@param process specify process by which fish are sampled, options are 'multinomial', 'hypergeometric', and 'equal_prob'. 
 #' 'equal_prob' is based on CIE comments from 2012. 
 #'@param p0 Probability that fish detects gear, used in the hook_prob function; default is 0.4  
@@ -49,6 +50,7 @@ make_ctl <- function(numrow = 10, numcol = 10, nfish1 = 10000, #initial number o
   scope = 1,
   nhooks = 5,
   ndrops = 5, 
+  nangs = 3, 
   process = 'equal_prob',
   p0 = .4, #probability that fish are attracted to gear 
   nyear = 10, #number of times to repeat fish_population
@@ -60,7 +62,7 @@ make_ctl <- function(numrow = 10, numcol = 10, nfish1 = 10000, #initial number o
   control <- list(numrow = numrow, numcol = numcol, nfish1 = nfish1, nfish2 = nfish2, prob1 = prob1, 
     prob2 = prob2,distribute = distribute,
     maxfish = maxfish, percent = percent, area = area, seed = seed, location = location, 
-    scope = scope, nhooks = nhooks, ndrops = ndrops, process = process, p0 = p0, 
+    scope = scope, nhooks = nhooks, ndrops = ndrops, nangs = nangs, process = process, p0 = p0, 
     nyear = nyear, browser = browser,
     cpue_method = cpue_method, mortality = mortality)
 
