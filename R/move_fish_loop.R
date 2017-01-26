@@ -14,6 +14,9 @@ move_fish_loop <- function(location, ff){
   #Store the original data frame to compare
   ff_orig <- ff
 
+  #Store the number of fish that moved
+  nfish_moved <- vector('list', length = 3)
+
   for(zz in 1:nrow(location)){
     moves <- define_movement(fish_area = ff, x = location[zz, 'x'],
       y = location[zz, 'y'], scope = scope)
@@ -35,6 +38,8 @@ move_fish_loop <- function(location, ff){
 
     #convert ff to a matrix
     ff <- matrix(ff$value, nrow = ctl$numrow, ncol = ctl$numcol)
+
+    nfish_moved[[zz]] <- moved
   }
 
   #use this to check stuff
@@ -44,7 +49,7 @@ move_fish_loop <- function(location, ff){
 
   # ff2 <- inner_join(ff_check, ff_orig,  by = c("Var1", "Var2"))
   # ff2$diff <- ff2$value.y - ff2$value.x
-  return(ff)
+  return(list(fish_area = ff, nfish_moved = nfish_moved))
 
 }
 
