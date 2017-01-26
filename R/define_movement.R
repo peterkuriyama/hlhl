@@ -8,7 +8,6 @@
 
 #' @export
 
-
 define_movement <- function(fish_area, x, y, scope){
   row_range <- (x - scope): (x + scope)
   row_range <- row_range[row_range %in% 1:nrow(fish_area)] #If there's a border case maybe?
@@ -34,5 +33,5 @@ define_movement <- function(fish_area, x, y, scope){
   nfish_outside <- sum(fish_range) - fish_in_loc
   
   return(list(fish_range = fish_range, nfish_outside = nfish_outside, 
-    zero_index = zero_index))
+    zero_index = zero_index, row_range = row_range, col_range = col_range))
 }
