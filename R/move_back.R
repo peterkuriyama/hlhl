@@ -22,7 +22,6 @@ move_back <- function(nfish_moved, samps_out){
                           return(x)
       })
 
-
   #Loop through the nfish_moved list
   for(nn in 1:length(nfish_moved)){
     temp_df <- nfish_moved[[nn]]
