@@ -1,4 +1,12 @@
+#' Fish population in a loop function
 
+#' Function to fish population in a for loop. 
+
+#' @param fish_area List that has the matrices of fish, needs to be list
+#' @param loc_row Locations of fishing
+#' @param ctl ctl file, from make_ctl function
+
+#' @export
 
 #Input fish_area, one row of location data frame and the ctl file
 
