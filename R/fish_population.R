@@ -160,7 +160,7 @@ fish_population <- function(fish_area, ctl){
 
   ##---------------------------------------------------------------------------------------
   #Return the fish areas
-  return(list(updated_area = fish_out, angler_samples = samps_out, ))
+  return(list(updated_area = fish_out, angler_samples = samps_out))
   
 }
 
