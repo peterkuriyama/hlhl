@@ -9,18 +9,17 @@
 
 #Figure out inputs
 move_back <- function(nfish_moved, samps_out){
-
   nfish_moved[[1]] <- left_join(nfish_moved[[1]], samps_out[, c('x', 'y', 'fish1samp')])
   nfish_moved[[2]] <- left_join(nfish_moved[[2]], samps_out[, c('x', 'y', 'fish2samp')])
 
   nfish_moved_update <- nfish_moved
-  
+
   #convert NAs to 0
   nfish_moved <- lapply(nfish_moved, FUN = function(x){
-                          x[which(is.na(x[, 9])), 9] <- 0
-                          x$after_fishing <- x$moved - x[, 9]
+                          x[which(is.na(x[, 11])), 11] <- 0
+                          x$after_fishing <- x$moved - x[, 11]
                           return(x)
-      })
+  })
 
   #Loop through the nfish_moved list
   for(nn in 1:length(nfish_moved)){
@@ -73,7 +72,7 @@ move_back <- function(nfish_moved, samps_out){
 
           #Number of fish that moved in
           moved_in <- temp_df[common_inds[move_from], 'moved'] - temp_df[common_inds[move_from], 'value']
-          caught <- temp_df[common_inds[move_from], 7]
+          caught <- temp_df[common_inds[move_from], 9]
 
           #Store the numbers of fish that moved in
           nfish_move_out[[dd]] <- moved_in
@@ -83,7 +82,6 @@ move_back <- function(nfish_moved, samps_out){
 
           temp_df[common_inds, 'moved_in_samp'] <- temp_df[common_inds, 'moved_in_samp'] + moved_in_samp
           temp_df[common_inds, 'caught_samp'] <- temp_df[common_inds, 'caught_samp'] + caught_samp
-
 
           #Check the numbers here
           # sum(temp_df[, 'moving'])
@@ -114,7 +112,7 @@ move_back <- function(nfish_moved, samps_out){
     if(sum(temp_df$value) == 0){
       temp_df$final <- 0
     }
-  
+     
     nfish_moved_update[[nn]] <- temp_df
   }   
 
