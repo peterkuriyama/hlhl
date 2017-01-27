@@ -11,7 +11,6 @@
 #Input fish_area, one row of location data frame and the ctl file
 
 fish_pop_loop <- function(fish_area, loc_row, ctl = ctl){
-# browser()
   # apply(location, MAR = 1, FUN = function(ll){
     temp_loc <- c(loc_row$x, loc_row$y)
     
@@ -24,7 +23,7 @@ fish_pop_loop <- function(fish_area, loc_row, ctl = ctl){
     #Store numbers of fish caught
     temp_fish12 <- data.frame(nsamps = 1:nsamps, fish1 = rep(999, nsamps),
       fish2 = rep(999, nsamps))
-    
+
       for(nn in 1:nsamps){
         temp_samp <- sample_exp(nfish1 = fish1, nfish2 = fish2, 
           prob1 = ctl$prob1, prob2 = ctl$prob2)
