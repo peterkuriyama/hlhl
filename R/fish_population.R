@@ -59,7 +59,7 @@ fish_population <- function(fish_area, ctl){
   ##---------------------------------------------------------------------------------------
   #Fish in Locations
   ##---------------------------------------------------------------------------------------
-  
+
   ##---------------------------------------------------------------------------------------
   #Move Fish into locations
   #Call this fish_temp because to keep the original, and
@@ -81,21 +81,46 @@ fish_population <- function(fish_area, ctl){
   ##---------------------------------------------------------------------------------------
   #Fish with sample_exp function
   #Do this in a for loop first, then maybe switch to an apply statement
-
-  #Store the samps stuff
+  
+  #Declare objects to track stuff
   samps_out <- as.data.frame(matrix(nrow = nrow(location), ncol = 5))
   names(samps_out) <- c('vessel', 'x', 'y', 'fish1samp', 'fish2samp')
-
-  #declare this initially
+  
   temp_fish_area <- to_fish
+  samps_out_running <- samps_out #running tally of 
+  
+  samps_out_running$vessel <- location$vessel
+  samps_out_running$x <- location$x
+  samps_out_running$y <- location$y
+  samps_out_running[, c('fish1samp', 'fish2samp')] <- 0
 
-  for(ll in 1:nrow(location)){
-    temp <- fish_pop_loop(fish_area = temp_fish_area, loc_row = location[ll, ],
-      ctl = ctl)  
-    temp_fish_area <- temp$fish_area
-    samps_out[ll, ] <- temp$samps
+  samps_out_drop <- vector('list', length = ndrops)
+
+  #Loop through drops and store catch  
+  for(dd in  1:ndrops){
+
+    for(ll in 1:nrow(location)){
+      temp <- fish_pop_loop(fish_area = temp_fish_area, loc_row = location[ll, ],
+        ctl = ctl)  
+      temp_fish_area <- temp$fish_area
+      samps_out[ll, ] <- temp$samps
+    }
+
+    samps_out_running$fish1samp <- samps_out_running$fish1samp + samps_out$fish1samp
+    samps_out_running$fish2samp <- samps_out_running$fish2samp + samps_out$fish2samp    
+
+    samps_out_drop[[dd]] <- samps_out
+
   }
- 
+
+  names(samps_out_drop) <- paste0('drop', 1:ndrops)
+  samps_out_drop <- ldply(samps_out_drop)
+  names(samps_out_drop)[1] <- 'drop'
+
+  #Compress samps_out for nfish_back function
+  samps_out <- samps_out_drop %>% group_by(x, y) %>% summarize(fish1samp = sum(fish1samp), 
+    fish2samp = sum(fish2samp)) %>% as.data.frame
+          
  #temp_fish_area is kind of a temporary
 
  ##---------------------------------------------------------------------------------------
@@ -118,25 +143,25 @@ fish_population <- function(fish_area, ctl){
     fish_out[[uu]] <- matrix(fish_out1$final, nrow = ctl$numrow, ncol = ctl$numcol, 
       byrow = TRUE)
   }
+
  
  ##---------------------------------------------------------------------------------------
  #Add in Mortality
  
   #Add in rounded mortality numbers
   inst_mort <- exp(mortality) / 100 #convert continuous to instantaneous
+  if(mortality == 0) inst_mort <- 0
 
   fish_out <- lapply(fish_out, FUN = function(x){
     x - round(x * inst_mort)
   })
-  
+
+# sum(samps_out$fish1samp) + sum(fish_out[[1]])
+
   ##---------------------------------------------------------------------------------------
   #Return the fish areas
-
-browser()  
   return(list(updated_area = fish_out, angler_samples = samps_out, ))
-  #Work out some drop stuff later
-
-  return(list(updated_area = fish_area, angler_samples = location_angler, samples = location))
+  
 }
 
 
