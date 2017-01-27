@@ -78,21 +78,9 @@ fish_population <- function(fish_area, ctl){
     return(yy)
   })
   
-# pp <- nfish_moved[[1]]
-# pp$check - pp$moved
-
-
-# sum(pp$moving)
-# sum(pp$moved)
-# sum(pp$check)
-# nfish_moved$check - nfish_moved$moved
-
   ##---------------------------------------------------------------------------------------
   #Fish with sample_exp function
   #Do this in a for loop first, then maybe switch to an apply statement
-
-  #Declare fish area to update
-  # temp_fish_area <- fish_temp
 
   #Store the samps stuff
   samps_out <- as.data.frame(matrix(nrow = nrow(location), ncol = 5))
@@ -115,229 +103,49 @@ fish_population <- function(fish_area, ctl){
  # Need to remove this eventually
  #Need to make sure that the move back uses the same info
  nfish_back <- move_back(nfish_moved = nfish_moved, samps_out = samps_out)
-browser()
-
-
-
-
-
-
-
- #Now format the output so that everything's looking ok
-zz <- 1
-finals <- vector('list', length = 2)
  
- for(zz in 1:length(nfish_back)){
-  moved <- nfish_back[[zz]]
-  orig <- temp_fish_area[[zz]]
-
-  orig <- melt(orig)
-  names(orig) <- c('x', 'y', 'orig_value')
-
-  temp_final <- left_join(orig, moved[, c('value', 'x', 'y', 'final')],
-    by = c('x', 'y'))
-
-  temp_final$unq <- paste(temp_final$x, temp_final$y)
-
-
- temp_final[temp_final$unq %in% temp_final[duplicated(temp_final$unq), 'unq'], ]
-  temp_final[duplicated(temp_final$unq), ]
-
-temp_final[which(duplicated(temp_final[, c('x', 'y')])), ]
-
-
-
-sum(temp_final$orig_value)
-sum(temp_final$value, na.rm = TRUE)
-sum(temp_final$final, na.rm = TRUE)
-
- }
-
- tt <- nfish_back[[1]]
- tt1 <- melt(temp_fish_area[[1]])
- names(tt1)[1:2] <- c('x', 'y')
-
-
- 
-
-
- tt2 <- left_join(tt1, tt[, c('x', 'y', 'value', 'final')])
-
- tt3 <- tt2[is.na(tt2$final) == FALSE, ]
- sum(tt3$value) - 45
- sum(tt3$final)
-
-tt5 <- inner_join(tt1, tt[, c('x', 'y', 'final')])
-sum(tt5$value) + 45
-sum(tt5$final)
-
- tt2[which(is.na(tt2$final)), 'final'] <- tt2[which(is.na(tt2$final)), 'value']
- sum(tt2$value) + 45
- sum(tt2$final)
-
-
-
- #Check the number of fish in nfish_back
- lapply(nfish_back, FUN = function(x){
-  matrix(x$final, nrow = ctl$numrow, ncol = ctl$numcol)
- })
-
- sum(nfish_back[[1]]$final)
- sum(nfish_back[[1]]$after_fishing)
-
-
-
- #update the temp fish 
- aa <- melt(temp_fish_area[[1]])
- names(aa)[1:2] <- c('x', 'y')
-
- qq <- left_join(aa, nfish_back[[1]][, c('x', 'y', 'final')], 
-  by = c('x', 'y'))
- 
- qq[which(is.na(qq$final)), 'final'] <- qq[which(is.na(qq$final)), 'value']
-
- sum(qq$value)
- sum(qq$final, na.rm = TRUE)
-
-
-
-
-
-   
-
-  temp <- nfish_moved[[1]]
-  #Use differences to see determine numbers moving back
-
-  #Find cells that had negative and positive changes in numbers
-  
-
-  
-  
-
-  
-  
-
-  lapply(ranges, FUN = function(x){
-    
-    
-  })
-# browser()
-
-
- 
-
-######
-######I'm HERE TRYING TO FIGURE THIS OUT
-######
-
-  (froms$x - ctl$scope): (froms$x + ctl$scope)
-
-  temp[move_to_ind, c('x', 'y')]
-  
-  temp[which(temp$diff >= 0), 'diff'] <- 0
-  temp$diff[which(temp$diff >= 0)]
-  
-  temp$diff < 0
-
-
-  temp$move_back_prob
-  temp[, c('value', 'moving', 'moved', 'after_fishing', 'move_back_prob')]
-  
-
-
-  temp$value / temp$after_fishing
-
-  rmultinom(1, size = sum(temp$after_fishing), prob = temp$move_back_prob)
-
-  nfish_moved[[1]]$move_back_prob <- nfish_moved[[1]]$moving / sum(nfish_moved[[1]]$moving)
-
-  rmultsum(temp$after_fishing) 
-
-  temp_prob <- temp$value / sum(temp$value)
-
-  
-
-  temp$moved_back <- temp$after_fishing * temp_prob
-
-  rmultinom(1, size = 300,
-    prob = nfish_moved[[1]]$move_back_prob)
-
-
-
-
-
-  #update nfish_moved  
-# browser()
- {
-    ##---------------------------------------------------------------------------------------
-    #Update numbers in each cell after fishing 
-    ##---------------------------------------------------------------------------------------
-    #Update number of fish in each cell
-    # fish_df$fished <- fish_df$moved
-    # fish_df[zero_index, 'fished'] <- fish_to_catch
-
-    #Two conditions:
-    #No fish left, return empty cells
-
-    # if(fish_to_catch == 0) {
-    #   fish_df$final <- fish_df$fished
-    # }
-
-    #if there are fish that can move back, move them
-    if(fish_to_catch != 0){
-
-      #movement back to cells is based on proportions that moved in
-      move_back_probs <- fish_df$moving
-      move_back_probs[zero_index] <- fish_df[zero_index, 'value']
-
-      mult_prob <- move_back_probs / sum(move_back_probs)
-
-      # if(is.na(sum(mult_prob))) mult_prob <- rep(0, length(move_back_probs))
-      # Sample from multinomial distribution
-      moved_back <- as.vector(rmultinom(1, size = fish_df[zero_index, 'fished'],
-                                        prob = mult_prob))
-
-      fish_df$delta <- moved_back
-
-      #update fish counts
-      fish_df$final <- fish_df$fished + fish_df$delta
-      fish_df[zero_index, 'final'] <- fish_df[zero_index, 'delta']
-    }
-
-    ##---------------------------------------------------------------------------------------
-    #Add mortality
-    ##---------------------------------------------------------------------------------------
-    
-    #Update fish_area matrix
-    fish_area[row_range, col_range] <- matrix(fish_df$final,
-      nrow = nrow(fish_range), ncol = ncol(fish_range))
-  
-    #Add in rounded mortality numbers
-    inst_mort <- exp(mortality) / 100 #convert continuous to instantaneous
-
-    fish_area <- fish_area - round(fish_area * inst_morg)
-
-    first_drop <- which(names(location) == 'drop1')
-    location[ii, first_drop:ncol(location)] <- samples #Store Samples
-
-    #Add locations to angler samples, then store in a list
-    angler_samples$vessel <- location[ii, 'vessel']
-    angler_samples$x <- location[ii, 'x']
-    angler_samples$y <- location[ii, 'y']
-  
-    angler_samples$drop <- 1:ndrops
-  
-    angler_samples <- angler_samples[, c('vessel', 'x', 'y', 'drop',
-                        names(angler_samples)[grep('angler', names(angler_samples))])]
-    location_angler[[ii]] <- angler_samples
-
+ #Add these into the overall fish_area
+  fish_out <- vector('list', length = 2)
+
+  for(uu in 1:length(fish_out)){
+    ttry <- fish_temp[[uu]]$fish_area  
+
+    fish_out1 <- left_join( ttry[, c('x', 'y', 'value')], nfish_back[[uu]][, c('x', 'y', 'final')], 
+      by = c('x', 'y'))
+
+    na_ind <- is.na(fish_out1$final)
+    fish_out1[na_ind, 'final'] <- fish_out1[na_ind, 'value']
+    fish_out[[uu]] <- matrix(fish_out1$final, nrow = ctl$numrow, ncol = ctl$numcol, 
+      byrow = TRUE)
   }
+ 
+ ##---------------------------------------------------------------------------------------
+ #Add in Mortality
+ 
+  #Add in rounded mortality numbers
+  inst_mort <- exp(mortality) / 100 #convert continuous to instantaneous
 
-  # print(angler_samples)
-  location_angler <- plyr::ldply(location_angler)
+  fish_out <- lapply(fish_out, FUN = function(x){
+    x - round(x * inst_mort)
+  })
+  
+  ##---------------------------------------------------------------------------------------
+  #Return the fish areas
+
+browser()  
+  return(list(updated_area = fish_out, angler_samples = samps_out, ))
+  #Work out some drop stuff later
 
   return(list(updated_area = fish_area, angler_samples = location_angler, samples = location))
 }
+
+
+
+
+
+
+
+
 
 
 
