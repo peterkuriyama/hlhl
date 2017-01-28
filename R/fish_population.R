@@ -136,8 +136,8 @@ fish_population <- function(fish_area, ctl, kk = 0){
   for(uu in 1:length(fish_out)){
     ttry <- fish_temp[[uu]]$fish_area  
 
-    fish_out1 <- left_join( ttry[, c('x', 'y', 'value')], nfish_back[[uu]][, c('x', 'y', 'final')], 
-      by = c('x', 'y'))
+    fish_out1 <- invisible(left_join( ttry[, c('x', 'y', 'value')], nfish_back[[uu]][, c('x', 'y', 'final')], 
+          by = c('x', 'y')))
 
     na_ind <- is.na(fish_out1$final)
     fish_out1[na_ind, 'final'] <- fish_out1[na_ind, 'value']
