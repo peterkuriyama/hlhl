@@ -8,7 +8,7 @@
 #' @export
 
 #Figure out inputs
-move_back <- function(nfish_moved, samps_out){
+move_back <- function(nfish_moved, samps_out, kk = 0){
   nfish_moved[[1]] <- left_join(nfish_moved[[1]], samps_out[, c('x', 'y', 'fish1samp')])
   nfish_moved[[2]] <- left_join(nfish_moved[[2]], samps_out[, c('x', 'y', 'fish2samp')])
 
@@ -22,7 +22,7 @@ move_back <- function(nfish_moved, samps_out){
   })
 
   #Loop through the nfish_moved list
-  for(nn in 1:length(nfish_moved)){
+  for(nn in 1:length(nfish_moved)){    
     temp_df <- nfish_moved[[nn]]
     temp_df$Var1 <- NULL
     temp_df$Var2 <- NULL
@@ -33,15 +33,18 @@ move_back <- function(nfish_moved, samps_out){
     # moves things back to original cells  
     
     #Find direction of movement, goal is to move fish back to original locations
-    move_from_ind <- which(temp_df$diff > 0)
-    move_to_ind <- which(temp_df$diff < 0)
+    pasted_fish_locs <- paste(samps_out$x, samps_out$y)
+
+    move_from_ind <- which(temp_df$unq %in% pasted_fish_locs)
+    move_to_ind <- which(temp_df$unq %in% pasted_fish_locs == FALSE)
     
     froms <- temp_df[move_from_ind, c('x', 'y')] 
-   
+
     #----------------------------------------------------
     #If there are fish, do this
     if(sum(temp_df$value) != 0){
-          #Find all the rows nearby
+        
+        #Find all the rows nearby
         ranges <- apply(froms, MAR = 1, FUN = function(x){
                     expand.grid(((x[1]) - ctl$scope) : (x[1] + ctl$scope), 
                       (x[2] - ctl$scope) : (x[2] + ctl$scope))
@@ -58,16 +61,16 @@ move_back <- function(nfish_moved, samps_out){
           common_inds <- which(temp_df$x %in% ranges[[dd]]$Var1 & 
                   temp_df$y %in% ranges[[dd]]$Var2)
 
-          move_from <- which(temp_df[common_inds, 'diff'] > 0)
-          move_to <- which(temp_df[common_inds, 'diff'] < 0)
-
+          move_from <- which(temp_df[common_inds, 'unq'] %in% pasted_fish_locs[dd])
+          move_to <- which(temp_df[common_inds, 'unq'] %in% pasted_fish_locs[dd] == FALSE)
+    
           #Define probabilities of moving based on distribution of fish
           #Currently based on the original distribution of the fish, although sampled 
           #from multinomial draw
           prob <- temp_df[common_inds, 'value'] #This used to be based on the difference between everything
-          # prob[which(prob >= 0)] <- 0
-          # prob <- abs(prob)
           prob <- prob / sum(prob) 
+
+          #maybe include this at some point
           # prob <- prob * ctl$move_out_prob #Control the proportion of fish that move out of fishing areas
 
           #Number of fish that moved in
@@ -90,12 +93,12 @@ move_back <- function(nfish_moved, samps_out){
         }   
 
       #Subtract all the fish that moved
-      fish_locs <- which(temp_df$diff > 0)
-      no_fish_locs <- which(temp_df$diff < 0)
+      fish_locs <- move_from_ind
+      no_fish_locs <- move_to_ind
 
       #update the final column
       temp_df$final <- temp_df$moved
-      
+
       #This step could be fucked
       #Remove catches
       temp_df[fish_locs, 'final'] <- temp_df[fish_locs, 'final'] - ldply(nfish_move_out)$V1
