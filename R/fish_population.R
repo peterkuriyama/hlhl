@@ -25,7 +25,8 @@
 # fish_population <- function(fish_area, location, scope = 1, nhooks, ndrops,
 #   ...){
 
-fish_population <- function(fish_area, ctl){
+fish_population <- function(fish_area, ctl, kk = 0){
+
   #Should have Four steps or so
   #Move Fish
   #Catch Fish
@@ -127,7 +128,7 @@ fish_population <- function(fish_area, ctl){
  # Move Fish Back
  # Need to remove this eventually
  #Need to make sure that the move back uses the same info
- nfish_back <- move_back(nfish_moved = nfish_moved, samps_out = samps_out)
+ nfish_back <- move_back(nfish_moved = nfish_moved, samps_out = samps_out, kk = kk)
  
  #Add these into the overall fish_area
   fish_out <- vector('list', length = 2)
