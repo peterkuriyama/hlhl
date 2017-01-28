@@ -7,17 +7,21 @@ library(reshape2)
 library(ggplot2)
 
 #--------------------------------------------------------------------------------------------
+#May need to track depletion by drop at some points, this is in conduct_survey
+#--------------------------------------------------------------------------------------------
 #Options to load the package
 
 #From github straight
-install_github('peterkuriyama/hlsimulator')
-library(hlsimulator)
+# install_github('peterkuriyama/hlsimulator')
+load_all()
+# library(hlsimulator)
 
-#Locally
-# load_all()
+ctl <- make_ctl(distribute = 'uniform', mortality = 0, move_out_prob = .5)
+out <- conduct_survey(ctl = ctl) 
 
-ctl <- make_ctl(distribute = 'patchy', mortality = .1)
-out <- conduct_survey(ctl = ctl)
+#Test this with two fish species
+ctl <- make_ctl(distribute = 'patchy', mortality = .1, nfish1 = 10000, nfish2 = 1000)
+conduct_survey(ctl = ctl)
 
 ctl <- make_ctl(distribute = 'patchy', mortality = matrix(rep(c(.1, .2), 100), nrow = 10, ncol = 10, byrow = TRUE))
 
