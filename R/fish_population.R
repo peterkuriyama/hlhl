@@ -61,41 +61,41 @@ fish_population <- function(fish_area, ctl, kk = 0){
   #Fish in Locations
   ##---------------------------------------------------------------------------------------
 
-<<<<<<< HEAD
-  for(ii in 1:nrow(location)){    
-    row_range <- (location[ii, 'x'] - scope):(location[ii, 'x'] + scope)
-    row_range <- row_range[row_range %in% 1:nrow(fish_area)] #If there's a border case maybe?
+# <<<<<<< HEAD
+#   for(ii in 1:nrow(location)){    
+#     row_range <- (location[ii, 'x'] - scope):(location[ii, 'x'] + scope)
+#     row_range <- row_range[row_range %in% 1:nrow(fish_area)] #If there's a border case maybe?
 
-    col_range <- (location[ii, 'y'] - scope):(location[ii, 'y'] + scope)
-    col_range <- col_range[col_range %in% 1:ncol(fish_area)]
+#     col_range <- (location[ii, 'y'] - scope):(location[ii, 'y'] + scope)
+#     col_range <- col_range[col_range %in% 1:ncol(fish_area)]
 
-    #Define range to fish
-    fish_area_melted <- reshape2::melt(fish_area)
+#     #Define range to fish
+#     fish_area_melted <- reshape2::melt(fish_area)
 
-    #Use melted matrix because fish_area is easier to subset
-    fish_range_melted <- subset(fish_area_melted, Var1 %in% row_range & Var2 %in% col_range)
-    fish_location_melted <-subset(fish_area_melted, Var1 == location[ii, 'x'] & Var2 == location[ii, 'y'])
+#     #Use melted matrix because fish_area is easier to subset
+#     fish_range_melted <- subset(fish_area_melted, Var1 %in% row_range & Var2 %in% col_range)
+#     fish_location_melted <-subset(fish_area_melted, Var1 == location[ii, 'x'] & Var2 == location[ii, 'y'])
 
-    #define zero index
-    zero_index <-  which(fish_range_melted$Var1 == location[ii, 'x'] & fish_range_melted$Var2 == location[ii, 'y'])
+#     #define zero index
+#     zero_index <-  which(fish_range_melted$Var1 == location[ii, 'x'] & fish_range_melted$Var2 == location[ii, 'y'])
 
-    fish_range <- matrix(fish_range_melted$value, nrow = length(row_range), ncol = length(col_range))
-    fish_in_loc <- fish_location_melted$value
+#     fish_range <- matrix(fish_range_melted$value, nrow = length(row_range), ncol = length(col_range))
+#     fish_in_loc <- fish_location_melted$value
 
-    #define number of fish outside
-    nfish_outside <- sum(fish_range) - fish_in_loc
+#     #define number of fish outside
+#     nfish_outside <- sum(fish_range) - fish_in_loc
 
-    ##---------------------------------------------------------------------------------------
-    #Move Fish
-    ##---------------------------------------------------------------------------------------
-    #Move fish to specified location
+#     ##---------------------------------------------------------------------------------------
+#     #Move Fish
+#     ##---------------------------------------------------------------------------------------
+#     #Move fish to specified location
 
-    #Calculate movement probabilities
-    #currently nothing goes out of specified location
-    #Movement probabilites depend on number of fish outside relative to
-    #total fish outside
-    probs <- fish_range / nfish_outside
-=======
+#     #Calculate movement probabilities
+#     #currently nothing goes out of specified location
+#     #Movement probabilites depend on number of fish outside relative to
+#     #total fish outside
+#     probs <- fish_range / nfish_outside
+# =======
   ##---------------------------------------------------------------------------------------
   #Move Fish into locations
   #Call this fish_temp because to keep the original, and
@@ -249,32 +249,32 @@ fish_population <- function(fish_area, ctl, kk = 0){
  #    #       if(sum(phook) != 1){
  #      #take absolute value of phook due to rounding errors letting it get negative
     
-<<<<<<< HEAD
-    #Update fish_area matrix
-    fish_area[row_range, col_range] <- matrix(fish_df$final,
-      nrow = nrow(fish_range), ncol = ncol(fish_range))
+# <<<<<<< HEAD
+#     #Update fish_area matrix
+#     fish_area[row_range, col_range] <- matrix(fish_df$final,
+#       nrow = nrow(fish_range), ncol = ncol(fish_range))
   
-    #If mortality is a single value do this
-    #Add in rounded mortality numbers
+#     #If mortality is a single value do this
+#     #Add in rounded mortality numbers
 
-    #If single mortality value for entire matrix
-    if(length(mortality) == 1){
-      inst_mort <- exp(mortality) / 100 #convert continuous to instantaneous
-      fish_area <- fish_area - round(fish_area * inst_mort)
-    }
+#     #If single mortality value for entire matrix
+#     if(length(mortality) == 1){
+#       inst_mort <- exp(mortality) / 100 #convert continuous to instantaneous
+#       fish_area <- fish_area - round(fish_area * inst_mort)
+#     }
     
-    if(length(mortality) != 1){
-      inst_mort <- exp(mortality) / 100
-      fish_area <- fish_area - round(fish_area * inst_mort)
-    }
+#     if(length(mortality) != 1){
+#       inst_mort <- exp(mortality) / 100
+#       fish_area <- fish_area - round(fish_area * inst_mort)
+#     }
 
 
-    first_drop <- which(names(location) == 'drop1')
-    location[ii, first_drop:ncol(location)] <- samples #Store Samples
-=======
- #      #For loop for number of drops and anglers
- #      for(qq in 1:ndrops){
->>>>>>> 2spp
+#     first_drop <- which(names(location) == 'drop1')
+#     location[ii, first_drop:ncol(location)] <- samples #Store Samples
+# =======
+#  #      #For loop for number of drops and anglers
+#  #      for(qq in 1:ndrops){
+# >>>>>>> 2spp
 
  #        #Have to redefine probabilities and check that catches don't exceed number of fish
  #        #available
