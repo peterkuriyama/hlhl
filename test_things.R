@@ -13,8 +13,8 @@ library(ggplot2)
 
 #From github straight
 # install_github('peterkuriyama/hlsimulator')
-load_all()
 # library(hlsimulator)
+load_all()
 
 ctl <- make_ctl(distribute = 'uniform', mortality = 0, move_out_prob = .5)
 out <- conduct_survey(ctl = ctl) 
