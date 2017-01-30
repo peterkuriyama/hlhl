@@ -4,18 +4,15 @@
 \alias{fish_population}
 \title{Fish the Population}
 \usage{
-fish_population(fish_area, ctl)
+fish_population(fish_area, ctl, kk = 0)
 }
 \description{
 Function to fish the population
 }
 \examples{
+control <- make_ctl()
+init <- initialize_population(control)
+fish_population(fish_area = init, ctl = control)
 
-init <- initialize_population(numrow = 10, numcol = 10, nfish = 10000, distribute = 'uniform',
-                               percent = .3, seed = 301)
-
-fish_population(fish_area = init, location = data.frame(vessel = c(1, 1, 2), x = c(3, 3, 8), 
- y = c(3, 5, 8)),
- scope = 2, nhooks = 5, ndrops = 3, process = "equal_prob")
 }
 

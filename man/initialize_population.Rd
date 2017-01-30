@@ -4,11 +4,13 @@
 \alias{initialize_population}
 \title{Initialize Population}
 \usage{
-initialize_population(ctl)
+initialize_population(ctl, nfish)
 }
 \arguments{
 \item{ctl}{List of control parameters from make_ctl function, description of arguments in 
 make_ctl function}
+
+\item{nfish}{Number of fish, use this to generate matrices for both species}
 }
 \description{
 Initialize the spatial distribution of the fish population
