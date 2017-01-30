@@ -3,6 +3,7 @@
 #' Initialize the spatial distribution of the fish population
 #' @param ctl List of control parameters from make_ctl function, description of arguments in 
 #' make_ctl function
+#' @param nfish Number of fish, use this to generate matrices for both species
 
 
 #' @examples 
@@ -20,10 +21,10 @@
 #'
 #' @export
 
-initialize_population <- function(ctl){
+initialize_population <- function(ctl, nfish){
   numrow <- ctl$numrow
   numcol <- ctl$numcol
-  nfish <- ctl$nfish
+  # nfish <- ctl$nfish
   distribute <- ctl$distribute
   maxfish <- ctl$maxfish
   percent <- ctl$percent
