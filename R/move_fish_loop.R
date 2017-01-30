@@ -8,7 +8,6 @@
 #' @export
 
 move_fish_loop <- function(location, ff){
-
   #Define the scope based on ctl file
   scope <- ctl$scope
   
@@ -35,7 +34,6 @@ move_fish_loop <- function(location, ff){
 
     update_these <- which(ff_melt$x %in% moved$x & ff_melt$y %in% moved$y)
 
-
     #Subtract moving fish
     ff_melt[update_these, 'value'] <- ff_melt[update_these, 'value'] - moved$moving
     
@@ -51,7 +49,10 @@ move_fish_loop <- function(location, ff){
 
   #Check duplicated
   duped <- which(duplicated(nfish_moved[, c('x', 'y')]))
-  nfish_moved <- nfish_moved[-duped, ]
+  
+  if(length(duped) != 0){
+    nfish_moved <- nfish_moved[-duped, ]  
+  }
 
   #replace with 
   ff_melt$unq <- paste(ff_melt$x, ff_melt$y)
