@@ -90,7 +90,6 @@ fish_population <- function(fish_area, ctl, kk = 0){
   samps_out_running$x <- location$x
   samps_out_running$y <- location$y
   samps_out_running[, c('fish1samp', 'fish2samp')] <- 0
->>>>>>> 2spp
 
   samps_out_drop <- vector('list', length = ndrops)
 
@@ -142,7 +141,6 @@ fish_population <- function(fish_area, ctl, kk = 0){
       byrow = TRUE)
   }
 
- 
  ##---------------------------------------------------------------------------------------
  #Add in Mortality
  
@@ -161,20 +159,6 @@ fish_population <- function(fish_area, ctl, kk = 0){
   return(list(updated_area = fish_out, angler_samples = samps_out))
   
 }
-
-
-# <<<<<<< HEAD
-#         #Have to redefine probabilities and check that catches don't exceed number of fish
-#         #available
-          
-#         #Redefine probabilities
-#         phook <- hook_probs(nfish = fish_to_catch, p0 = p0) #probability of catching number of fish
-#         phook <- round(phook, digits = 10) #Rounding errors with the probabilities, round to 10 decimal places
-# =======
-# >>>>>>> 2spp
-
-
-
 
 
 
