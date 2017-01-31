@@ -9,12 +9,12 @@
 
 #Figure out inputs
 move_back <- function(nfish_moved, samps_out, kk = 0){
+
   nfish_moved[[1]] <- left_join(nfish_moved[[1]], samps_out[, c('x', 'y', 'fish1samp')])
   nfish_moved[[2]] <- left_join(nfish_moved[[2]], samps_out[, c('x', 'y', 'fish2samp')])
 
   nfish_moved_update <- nfish_moved
 
-  #convert NAs to 0
   nfish_moved <- lapply(nfish_moved, FUN = function(x){
                           x[which(is.na(x[, 11])), 11] <- 0
                           x$after_fishing <- x$moved - x[, 11]
@@ -70,6 +70,9 @@ move_back <- function(nfish_moved, samps_out, kk = 0){
           prob <- temp_df[common_inds, 'value'] #This used to be based on the difference between everything
           prob <- prob / sum(prob) 
 
+          #If there are no fish, assign zero probability
+          if(is.na(prob)) prob <- rep(0, length(common_inds))
+
           #maybe include this at some point
           # prob <- prob * ctl$move_out_prob #Control the proportion of fish that move out of fishing areas
 
@@ -79,9 +82,18 @@ move_back <- function(nfish_moved, samps_out, kk = 0){
 
           #Store the numbers of fish that moved in
           nfish_move_out[[dd]] <- moved_in
+          
+          #If prob is 0, don't catch any fish
+          if(sum(prob) != 0){
+            moved_in_samp <- rmultinom(1, size = moved_in, prob = prob)
+            caught_samp <- rmultinom(1, size = caught, prob = prob)
+          }
+          
+          if(sum(prob) == 0){
+            moved_in_samp <- 0
+            caught_samp <- 0
+          }
 
-          moved_in_samp <- rmultinom(1, size = moved_in, prob = prob)
-          caught_samp <- rmultinom(1, size = caught, prob = prob)
 
           temp_df[common_inds, 'moved_in_samp'] <- temp_df[common_inds, 'moved_in_samp'] + moved_in_samp
           temp_df[common_inds, 'caught_samp'] <- temp_df[common_inds, 'caught_samp'] + caught_samp
@@ -125,3 +137,15 @@ move_back <- function(nfish_moved, samps_out, kk = 0){
 }
  
   
+#Debuggins scraps
+  # if(kk == 5) browser()
+  #convert NAs to 0
+# ccc <- nfish_moved[[2]]
+# ccc
+
+
+# lapply(nfish_moved, FUN = function(x){
+#                         x[which(is.na(x[, 11])), 11] <- 0
+#                         # x$after_fishing <- x$moved - x[, 11]
+#                         return(x)
+# })
