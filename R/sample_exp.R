@@ -24,10 +24,9 @@ sample_exp <- function(nfish1, nfish2, prob1, prob2){
 
   #Probability of catching a fish
   hook_prob <- 1 - ((1 - p1) * (1 - p2))
+  hook_prob2 <- ((1 - p1) * (1 - p2))
 
-#Some error with binomial arguments
-  fish <- rbinom(n = 1, size = 1,  prob = hook_prob)
-  
+  fish <- rbinom(n = 1, size = 1,  prob = hook_prob)  
   #------------------------------------------------
   # Which fish was caught?
   #initially declare both as 0
