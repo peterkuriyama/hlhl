@@ -13,14 +13,25 @@ library(ggplot2)
 
 #From github straight
 install_github('peterkuriyama/hlsimulator')
-# library(hlsimulator)
-# load_all()
+library(hlsimulator)
 
-ctl <- make_ctl(distribute = 'uniform', mortality = 0, move_out_prob = .5)
+# load_all()
+ctl <- make_ctl(distribute = 'uniform', mortality = .1, move_out_prob = .5,
+  nfish1 = 10000, nfish2 = 10000, prob1 = 1, prob2 = 1, nyear = 15, scope = 1)
 out <- conduct_survey(ctl = ctl) 
 
+
+out$samples$fish1samp + out$samples$fish2samp
+
+#Things to test:
+#If scope is 0 (no movement), there should be pretty quick local depletion
+# I don't think the two species probabilities are strong enough
+# Also, still catching too many fish, this might be related to the movement though
+#Need to implement tracking by drop also maybe
+
+
 #Test this with two fish species
-ctl <- make_ctl(distribute = 'patchy', mortality = .1, nfish1 = 10000, nfish2 = 1000)
+ctl <- make_ctl(distribute = 'patchy', mortality = .9, nfish1 = 10000, nfish2 = 1000)
 conduct_survey(ctl = ctl)
 
 ctl <- make_ctl(distribute = 'patchy', mortality = matrix(rep(c(.1, .2), 100), nrow = 10, ncol = 10, byrow = TRUE))
