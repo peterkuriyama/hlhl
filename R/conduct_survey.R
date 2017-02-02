@@ -45,7 +45,8 @@ conduct_survey <- function(ctl){
     fished_areas[[kk]] <- temp$updated_area
 
     #Redefine the fishing area
-    temp_area <- temp$updated_area
+    temp_area <- temp$updated_area    
+
   }
 
   #manipulate samples  
