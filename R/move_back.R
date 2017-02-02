@@ -21,14 +21,6 @@ move_back <- function(nfish_moved, samps_out, ctl, kk = 0, fish_area, fish_area_
 
   nfish_moved_update <- nfish_moved
 
-  
-  #Update the after_fishing columns
-  # nfish_moved <- lapply(nfish_moved, FUN = function(x){
-  #                         x[which(is.na(x[, 11])), 11] <- 0
-  #                         x$after_fishing <- x$moved - x[, 11]
-  #                         return(x)
-  # })
-  
   after1 <- fam %>% filter(L1 == 1)  
   nfish_moved[[1]]$after_fishing <- after1[after1$unq %in% nfish_moved[[1]]$unq, 'value']
 
