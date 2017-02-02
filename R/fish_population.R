@@ -26,7 +26,6 @@
 #   ...){
 
 fish_population <- function(fish_area, ctl, kk = 0){
-
   #Should have Four steps or so
   #Move Fish
   #Catch Fish
@@ -60,14 +59,19 @@ fish_population <- function(fish_area, ctl, kk = 0){
   ##---------------------------------------------------------------------------------------
   #Move Fish into locations
   #Call this fish_temp because to keep the original, and
+
+  move_fish_loop(location = location, ff = fish_area[[1]])
+
   fish_temp <- lapply(fish_area, FUN = function(z){
       move_fish_loop(location = location, ff = z)
   })
 
   #convert fish_area into matrices
   to_fish <- lapply(fish_temp, FUN = function(x){
-    matrix(x$fish_area$value, nrow = ctl$numrow, ncol = ctl$numcol, byrow = TRUE)
+    matrix(x$fish_area$value, nrow = ctl$numrow, ncol = ctl$numcol)
   })
+
+
 
   nfish_moved <- lapply(fish_temp, FUN = function(x){
     yy <- x$nfish_moved
@@ -78,66 +82,113 @@ fish_population <- function(fish_area, ctl, kk = 0){
   ##---------------------------------------------------------------------------------------
   #Fish with sample_exp function
   #Do this in a for loop first, then maybe switch to an apply statement
-  
+
   #Declare objects to track stuff
   samps_out <- as.data.frame(matrix(nrow = nrow(location), ncol = 5))
   names(samps_out) <- c('vessel', 'x', 'y', 'fish1samp', 'fish2samp')
   
   temp_fish_area <- to_fish
-  samps_out_running <- samps_out #running tally of 
-  
-  samps_out_running$vessel <- location$vessel
-  samps_out_running$x <- location$x
-  samps_out_running$y <- location$y
-  samps_out_running[, c('fish1samp', 'fish2samp')] <- 0
+
+temp_fish_area_orig <- temp_fish_area
+
+#if negative, browser
+# if(sum(unlist(temp_fish_area) < 0) != 0) browser()
 
   samps_out_drop <- vector('list', length = ndrops)
+  fish_area_drop <- samps_out_drop
+
+#manually modify the loop dawg
+# temp_fish_area_orig <- temp_fish_area
+# dd <- 1
+# ll <- 1
 
   #Loop through drops and store catch  
-  for(dd in  1:ndrops){
-
+  for(dd in 1:ndrops){
     for(ll in 1:nrow(location)){
+
       temp <- fish_pop_loop(fish_area = temp_fish_area, loc_row = location[ll, ],
-        ctl = ctl)  
-      temp_fish_area <- temp$fish_area
+        ctl = ctl, kk = kk)   
+
+      temp_fish_area <- temp$fish_area  
       samps_out[ll, ] <- temp$samps
     }
 
-    samps_out_running$fish1samp <- samps_out_running$fish1samp + samps_out$fish1samp
-    samps_out_running$fish2samp <- samps_out_running$fish2samp + samps_out$fish2samp    
+    #Remove fish from temp_area
+    # tfam <- melt(temp_fish_area) #temp_fish_area_melted
+    # names(tfam)[1:2] <- c('x', 'y')
+    # tfam$unq <- paste(tfam$x, tfam$y)
+    # samps_out$unq <- paste(samps_out$x, samps_out$y)
 
+    # tfam1 <- subset(tfam, L1 == 1)
+    # tfam2 <- subset(tfam, L1 == 2)
+
+    #Should already be removed
+    # tfam1[tfam1$unq %in% samps_out$unq, 'value'] <- tfam1[tfam1$unq %in% samps_out$unq, 'value'] - 
+    #   samps_out$fish1samp
+    # tfam2[tfam2$unq %in% samps_out$unq, 'value'] <- tfam2[tfam2$unq %in% samps_out$unq, 'value'] - 
+    #   samps_out$fish2samp
+
+    #Now merge everything back
+    # tt1 <- matrix(tfam1$value, nrow = ctl$numrow, ncol = ctl$numcol, byrow = TRUE)
+    # tt2 <- matrix(tfam2$value, nrow = ctl$numrow, ncol = ctl$numcol, byrow = TRUE)
+
+# temp_fish_area_orig[[2]]
+# temp_fish_area[[2]]
+
+# samps_out
+# temp_fish_area_check[[1]]
+
+    # temp_fish_area_check <- list(tt1, tt2)
+
+    # samps_out_running$fish1samp <- samps_out_running$fish1samp + samps_out$fish1samp
+    # samps_out_running$fish2samp <- samps_out_running$fish2samp + samps_out$fish2samp    
     samps_out_drop[[dd]] <- samps_out
-
+    fish_area_drop[[dd]] <- temp_fish_area
   }
 
+
+  
   names(samps_out_drop) <- paste0('drop', 1:ndrops)
   samps_out_drop <- ldply(samps_out_drop)
   names(samps_out_drop)[1] <- 'drop'
 
+# #Check that the numbers are the same
+# fad_check <- melt(fish_area_drop)
+# names(fad_check)[1:2] <- c('x', 'y')
+# fad_check$unq <- paste(fad_check$x, fad_check$y)
+# samps_out_drop$unq <- paste(samps_out_drop$x, samps_out_drop$y)
+
+# temp_fish_area_orig[[2]][3, 5]
+# fad_check %>% filter(L2 == 2, unq %in% samps_out_drop$unq, unq == "3 5")
+# samps_out_drop %>% filter(unq == '3 5')
+
   #Compress samps_out for nfish_back function
   samps_out <- samps_out_drop %>% group_by(x, y) %>% summarize(fish1samp = sum(fish1samp), 
-    fish2samp = sum(fish2samp)) %>% as.data.frame
-          
- #temp_fish_area is kind of a temporary
+    fish2samp = sum(fish2samp)) %>% as.data.frame  
 
  ##---------------------------------------------------------------------------------------
  # Move Fish Back
  # Need to remove this eventually
  #Need to make sure that the move back uses the same info
- nfish_back <- move_back(nfish_moved = nfish_moved, samps_out = samps_out, kk = kk)
+# browser()
+ if(ctl$scope != 0){
+   nfish_back <- move_back(nfish_moved = nfish_moved, samps_out = samps_out, kk = kk, ctl = ctl,
+    fish_area = temp_fish_area, fish_area_orig = temp_fish_area_orig) 
+ }
+ 
  
  #Add these into the overall fish_area
-  fish_out <- vector('list', length = 2)
+ fish_out <- vector('list', length = 2)
 
-  for(uu in 1:length(fish_out)){
-    ttry <- fish_temp[[uu]]$fish_area  
+ for(uu in 1:length(fish_out)){
+   ttry <- fish_temp[[uu]]$fish_area  
 
-    fish_out1 <- invisible(left_join( ttry[, c('x', 'y', 'value')], nfish_back[[uu]][, c('x', 'y', 'final')], 
-          by = c('x', 'y')))
+   fish_out1 <- invisible(left_join( ttry[, c('x', 'y', 'value')], nfish_back[[uu]][, c('x', 'y', 'final')], 
+         by = c('x', 'y')))
 
-    na_ind <- is.na(fish_out1$final)
-    fish_out1[na_ind, 'final'] <- fish_out1[na_ind, 'value']
-    fish_out[[uu]] <- matrix(fish_out1$final, nrow = ctl$numrow, ncol = ctl$numcol, 
+   na_ind <- is.na(fish_out1$final)
+   fish_out1[na_ind, 'final'] <- fish_out1[na_ind, 'value']
+   fish_out[[uu]] <- matrix(fish_out1$final, nrow = ctl$numrow, ncol = ctl$numcol, 
       byrow = TRUE)
   }
 
@@ -152,10 +203,8 @@ fish_population <- function(fish_area, ctl, kk = 0){
     x - round(x * inst_mort)
   })
 
-# sum(samps_out$fish1samp) + sum(fish_out[[1]])
-
   ##---------------------------------------------------------------------------------------
-  #Return the fish areas
+  #Return the fish areas  
   return(list(updated_area = fish_out, angler_samples = samps_out))
   
 }
@@ -300,3 +349,34 @@ fish_population <- function(fish_area, ctl, kk = 0){
  #      }
  #     }
  #    }
+
+
+ ##---------------------------------------------------------------------------------------
+#Browser Shit
+#Check the numbers to make sure that things aren't subtacted too much
+# samps_out$unq <- paste(samps_out$x, samps_out$y)
+# t1 <- melt(temp_fish_area[[1]])
+# names(t1)[1:2] <- c('x', 'y')
+# t1$unq <- paste(t1$x, t1$y)
+
+# t2 <- melt(temp_fish_area[[2]])
+# names(t2)[1:2] <- c('x', 'y')
+# t2$unq <- paste(t2$x, t2$y)
+
+# #If there's something wrong with species 1
+# if(sum(samps_out$fish1samp > (t1[t1$unq %in% samps_out$unq, 'value'])) != 0){
+#   print("species 1 issue")
+#   browser()
+
+#   samps_out$fish1samp
+#   t1[t1$unq %in% samps_out$unq, 'value']
+#   t1[t1$unq %in% samps_out$unq, ]
+#   samps_out
+# }
+
+
+# #If there's something wrong with species 2
+# if(  sum(samps_out$fish2samp > (t2[t2$unq %in% samps_out$unq, 'value'])) != 0){
+#   print("species 2 issue")
+#   browser()
+# }
