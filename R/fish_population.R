@@ -60,8 +60,6 @@ fish_population <- function(fish_area, ctl, kk = 0){
   #Move Fish into locations
   #Call this fish_temp because to keep the original, and
 
-  move_fish_loop(location = location, ff = fish_area[[1]])
-
   fish_temp <- lapply(fish_area, FUN = function(z){
       move_fish_loop(location = location, ff = z)
   })
@@ -70,7 +68,6 @@ fish_population <- function(fish_area, ctl, kk = 0){
   to_fish <- lapply(fish_temp, FUN = function(x){
     matrix(x$fish_area$value, nrow = ctl$numrow, ncol = ctl$numcol)
   })
-
 
 
   nfish_moved <- lapply(fish_temp, FUN = function(x){
@@ -89,18 +86,10 @@ fish_population <- function(fish_area, ctl, kk = 0){
   
   temp_fish_area <- to_fish
 
-temp_fish_area_orig <- temp_fish_area
-
-#if negative, browser
-# if(sum(unlist(temp_fish_area) < 0) != 0) browser()
+  temp_fish_area_orig <- temp_fish_area
 
   samps_out_drop <- vector('list', length = ndrops)
   fish_area_drop <- samps_out_drop
-
-#manually modify the loop dawg
-# temp_fish_area_orig <- temp_fish_area
-# dd <- 1
-# ll <- 1
 
   #Loop through drops and store catch  
   for(dd in 1:ndrops){
@@ -112,55 +101,13 @@ temp_fish_area_orig <- temp_fish_area
       temp_fish_area <- temp$fish_area  
       samps_out[ll, ] <- temp$samps
     }
-
-    #Remove fish from temp_area
-    # tfam <- melt(temp_fish_area) #temp_fish_area_melted
-    # names(tfam)[1:2] <- c('x', 'y')
-    # tfam$unq <- paste(tfam$x, tfam$y)
-    # samps_out$unq <- paste(samps_out$x, samps_out$y)
-
-    # tfam1 <- subset(tfam, L1 == 1)
-    # tfam2 <- subset(tfam, L1 == 2)
-
-    #Should already be removed
-    # tfam1[tfam1$unq %in% samps_out$unq, 'value'] <- tfam1[tfam1$unq %in% samps_out$unq, 'value'] - 
-    #   samps_out$fish1samp
-    # tfam2[tfam2$unq %in% samps_out$unq, 'value'] <- tfam2[tfam2$unq %in% samps_out$unq, 'value'] - 
-    #   samps_out$fish2samp
-
-    #Now merge everything back
-    # tt1 <- matrix(tfam1$value, nrow = ctl$numrow, ncol = ctl$numcol, byrow = TRUE)
-    # tt2 <- matrix(tfam2$value, nrow = ctl$numrow, ncol = ctl$numcol, byrow = TRUE)
-
-# temp_fish_area_orig[[2]]
-# temp_fish_area[[2]]
-
-# samps_out
-# temp_fish_area_check[[1]]
-
-    # temp_fish_area_check <- list(tt1, tt2)
-
-    # samps_out_running$fish1samp <- samps_out_running$fish1samp + samps_out$fish1samp
-    # samps_out_running$fish2samp <- samps_out_running$fish2samp + samps_out$fish2samp    
     samps_out_drop[[dd]] <- samps_out
     fish_area_drop[[dd]] <- temp_fish_area
   }
 
-
-  
   names(samps_out_drop) <- paste0('drop', 1:ndrops)
   samps_out_drop <- ldply(samps_out_drop)
   names(samps_out_drop)[1] <- 'drop'
-
-# #Check that the numbers are the same
-# fad_check <- melt(fish_area_drop)
-# names(fad_check)[1:2] <- c('x', 'y')
-# fad_check$unq <- paste(fad_check$x, fad_check$y)
-# samps_out_drop$unq <- paste(samps_out_drop$x, samps_out_drop$y)
-
-# temp_fish_area_orig[[2]][3, 5]
-# fad_check %>% filter(L2 == 2, unq %in% samps_out_drop$unq, unq == "3 5")
-# samps_out_drop %>% filter(unq == '3 5')
 
   #Compress samps_out for nfish_back function
   samps_out <- samps_out_drop %>% group_by(x, y) %>% summarize(fish1samp = sum(fish1samp), 
@@ -170,12 +117,10 @@ temp_fish_area_orig <- temp_fish_area
  # Move Fish Back
  # Need to remove this eventually
  #Need to make sure that the move back uses the same info
-# browser()
  if(ctl$scope != 0){
    nfish_back <- move_back(nfish_moved = nfish_moved, samps_out = samps_out, kk = kk, ctl = ctl,
     fish_area = temp_fish_area, fish_area_orig = temp_fish_area_orig) 
  }
- 
  
  #Add these into the overall fish_area
  fish_out <- vector('list', length = 2)
@@ -215,168 +160,3 @@ temp_fish_area_orig <- temp_fish_area
 
 
 
-
-
-
-#Old Code that fished within a for loop
- # ##---------------------------------------------------------------------------------------
- #    #Fish in Specific Areas
- #    ##---------------------------------------------------------------------------------------
-
- #    #Now fish in specified cell, called zero.index
- #    fish_to_catch <- fish_df[zero_index, 'moved']
-
- #    #specify number of anglers
- #    if(nhooks %% 5 != 0) stop('number of hooks must be multiple of 5')
- #    nang <- nhooks / 5 #number of anglers
-
- #    #format angler samples
- #    angler_samples <- as.data.frame(matrix(nrow = ndrops, ncol = 1 + nang))
- #    names(angler_samples) <- c(paste0('angler', 1:nang), 'drop')
- #    angler_samples$drop <- 1:ndrops
-
- #    #--------Equal hook probabilities
- #    if(process == 'equal_prob'){
- #      samples <- vector(length = ndrops)
-
- #      #If phook doesn't sum to 1, throw error
- #    #       if(sum(phook) != 1){
- #      #take absolute value of phook due to rounding errors letting it get negative
-    
-# <<<<<<< HEAD
-#     #Update fish_area matrix
-#     fish_area[row_range, col_range] <- matrix(fish_df$final,
-#       nrow = nrow(fish_range), ncol = ncol(fish_range))
-  
-#     #If mortality is a single value do this
-#     #Add in rounded mortality numbers
-
-#     #If single mortality value for entire matrix
-#     if(length(mortality) == 1){
-#       inst_mort <- exp(mortality) / 100 #convert continuous to instantaneous
-#       fish_area <- fish_area - round(fish_area * inst_mort)
-#     }
-    
-#     if(length(mortality) != 1){
-#       inst_mort <- exp(mortality) / 100
-#       fish_area <- fish_area - round(fish_area * inst_mort)
-#     }
-
-
-#     first_drop <- which(names(location) == 'drop1')
-#     location[ii, first_drop:ncol(location)] <- samples #Store Samples
-# =======
-#  #      #For loop for number of drops and anglers
-#  #      for(qq in 1:ndrops){
-# >>>>>>> 2spp
-
- #        #Have to redefine probabilities and check that catches don't exceed number of fish
- #        #available
-        
- #        #Redefine probabilities
- #        phook <- hook_probs(nfish = fish_to_catch, p0 = p0) #probability of catching number of fish
- #        phook <- round(phook, digits = 10) #Rounding errors with the probabilities, round to 10 decimal places
-
- #        #Loop through anglers here,
- #        #maybe add in ability to modify the probabilities of certain anglers
- #        # samples_ang <- rep('999', length = nang)
-        
- #        #Sample fish for each angler
- #        samp_temp <- rmultinom(nang, 1, phook) #probabilities defined in phook
-        
- #        samp <- data.frame(nfish = 0:5, pick = samp_temp)    
- #        samp <- melt(samp, id.vars = 'nfish') #melt into columns
-        
- #        samples_ang <- samp[which(samp$value == 1), 'nfish'] #need to track these also
-        
- #        #Loop through samp temp to make sure only 
- #        #fish_to_catch can be caught
- #        if(sum(samples_ang) > fish_to_catch) {
- #          temp_samp <- cumsum(samples_ang)
- #          samples_ang[which(temp_samp > fish_to_catch)] <- 0          
- #        }
-      
- #        #format and store angler samples
- #        # angang <- as.data.frame(t(as.data.frame(samples_ang)))
- #        # row.names(angang) <- NULL
- #        # names(angang) <- paste0('angler', 1:nang)
- #        # angang$drop <- qq
-
- #        #Store Samples
- #        angler_samples[qq, 1:nang] <- samples_ang
- #        samples[qq] <- sum(samples_ang)
-
- #        # samples[qq] <- sample_equal_prob(nfish = fish_to_catch, nhooks = nhooks, p0 = dots$p0)  
- #        fish_to_catch <- fish_to_catch - samples[qq]
-      
- #        #add if statement so that samples[qq] cannot exceed fish_to_catch
- #        # if(fish_to_catch < 0) fish_to_catch <- 0
- #        if(fish_to_catch < 0) stop('negative fish')
- #      }
- #    }
-
- #    #--------Hypergeometric
- #    if(process == 'hypergeometric'){
- #      ###in rhyper
- #      #n is number of failures
- #      #m is number of successes (fish)
- #      #k is number of samples, both n = k = nhooks
- #      #nn is number of sampling events, maybe equal to ndrops
-
- #      samples <- vector(length = ndrops)
-
- #      for(qq in 1:ndrops){
- #        samples[qq] <- rhyper(n = nhooks, m = fish_to_catch, k = nhooks, nn = 1)
- #        fish_to_catch <- fish_to_catch - samples[qq] #remove caught fish
- #      }
- #    }
-
- #    #--------Multinomial
- #    #multinomial process is still really in development
- #    if(process == 'multinomial'){
- #      hookProbs <- rep(1 / (nhooks + 1), (nhooks + 1)) #All Hooks have equal probability
- #      catches <- matrix(nrow = (nhooks + 1), ncol = nhooks)
-
- #      for(zz in 1:nhooks){
- #      catches[, zz] <- rmultinom(1, size = 1, prob = hookProbs)
-
- #      rmultinom(1, size = fish_to_catch, prob = hookProbs)
-
- #      #update hook probabilties if fish are caught
- #      if (sum(catches[, zz]) == 1 & which(catches[, zz] == 1) != 1) {
- #        hookProbs[1] <- hookProbs[1] + hookProbs[which(catches[, zz] == 1)]
- #        hookProbs[which(catches[, zz] == 1)] <- 0
- #      }
- #     }
- #    }
-
-
- ##---------------------------------------------------------------------------------------
-#Browser Shit
-#Check the numbers to make sure that things aren't subtacted too much
-# samps_out$unq <- paste(samps_out$x, samps_out$y)
-# t1 <- melt(temp_fish_area[[1]])
-# names(t1)[1:2] <- c('x', 'y')
-# t1$unq <- paste(t1$x, t1$y)
-
-# t2 <- melt(temp_fish_area[[2]])
-# names(t2)[1:2] <- c('x', 'y')
-# t2$unq <- paste(t2$x, t2$y)
-
-# #If there's something wrong with species 1
-# if(sum(samps_out$fish1samp > (t1[t1$unq %in% samps_out$unq, 'value'])) != 0){
-#   print("species 1 issue")
-#   browser()
-
-#   samps_out$fish1samp
-#   t1[t1$unq %in% samps_out$unq, 'value']
-#   t1[t1$unq %in% samps_out$unq, ]
-#   samps_out
-# }
-
-
-# #If there's something wrong with species 2
-# if(  sum(samps_out$fish2samp > (t2[t2$unq %in% samps_out$unq, 'value'])) != 0){
-#   print("species 2 issue")
-#   browser()
-# }
