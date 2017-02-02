@@ -45,9 +45,6 @@ fish_pop_loop <- function(fish_area, loc_row, ctl = ctl, kk = 0){
           temp_samp$fish2 <- 0
         }
 
-        # if(fish1 - temp_samp$fish1 < 0 | 
-        #   fish2 - temp_samp$fish2 < 0) browser()
-
         #update counts of fish1 and fish2
         fish1 <- fish1 - temp_samp$fish1
         fish2 <- fish2 - temp_samp$fish2
