@@ -87,7 +87,7 @@ move_fish_loop <- function(location, ff){
 
   nfish_moved1$check <- ff_melt[ff_melt$unq %in% nfish_moved1$unq, 'value']
 
-  return(list(fish_area = ff_melt, nfish_moved = nfish_moved))
+  return(list(fish_area = ff_melt, nfish_moved = nfish_moved1))
 
 }
 
