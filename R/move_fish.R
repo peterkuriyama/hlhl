@@ -1,8 +1,15 @@
 #' Move Fish
 #' Function to move fish
 
+#' @param fish_range1 The range of fish to calculate the numbers of fish from. Based on the "scope"
+#' parameter specified in the ctl file
+#' @param nfish_outside1 The number of fish outside the range
+#' @param zero_index1 The location of fishing activity
+#' @export
+
 move_fish <- function(fish_range1 = fish_range, nfish_outside1 = nfish_outside,
   zero_index1 = zero_index){
+
   #define movement probabilities, currently nothing goes out of specified location
   #depend on number of fish relative to nfish outside
   probs <- fish_range1 / nfish_outside1
