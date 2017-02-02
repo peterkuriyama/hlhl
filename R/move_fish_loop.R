@@ -8,13 +8,12 @@
 #' @export
 
 move_fish_loop <- function(location, ff){
+# browser()
   #Define the scope based on ctl file
   scope <- ctl$scope
   
   #Store the original data frame to compare
   ff_orig <- ff
-
-# if(sum(is.na(ff_orig)) != 0) browser()
 
   #Store the number of fish that moved
   nfish_moved <- vector('list', length = 3)
@@ -22,7 +21,6 @@ move_fish_loop <- function(location, ff){
   #melt ff to keep track of fish moving in and out
   ff_melt <- melt(ff)
   names(ff_melt)[1:2] <- c('x', 'y')
-
 
   #Now calculate the number of fish that move in each location
   for(zz in 1:nrow(location)){
@@ -47,7 +45,6 @@ move_fish_loop <- function(location, ff){
 
     nfish_moved[[zz]] <- moved
   }
-
 
   #Calculate the number of fish moving in each fishing location
   names(nfish_moved) <- paste0("loc", 1:length(nfish_moved))
@@ -74,7 +71,12 @@ move_fish_loop <- function(location, ff){
   nfish_moved1$nmoving <- NULL
   
   #Update moved column with moved_in
-  fish_locs <- which(nfish_moved1$moving == 0)
+  # fish_locs <- which(nfish_moved1$moving == 0)
+  fish_locs <- paste(location$x, location$y)
+  fish_locs <- which(nfish_moved1$unq %in% fish_locs)
+
+# if((length(nfish_moved1[fish_locs, 'value'] ) == length(moved_in$nmoving)) == FALSE) browser()
+
   nfish_moved1[fish_locs, 'moved'] <- nfish_moved1[fish_locs, 'value'] + moved_in$nmoving
   
   #Clean up the data frames
