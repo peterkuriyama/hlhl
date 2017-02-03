@@ -9,7 +9,6 @@
 
 #Figure out inputs
 move_back <- function(nfish_moved, samps_out, ctl, kk = 0, fish_area, fish_area_orig){
-
   nfish_moved[[1]] <- suppressMessages(left_join(nfish_moved[[1]], samps_out[, c('x', 'y', 'fish1samp')], 
     by = c('x', 'y')))
   nfish_moved[[2]] <- suppressMessages(left_join(nfish_moved[[2]], samps_out[, c('x', 'y', 'fish2samp')],
@@ -97,15 +96,17 @@ move_back <- function(nfish_moved, samps_out, ctl, kk = 0, fish_area, fish_area_
 
       #If there are negatives, just put them randomly somewhere
       if(sum(temp_df$final < 0) != 0){
-        non_negs <- which(temp_df$final >= 0)  
+        
+        non_negs <- which(temp_df$final > 0)  
         negs <- which(temp_df$final < 0)  
         cat(abs(sum(temp_df[negs, "final"])), "negative fish", '\n')
         n_neg_fish <- abs(sum(temp_df[negs, "final"]))
-        
-        #Remove fish from random locations
-        rm_fish <- sample(non_negs, n_neg_fish, replace = TRUE)
-        rm_fish1 <- table(rm_fish)
 
+        #Expand the non_negative indices based on the number of fish present
+        expanded_indices <- rep(non_negs, temp_df[non_negs, "final"])
+        rm_fish <- sample(expanded_indices, n_neg_fish, replace = FALSE)
+        rm_fish1 <- table(rm_fish) #Remove fish from random locations
+                
         #loop through the table to add negative fish to temp_df
         for(tt in 1:dim(rm_fish1)){
           temp_df[as.numeric(names(rm_fish1)[tt]), 'final'] <- temp_df[as.numeric(names(rm_fish1)[tt]), 
@@ -114,6 +115,7 @@ move_back <- function(nfish_moved, samps_out, ctl, kk = 0, fish_area, fish_area_
         
         #Now change the negative values in final column to zeroes
         temp_df[negs, 'final'] <- 0
+        if(sum(temp_df$final) != sum(temp_df$after_fishing)) print("numbers don't add up")
       }
 
     }
@@ -131,41 +133,3 @@ move_back <- function(nfish_moved, samps_out, ctl, kk = 0, fish_area, fish_area_
 
 } 
 
-
-
-
-
-# rm_fish <- c(12, 12)
-# rm_fish_tbl <- table(rm_fish)
-# rm_fish %>% group_by(rm_fish) %>% tally()        
-    
-
-
-#         temp_df$final[rm_fish, ]        
-
-# sum(temp_df[non_negs, 'final'])
-# sample(non_negs)
-
-# sum(temp_df$final)
-
-#         #fish to move
-#         fishabs(sum(temp_df[negs, "final"]))
-
-#         temp
-
-#       }
-      
-#       negs <- which(temp_df$final < 0)
-#       temp_df$
-      
-
-# sum(temp_df$final) + sum(temp_df$caught_samp)
-# sum(temp_df$value) 
-
-
-
-#Make sure that it's not negative
-
-
-    #   nfish_moved_update[[nn]] <- temp_df
-    
