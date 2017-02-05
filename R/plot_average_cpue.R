@@ -16,5 +16,6 @@ plot_average_cpue <- function(out){
     nfish = unique(nfish)) %>% as.data.frame
 
   ggplot(cpues_avg, aes(x = nfish, y = tot_cpue)) + geom_point() + geom_line() + 
-    facet_wrap(~ spp)
+    facet_wrap(~ spp) + ylim(0, 1) + 
+    labs(x = "True Number of Fish", y = "Average CPUE") + theme_bw()
 }
