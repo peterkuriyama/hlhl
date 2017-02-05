@@ -114,10 +114,18 @@ move_back <- function(nfish_moved, samps_out, ctl, kk = 0, fish_area, fish_area_
         }
         
         #Now change the negative values in final column to zeroes
-        temp_df[negs, 'final'] <- 0
-        if(sum(temp_df$final) != sum(temp_df$after_fishing)) print("numbers don't add up")
+        temp_df[which(temp_df$final < 0), 'final'] <- 0                
       }
 
+      #Condition of everything caught in after_fishing
+      if(sum(temp_df$after_fishing) == 0){
+        temp_df$final <- 0    
+      } 
+
+      if(sum(temp_df$final) != sum(temp_df$after_fishing)){
+        print("numbers don't add up")
+        browser()
+      } 
     }
     #----------------------------------------------------
     #If there are no fish, do this
