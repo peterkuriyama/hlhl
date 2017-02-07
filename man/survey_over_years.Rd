@@ -50,4 +50,3 @@ initialize_population(numrow = 10, numcol = 10, nfish = 100, distribute = 'patch
 
 }
 \keyword{initialize}
-

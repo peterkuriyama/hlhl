@@ -43,4 +43,3 @@ run_and_plot(numrow = 10, numcol = 10, nfish = 10000,
    nlocs = 10, move_func = 'move_fish_cw', move_prob = .8)
 }
 \keyword{initialize}
-

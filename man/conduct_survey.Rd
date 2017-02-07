@@ -24,4 +24,3 @@ ctl <- make_ctl()
 conduct_survey(ctl)
 }
 \keyword{survey}
-

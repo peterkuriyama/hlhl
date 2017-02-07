@@ -56,4 +56,3 @@ Used in initialize_population
 run_sim(nhooks = 15, seed = 200, nfish = 1000, nyear = 15, distribute = 'patchy', 
        percent = .5, cpue_method = '75hooks')
 }
-

@@ -20,4 +20,3 @@ xx <- survey_over_years(numrow = 10, numcol = 10, nfish = 10000,
 thing <- parse_master_list(xx)
 }
 \keyword{initialize}
-

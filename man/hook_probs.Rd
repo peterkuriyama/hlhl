@@ -23,4 +23,3 @@ hook at random. Based on comments from 2012 CIE review.
 \examples{
 hook_probs(nfish = 40, p0 = .4, nhooks = 5)
 }
-

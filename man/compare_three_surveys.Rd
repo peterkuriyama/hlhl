@@ -37,4 +37,3 @@ Compare three surveys and plot the results
 Put example in 
 }
 \keyword{initialize}
-

@@ -28,4 +28,3 @@ control <- make_ctl(distribute = 'patchy')
 initialize_population(ctl = control)
 
 }
-

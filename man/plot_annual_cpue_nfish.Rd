@@ -21,4 +21,3 @@ Plot annual averaged cpue and true number of fish
 plot example
 }
 \keyword{plot}
-

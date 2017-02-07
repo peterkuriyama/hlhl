@@ -18,4 +18,3 @@ Move fish in for loop
 Function that moves fish by looping through locations. Do this rather than apply statement
 to avoid weird fish movement if nfish in a certain cell isn't enough.
 }
-

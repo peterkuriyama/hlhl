@@ -27,4 +27,3 @@ move_fish_hs(fish_area = initialize_population(distribute = 'patchy', numrow = 1
              max_prob = 0.2)
 }
 \keyword{movement}
-

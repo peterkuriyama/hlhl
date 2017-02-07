@@ -2,6 +2,7 @@
 % Please edit documentation in R/hook_prob_equal.R, R/sample_equal_prob.R
 \name{sample_equal_prob}
 \alias{sample_equal_prob}
+\alias{sample_equal_prob}
 \title{Conduct Survey
 Wrapper to repeatedly run fish_population function
 Give function arguments for
@@ -43,4 +44,3 @@ put example here dude
 }
 \keyword{hook}
 \keyword{probability}
-

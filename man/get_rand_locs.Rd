@@ -21,4 +21,3 @@ Function to generate random fishing locations.
 \examples{
 rand_locs <- get_rand_locs()
 }
-

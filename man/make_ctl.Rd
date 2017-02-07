@@ -69,4 +69,3 @@ Used in initialize_population
 \examples{
 make_ctl(p0 = .2)
 }
-

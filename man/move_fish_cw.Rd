@@ -20,4 +20,3 @@ Probabilities decline evenly by column (highest on furthest left column).
 
 }
 \keyword{movement}
-

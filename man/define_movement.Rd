@@ -20,4 +20,3 @@ define_movement(fish_area, x, y, scope)
 Define Movement range of each location
 Function to define movement range at specified locations
 }
-

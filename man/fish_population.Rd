@@ -15,4 +15,3 @@ init <- initialize_population(control)
 fish_population(fish_area = init, ctl = control)
 
 }
-

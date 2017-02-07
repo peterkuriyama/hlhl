@@ -5,7 +5,7 @@
 \title{Move fish back
 Function that moves fish back to their starting place. This occurs after fishing}
 \usage{
-move_back(nfish_moved, samps_out, kk = 0)
+move_back(nfish_moved, samps_out, ctl, kk = 0, fish_area, fish_area_orig)
 }
 \arguments{
 \item{nfish_moved}{List of fish that moved from previous function}
@@ -16,4 +16,3 @@ move_back(nfish_moved, samps_out, kk = 0)
 Move fish back
 Function that moves fish back to their starting place. This occurs after fishing
 }
-
