@@ -9,9 +9,9 @@
 
 move_fish <- function(fish_range1 = fish_range, nfish_outside1 = nfish_outside,
   zero_index1 = zero_index){
-
   #define movement probabilities, currently nothing goes out of specified location
   #depend on number of fish relative to nfish outside
+
   probs <- fish_range1 / nfish_outside1
 
   #Create data frame of fish_range, easier to manipulate
