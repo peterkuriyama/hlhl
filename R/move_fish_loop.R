@@ -15,7 +15,7 @@ move_fish_loop <- function(location, ff){
   ff_orig <- ff
 
   #Store the number of fish that moved
-  nfish_moved <- vector('list', length = 3)
+  nfish_moved <- vector('list', length = nrow(location))
 
   #melt ff to keep track of fish moving in and out
   ff_melt <- melt(ff)
@@ -24,7 +24,7 @@ move_fish_loop <- function(location, ff){
   #I need to add in updates to each fishing area so a crazy number of fish aren't moving
   #at once
   #Now calculate the number of fish that move in each location
-
+# browser()
   for(zz in 1:nrow(location)){
     moves <- define_movement(fish_area = ff, x = location[zz, 'x'],
       y = location[zz, 'y'], scope = scope)
