@@ -99,7 +99,7 @@ move_back <- function(nfish_moved, samps_out, ctl, kk = 0, fish_area, fish_area_
         
         non_negs <- which(temp_df$final > 0)  
         negs <- which(temp_df$final < 0)  
-        cat(abs(sum(temp_df[negs, "final"])), "negative fish", '\n')
+        # cat(abs(sum(temp_df[negs, "final"])), "negative fish", '\n')
         n_neg_fish <- abs(sum(temp_df[negs, "final"]))
 
         #Expand the non_negative indices based on the number of fish present
