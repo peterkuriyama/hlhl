@@ -4,7 +4,7 @@
 \alias{move_fish_left}
 \title{Move Fish Left}
 \usage{
-move_fish_left(fish_area, max_prob = 0.5, min_prob = 0.05, ...)
+move_fish_left(fish_area, max_prob, min_prob)
 }
 \arguments{
 \item{fish_area}{Input matrix of distributed fish}

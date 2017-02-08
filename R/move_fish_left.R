@@ -11,7 +11,8 @@
 #' @examples 
 #' 
 
-move_fish_left <- function(fish_area, max_prob = 0.5, min_prob = 0.05, ...){
+move_fish_left <- function(fish_area, max_prob, min_prob){
+
   numrow <- nrow(fish_area)
   numcol <- ncol(fish_area)
 
