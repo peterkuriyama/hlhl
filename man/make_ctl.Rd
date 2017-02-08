@@ -10,7 +10,8 @@ make_ctl(numrow = 10, numcol = 10, nfish1 = 10000, nfish2 = 0,
   location = data.frame(vessel = c(1, 1, 2), x = c(3, 3, 8), y = c(3, 5, 8)),
   scope = 1, nhooks = 5, ndrops = 5, nangs = 3,
   process = "equal_prob", p0 = 0.4, nyear = 10, browser = FALSE,
-  cpue_method = "average", mortality)
+  cpue_method = "average", mortality, movement_function = 999,
+  max_prob = 0.1, min_prob = 0.1)
 }
 \arguments{
 \item{numrow}{Number of rows in matrix}
@@ -61,7 +62,13 @@ make_ctl(numrow = 10, numcol = 10, nfish1 = 10000, nfish2 = 0,
 
 \item{mortality}{Natural mortality values, can be input as single value or matrix. 
 Percentage mortality each year if single value
-options are 'average', '75hooks' to aggregate by hooks, and 'weighted_average' is in development}
+options are 'average', '75hooks' to aggregate by hooks, and 'weighted_average' is in development.}
+
+\item{movement_function}{Specify the movement function, this occurs in year 2 of the survey}
+
+\item{max_prob}{Maximum movement probability for movement functions; defaults to 0.1}
+
+\item{min_prob}{Minimum movement probability for movement functions; defaults to 0.1}
 }
 \description{
 Define arguments for hook and line simulations

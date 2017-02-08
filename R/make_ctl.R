@@ -28,7 +28,10 @@
 #' @param cpue_method Method of aggregating cpue. For use in calc_cpue function. Currently
 #' @param mortality Natural mortality values, can be input as single value or matrix. 
 #'Percentage mortality each year if single value
-#' options are 'average', '75hooks' to aggregate by hooks, and 'weighted_average' is in development
+#' options are 'average', '75hooks' to aggregate by hooks, and 'weighted_average' is in development.
+#' @param movement_function Specify the movement function, this occurs in year 2 of the survey
+#' @param max_prob Maximum movement probability for movement functions; defaults to 0.1
+#' @param min_prob Minimum movement probability for movement functions; defaults to 0.1
 
 #' @examples
 #' make_ctl(p0 = .2)
@@ -58,7 +61,10 @@ make_ctl <- function(numrow = 10, numcol = 10, nfish1 = 10000, #initial number o
   nyear = 10, #number of times to repeat fish_population
   browser = FALSE,
   cpue_method = 'average',
-  mortality
+  mortality,
+  movement_function = 999,
+  max_prob = .1,
+  min_prob = .1
   ){
 # browser()
   control <- list(numrow = numrow, numcol = numcol, nfish1 = nfish1, nfish2 = nfish2, prob1 = prob1, 
@@ -67,7 +73,7 @@ make_ctl <- function(numrow = 10, numcol = 10, nfish1 = 10000, #initial number o
     location = location, 
     scope = scope, nhooks = nhooks, ndrops = ndrops, nangs = nangs, process = process, p0 = p0, 
     nyear = nyear, browser = browser,
-    cpue_method = cpue_method, mortality = mortality)
+    cpue_method = cpue_method, mortality = mortality, movement_function = movement_function)
 
   return(control)
 
