@@ -29,7 +29,7 @@
 #' @param mortality Natural mortality values, can be input as single value or matrix. 
 #'Percentage mortality each year if single value
 #' options are 'average', '75hooks' to aggregate by hooks, and 'weighted_average' is in development.
-#' @param movement_function Specify the movement function, this occurs in year 2 of the survey
+#' @param movement_function Specify the movement function, this occurs in year 2 of the survey, defaults to no movement
 #' @param max_prob Maximum movement probability for movement functions; defaults to 0.1
 #' @param min_prob Minimum movement probability for movement functions; defaults to 0.1
 
@@ -62,7 +62,7 @@ make_ctl <- function(numrow = 10, numcol = 10, nfish1 = 10000, #initial number o
   browser = FALSE,
   cpue_method = 'average',
   mortality,
-  movement_function = 999,
+  movement_function = move_fish_none,
   max_prob = .1,
   min_prob = .1
   ){
@@ -73,7 +73,8 @@ make_ctl <- function(numrow = 10, numcol = 10, nfish1 = 10000, #initial number o
     location = location, 
     scope = scope, nhooks = nhooks, ndrops = ndrops, nangs = nangs, process = process, p0 = p0, 
     nyear = nyear, browser = browser,
-    cpue_method = cpue_method, mortality = mortality, movement_function = movement_function)
+    cpue_method = cpue_method, mortality = mortality, movement_function = movement_function,
+    max_prob = max_prob, min_prob = min_prob)
 
   return(control)
 
