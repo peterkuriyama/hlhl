@@ -8,6 +8,7 @@
 #' @export
 
 move_fish_loop <- function(location, ff){
+
   #Define the scope based on ctl file
   scope <- ctl$scope
   
@@ -24,7 +25,7 @@ move_fish_loop <- function(location, ff){
   #I need to add in updates to each fishing area so a crazy number of fish aren't moving
   #at once
   #Now calculate the number of fish that move in each location
-# browser()
+
   for(zz in 1:nrow(location)){
     moves <- define_movement(fish_area = ff, x = location[zz, 'x'],
       y = location[zz, 'y'], scope = scope)
