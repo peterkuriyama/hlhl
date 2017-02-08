@@ -4,10 +4,14 @@
 \alias{move_fish_none}
 \title{Move Fish None}
 \usage{
-move_fish_none(fish_area, ...)
+move_fish_none(fish_area, max_prob, min_prob)
 }
 \arguments{
 \item{fish_area}{Input matrix of distributed fish}
+
+\item{max_prob}{not applicable to this function}
+
+\item{min_prob}{not applicable to this function}
 }
 \description{
 This function doesn't move any fish. Easiest to add no movement into the package
