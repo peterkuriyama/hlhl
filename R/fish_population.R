@@ -57,97 +57,108 @@ fish_population <- function(fish_area, ctl, kk = 0){
   fish_area_list <- lapply(fish_area, FUN = function(x) melt(x))
 
   ##---------------------------------------------------------------------------------------
-  #Move Fish into locations
-  #Call this fish_temp because to keep the original, and
+  #Do all this if there are fishing locations specified
 
-  fish_temp <- lapply(fish_area, FUN = function(z){
-      move_fish_loop(location = location, ff = z)
-  })
-
-  #convert fish_area into matrices
-  to_fish <- lapply(fish_temp, FUN = function(x){
-    matrix(x$fish_area$value, nrow = ctl$numrow, ncol = ctl$numcol)
-  })
-
-
-  nfish_moved <- lapply(fish_temp, FUN = function(x){
-    yy <- x$nfish_moved
-    yy$moved <- yy$check
-    return(yy)
-  })
+  if(sum(location$x %in% 0) == 0){
+    ##---------------------------------------------------------------------------------------
+    #Move Fish into locations
+    #Call this fish_temp because to keep the original, and
   
-  ##---------------------------------------------------------------------------------------
-  #Fish with sample_exp function
-  #Do this in a for loop first, then maybe switch to an apply statement
-
-  #Declare objects to track stuff
-  samps_out <- as.data.frame(matrix(nrow = nrow(location), ncol = 5))
-  names(samps_out) <- c('vessel', 'x', 'y', 'fish1samp', 'fish2samp')
+    fish_temp <- lapply(fish_area, FUN = function(z){
+        move_fish_loop(location = location, ff = z)
+    })
   
-  temp_fish_area <- to_fish
-
-  temp_fish_area_orig <- temp_fish_area
-
-  samps_out_drop <- vector('list', length = ndrops)
-  fish_area_drop <- samps_out_drop
-
-  #Loop through drops and store catch  
-  for(dd in 1:ndrops){
-    for(ll in 1:nrow(location)){
-
-      temp <- fish_pop_loop(fish_area = temp_fish_area, loc_row = location[ll, ],
-        ctl = ctl, kk = kk)   
-
-      temp_fish_area <- temp$fish_area  
-      samps_out[ll, ] <- temp$samps
+    #convert fish_area into matrices
+    to_fish <- lapply(fish_temp, FUN = function(x){
+      matrix(x$fish_area$value, nrow = ctl$numrow, ncol = ctl$numcol)
+    })
+  
+    nfish_moved <- lapply(fish_temp, FUN = function(x){
+      yy <- x$nfish_moved
+      yy$moved <- yy$check
+      return(yy)
+    })
+    
+    ##---------------------------------------------------------------------------------------
+    #Fish with sample_exp function
+    #Do this in a for loop first, then maybe switch to an apply statement
+  
+    #Declare objects to track stuff
+    samps_out <- as.data.frame(matrix(nrow = nrow(location), ncol = 5))
+    names(samps_out) <- c('vessel', 'x', 'y', 'fish1samp', 'fish2samp')
+    
+    temp_fish_area <- to_fish
+  
+    temp_fish_area_orig <- temp_fish_area
+  
+    samps_out_drop <- vector('list', length = ndrops)
+    fish_area_drop <- samps_out_drop
+  
+    #Loop through drops and store catch  
+    for(dd in 1:ndrops){
+      for(ll in 1:nrow(location)){
+  
+        temp <- fish_pop_loop(fish_area = temp_fish_area, loc_row = location[ll, ],
+          ctl = ctl, kk = kk)   
+  
+        temp_fish_area <- temp$fish_area  
+        samps_out[ll, ] <- temp$samps
+      }
+      samps_out_drop[[dd]] <- samps_out
+      fish_area_drop[[dd]] <- temp_fish_area
     }
-    samps_out_drop[[dd]] <- samps_out
-    fish_area_drop[[dd]] <- temp_fish_area
+  
+    names(samps_out_drop) <- paste0('drop', 1:ndrops)
+    samps_out_drop <- ldply(samps_out_drop)
+    names(samps_out_drop)[1] <- 'drop'
+  
+    #Compress samps_out for nfish_back function
+    samps_out <- samps_out_drop %>% group_by(x, y) %>% summarize(fish1samp = sum(fish1samp), 
+      fish2samp = sum(fish2samp)) %>% as.data.frame  
+  
+   ##---------------------------------------------------------------------------------------
+   # Move Fish Back
+   # Need to remove this eventually
+   #Need to make sure that the move back uses the same info
+   if(ctl$scope != 0){
+     nfish_back <- move_back(nfish_moved = nfish_moved, samps_out = samps_out, kk = kk, ctl = ctl,
+      fish_area = temp_fish_area, fish_area_orig = temp_fish_area_orig) 
+   }
+   
+   #Add these into the overall fish_area
+   fish_out <- vector('list', length = 2)
+  
+   for(uu in 1:length(fish_out)){
+     ttry <- fish_temp[[uu]]$fish_area  
+  
+     fish_out1 <- invisible(left_join( ttry[, c('x', 'y', 'value')], nfish_back[[uu]][, c('x', 'y', 'final')], 
+           by = c('x', 'y')))
+  
+     na_ind <- is.na(fish_out1$final)
+     fish_out1[na_ind, 'final'] <- fish_out1[na_ind, 'value']
+     fish_out[[uu]] <- matrix(fish_out1$final, nrow = ctl$numrow, ncol = ctl$numcol, 
+        byrow = TRUE)
+    }    
   }
-
-  names(samps_out_drop) <- paste0('drop', 1:ndrops)
-  samps_out_drop <- ldply(samps_out_drop)
-  names(samps_out_drop)[1] <- 'drop'
-
-  #Compress samps_out for nfish_back function
-  samps_out <- samps_out_drop %>% group_by(x, y) %>% summarize(fish1samp = sum(fish1samp), 
-    fish2samp = sum(fish2samp)) %>% as.data.frame  
 
  ##---------------------------------------------------------------------------------------
- # Move Fish Back
- # Need to remove this eventually
- #Need to make sure that the move back uses the same info
- if(ctl$scope != 0){
-   nfish_back <- move_back(nfish_moved = nfish_moved, samps_out = samps_out, kk = kk, ctl = ctl,
-    fish_area = temp_fish_area, fish_area_orig = temp_fish_area_orig) 
+ #If there's no fishing, make sure that the output has the same
+ if(sum(location$x %in% 0) != 0){
+  fish_out <- fish_area
+  samps_out <- data.frame(x = location$x, y = location$y, fish1samp = 0, fish2samp = 0)
  }
- 
- #Add these into the overall fish_area
- fish_out <- vector('list', length = 2)
-
- for(uu in 1:length(fish_out)){
-   ttry <- fish_temp[[uu]]$fish_area  
-
-   fish_out1 <- invisible(left_join( ttry[, c('x', 'y', 'value')], nfish_back[[uu]][, c('x', 'y', 'final')], 
-         by = c('x', 'y')))
-
-   na_ind <- is.na(fish_out1$final)
-   fish_out1[na_ind, 'final'] <- fish_out1[na_ind, 'value']
-   fish_out[[uu]] <- matrix(fish_out1$final, nrow = ctl$numrow, ncol = ctl$numcol, 
-      byrow = TRUE)
-  }
 
  ##---------------------------------------------------------------------------------------
  #Add in Mortality
  
   #Add in rounded mortality numbers
-  inst_mort <- exp(mortality) / 100 #convert continuous to instantaneous
-  if(mortality == 0) inst_mort <- 0
-
   fish_out <- lapply(fish_out, FUN = function(x){
-    x - round(x * inst_mort)
+    x - round(x * mortality)    
   })
 
+  #Convert all negative numbers to 0
+  fish_out[[1]][which(fish_out[[1]] < 0)] <- 0
+  fish_out[[2]][which(fish_out[[2]] < 0)] <- 0
   ##---------------------------------------------------------------------------------------
   #Return the fish areas  
   return(list(updated_area = fish_out, angler_samples = samps_out))
