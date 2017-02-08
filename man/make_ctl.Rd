@@ -59,7 +59,8 @@ make_ctl(numrow = 10, numcol = 10, nfish1 = 10000, nfish2 = 0,
 
 \item{cpue_method}{Method of aggregating cpue. For use in calc_cpue function. Currently}
 
-\item{mortality}{Natural mortality values, can be input as single value or matrix
+\item{mortality}{Natural mortality values, can be input as single value or matrix. 
+Percentage mortality each year if single value
 options are 'average', '75hooks' to aggregate by hooks, and 'weighted_average' is in development}
 }
 \description{

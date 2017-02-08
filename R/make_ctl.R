@@ -26,7 +26,8 @@
 #' @param nyear Number of years in survey; default is 10
 #' @param browser Switch to turn on browser for debugging
 #' @param cpue_method Method of aggregating cpue. For use in calc_cpue function. Currently
-#' @param mortality Natural mortality values, can be input as single value or matrix
+#' @param mortality Natural mortality values, can be input as single value or matrix. 
+#'Percentage mortality each year if single value
 #' options are 'average', '75hooks' to aggregate by hooks, and 'weighted_average' is in development
 
 #' @examples
