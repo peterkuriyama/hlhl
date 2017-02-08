@@ -11,9 +11,12 @@
 #' ctl <- make_ctl()
 #' conduct_survey(ctl)
 
-conduct_survey <- function(ctl){
-  # location, scope, nhooks, ndrops, 
-  # ...){
+conduct_survey <- function(ctl){  
+  
+  #Specify movement probabilities
+  max_prob <- ctl$max_prob
+  min_prob <- ctl$min_prob
+
   nyear <- ctl$nyear
   # survey_samples <- vector('list', length = nyear)
   drop_samples <- vector('list', length = nyear)
@@ -36,9 +39,16 @@ conduct_survey <- function(ctl){
 
   temp_area <- after_first$updated_area #Define temporary area for use in the for loop
 
+  #Specify movement function if there is one
+  movement_function <- ctl$movement_function
+
   #Loop over years of survey, specified in ctl
   for(kk in 2:nyear){
-# print(kk)    
+    
+    #Move fish based on function specified in ctl 
+    temp_area[[1]] <- movement_function(temp_area[[1]], max_prob = ctl$max_prob, min_prob = ctl$min_prob)$final
+    temp_area[[2]] <- movement_function(temp_area[[2]], max_prob = ctl$max_prob, min_prob = ctl$min_prob)$final    
+
     temp <- fish_population(fish_area = temp_area, ctl = ctl, kk = kk)
 
     # survey_samples[[kk]] <- temp$samples
