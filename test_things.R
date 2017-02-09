@@ -6,6 +6,17 @@ library(dplyr)
 library(reshape2)
 library(ggplot2)
 
+#----------------------------------------------------------------------------------------
+# What range of catch per hooks provides a relative index of abundance?
+# What range of hooks without an aggressive species provides a relative index of abundance.
+
+#To-Do:
+#1. Explore patchiness configurations
+#2. Figure way to get the probabilities lower
+#3. Scenarios:
+  #Increasing/decreasing Trend
+  #Gear saturation
+  #Aggressive behavior
 #--------------------------------------------------------------------------------------------
 #May need to track depletion by drop at some points, this is in conduct_survey
 #--------------------------------------------------------------------------------------------
@@ -15,77 +26,143 @@ library(ggplot2)
 install_github('peterkuriyama/hlsimulator')
 library(hlsimulator)
 
+#--------------------------------------------------------------------------------------------
+#Define default locations that will be used for other scenarios
+set.seed(3)
+locs <- expand.grid(1:10, 1:10)
+locs$vessel <- 1
+names(locs)[1:2] <- c('x', 'y')
+locs <- locs[, c('vessel', 'x', 'y')]
+
+samps <- base::sample(1:100, 20)
+def_locs <- locs[samps, ]
+
+#--------------------------------------------------------------------------------------------
+#Changes with increasing number of fishing locations
+{
+  set.seed(3)
+  locs <- expand.grid(1:10, 1:10)
+  locs$vessel <- 1
+  names(locs)[1:2] <- c('x', 'y')
+  locs <- locs[, c('vessel', 'x', 'y')]
+  
+  samps <- base::sample(1:100, 40)
+  locs <- locs[samps, ]
+  
+  #Do this as a for loop
+  location_runs <- vector('list', length = nrow(locs))
+  
+  for(ii in 1:length(location_runs)){
+  print(ii)
+    temp_loc <- locs[1:ii, ]
+    
+    ctl <- make_ctl(distribute = 'patchy', mortality = .1, move_out_prob = .5,
+      nfish1 = 10000, nfish2 = 10000, prob1 = .01, prob2 = .99, nyear = 15, scope = 1, seed = 4,
+      location = temp_loc)  
+    out <- conduct_survey(ctl = ctl)
+    inp <- format_plot_input(out = out)
+  
+    location_runs[[ii]] <- inp
+  }
+  
+  #location_runs_plot
+  names(location_runs) <- 1:length(location_runs)
+  lrp <- ldply(location_runs)
+  names(lrp)[1] <- "nlocs"
+  
+  # save(lrp, file = 'output/location_runs.Rdata')
+  load('output/location_runs.Rdata')
+  
+  for_plot <- lrp %>% group_by(nlocs, year, variable) %>% summarize(cpue = mean(value), nfish = unique(nfish)) %>%
+    as.data.frame
+  for_plot$nlocs <- as.numeric(for_plot$nlocs)
+  
+  for_plot %>% filter(variable == 'cpue1') %>% ggplot() + geom_line(aes(x = nfish, y = cpue)) + 
+    facet_wrap(~ nlocs)
+  
+  ggplot(for_plot) + geom_line(aes(x = nfish, y = cpue, group = nlocs, colour = nlocs)) + 
+    facet_wrap(~ variable)
+}
+#--------------------------------------------------------------------------------------------
+#What effect does fish passing through certain parts is
+#Write this as a for loop
+{
+  y_vals <- 1:10
+  y_outs <- vector('list', length = length(y_vals))
+  
+  #Run this thing in for loop
+  for(yy in y_vals){
+    print(yy)
+    locs <- expand.grid(1:10, 1:10)
+    locs$vessel <- 1
+    names(locs)[1:2] <- c('x', 'y')
+  
+    locs <- locs[, c('vessel', 'x', 'y')]
+    locs %>% filter(y == yy & x %in% c(1, 5, 7, 9)) -> locs
+  
+    ctl <- make_ctl(distribute = 'uniform', mortality = .1, move_out_prob = .5,
+    nfish1 = 10000, nfish2 = 10000, prob1 = .01, prob2 = .99, nyear = 15, scope = 1, seed = 4,
+    location = locs, movement_function = move_fish_left)  
+    out <- conduct_survey(ctl = ctl)
+    inp <- format_plot_input(out = out)
+    y_outs[[yy]] <- inp
+  }
+
+  names(y_outs) <- as.character(y_vals)
+  y_outs <- ldply(y_outs)
+  names(y_outs)[1] <- 'y_value'
+
+  for_plot <- y_outs %>% group_by(y_value, year, variable) %>% summarize(cpue = mean(value),
+    nfish = unique(nfish)) %>% as.data.frame
+  for_plot$y_value <- as.numeric(for_plot$y_value)
+
+  ggplot(for_plot) + geom_line(aes(x = nfish, y = cpue, group = y_value, colour = y_value), 
+    size = 1.5) + facet_wrap(~ variable) + theme_bw()
+}
+
+#--------------------------------------------------------------------------------------------
+#Test Aggressive fish for one species,
+#Both species should have the same response
+p1s <- seq(.1, 1, by = .1)
+p_outs <- vector('list', length = length(p1s))
+
+#Figure out the location configurations
+
+for(pp in 1:length(p1s)){
+  lo
+}
 
 
 ctl <- make_ctl(distribute = 'uniform', mortality = .1, move_out_prob = .5,
-  nfish1 = 10000, nfish2 = 10000, prob1 = 1, prob2 = .3, nyear = 15, scope = 1)
-out <- conduct_survey(ctl = ctl) 
-plot_average_cpue(out = out)
+    nfish1 = 10000, nfish2 = 5000, prob1 = .01, prob2 = .99, nyear = 15, scope = 1, seed = 4,
+    location = locs, movement_function = move_fish_left)  
 
 
 #--------------------------------------------------------------------------------------------
-#Need to document these functions
-
-#plot cpue for each location
-format_plot_input <- function(out){
-  #--------------------------------------------------------------
-  #Calculate true number of each species
-  spp1 <- lapply(out$fished_areas, FUN = function(x) melt(x))
-  spp1 <- ldply(spp1)
-  names(spp1)[1] <- 'year'
-  
-  spp1$year <- as.numeric(substr(spp1$year, 5, nchar(spp1$year)))
-
-  spp1 <- spp1 %>% group_by(year) %>% summarize(nfish = sum(value)) %>% 
-            as.data.frame
-  spp1$spp <- 'spp1'             
-
-  spp2 <- lapply(out$fished_areas, FUN = function(x) melt(x))
-  spp2 <- ldply(spp2)
-  names(spp2)[1] <- 'year'
-  
-  spp2$year <- as.numeric(substr(spp2$year, 5, nchar(spp2$year)))
-
-  spp2 <- spp2 %>% group_by(year) %>% summarize(nfish = sum(value)) %>% 
-            as.data.frame
-  spp2$spp <- 'spp2'            
-  spps <- rbind(spp1, spp2)
-  #--------------------------------------------------------------
-  #plot indices from each location            
-  samps <- melt(out$samples, id.vars = c("year", 'x', 'y') )
-  samps$spp <- NA
-  
-  samps[grep('1', samps$variable), "spp"] <- 'spp1'
-  samps[grep('2', samps$variable), "spp"] <- 'spp2'
-  
-  samps$loc <- paste(samps$x, samps$y)
-  samps$variable <- as.character(samps$variable)
-  samps$year <- as.numeric(samps$year)
-  for_plot <- left_join(samps, spps, by = c('year', 'spp'))
-
-  cpues <- for_plot %>% filter(variable %in% c('cpue1', 'cpue2'))
-  cpues <- cpues[order(cpues$year), ]
-
-  return(cpues)
-}
+#Patchy Distribution
 
 
-plot_average_cpue <- function(out){
-  cpues <- format_plot_input(out = out)
-  cpues_avg <- cpues %>% group_by(year, variable, spp) %>% summarize(tot_cpue = mean(value),
-    nfish = unique(nfish)) %>% as.data.frame
+#--------------------------------------------------------------------------------------------
+#See what happens with decreasing population trend
 
-  ggplot(cpues_avg, aes(x = nfish, y = tot_cpue)) + geom_point() + geom_line() + 
-    facet_wrap(~ spp)
-}
+#Run this to see the effect of sample size
+#Turn fishing off by passing an empty locs
+locs <- data.frame(vessel = 1, x = 0, y = 0)
+
+ctl <- make_ctl(distribute = 'uniform', mortality = 0, move_out_prob = .5,
+  nfish1 = 10000, nfish2 = 10000, prob1 = .01, prob2 = .99, nyear = 15, scope = 1, seed = 4,
+  location = locs, movement_function = move_fish_left)
+
+out <- conduct_survey(ctl = ctl) 
+plot_average_cpue(out = out )
 
 
 
-cpues <- format_plot_input(out = out)
-cpues %>% group_by(y)
 
-  ggplot(cpues, aes(x = nfish, y = value, colour = loc)) + geom_line() + geom_point() + 
-    facet_wrap(~ variable)
+
+
+
+
 
 
 
