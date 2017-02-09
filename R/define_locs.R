@@ -17,13 +17,15 @@ define_locs <- function(numrow = 10, numcol = 10, condition){
   locs$vessel <- 1
   names(locs)[1:2] <- c('x', 'y')
   locs <- locs[, c('vessel', 'x', 'y')]
+  locs$unq <- paste(locs$x, locs$y)
 
   #Paste the text together, this uses dplyr currently and sub
   first_part <- "locs %>% filter("
   last_part <- ")"
 
   locs_out <- eval(parse(text = paste0(first_part, condition, last_part)))
-  
+  locs_out$unq <- NULL
+
   return(locs_out)
 }
 
