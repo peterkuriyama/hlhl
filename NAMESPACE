@@ -3,6 +3,7 @@
 export(calc_cpue)
 export(compare_three_surveys)
 export(conduct_survey)
+export(define_locs)
 export(define_movement)
 export(explore_nlocs_cpue)
 export(fish_pop_loop)
