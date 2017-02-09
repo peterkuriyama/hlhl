@@ -2,7 +2,7 @@
 
 #' Function to plot the average cpue. Calls format_plot_input function
 
-#' @param out
+#' @param out Output from conduct_survey
 #' @examples
 #' ctl <- make_ctl(distribute = 'uniform', mortality = .1, move_out_prob = .5,
 #'                 nfish1 = 1000, nfish2 = 10000, prob1 = 1, prob2 = .3, nyear = 15, scope = 1)

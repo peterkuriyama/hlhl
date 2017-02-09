@@ -7,6 +7,9 @@ Function to plot the average cpue. Calls format_plot_input function}
 \usage{
 plot_average_cpue(out)
 }
+\arguments{
+\item{out}{Output from conduct_survey}
+}
 \description{
 Ploat Average CPUE
 Function to plot the average cpue. Calls format_plot_input function
