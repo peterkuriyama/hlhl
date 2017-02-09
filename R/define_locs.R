@@ -13,7 +13,7 @@
 #' define_locs(condition = "y == 3 & x == 5")
 
 define_locs <- function(numrow = 10, numcol = 10, condition){
-  locs <- expand.grid(1:10, 1:10)
+  locs <- expand.grid(1:numrow, 1:numcol)
   locs$vessel <- 1
   names(locs)[1:2] <- c('x', 'y')
   locs <- locs[, c('vessel', 'x', 'y')]
