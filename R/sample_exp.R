@@ -18,13 +18,11 @@ sample_exp <- function(nfish1, nfish2, prob1, prob2){
 
   #Might need to adjust the shape of this curve
   #Can adjust these to account for behavior of certain species
-  p1 <- 1 - exp(-nfish1 * prob1) #use prob 1 to define probability of catching fish 1
-
-  p2 <- 1 - exp(-nfish2 *  prob2) #use prob2 to define probability of catching fish 2
+  p1 <- 1 - exp(-nfish1 / 10 * prob1) #use prob 1 to define probability of catching fish 1
+  p2 <- 1 - exp(-nfish2 / 10 *  prob2) #use prob2 to define probability of catching fish 2
 
   #Probability of catching a fish
   hook_prob <- 1 - ((1 - p1) * (1 - p2))
-  hook_prob2 <- ((1 - p1) * (1 - p2))
 
   fish <- rbinom(n = 1, size = 1,  prob = hook_prob)  
   #------------------------------------------------
@@ -39,7 +37,9 @@ sample_exp <- function(nfish1, nfish2, prob1, prob2){
     fish1 <- rbinom(n = 1, size = 1, prob = p1a)
   }
   
-  if(fish1 == 0 & fish == 1) fish2 <- 1
+  if(fish1 == 0 & fish == 1){    
+    fish2 <- 1
+  } 
   
   #Return values as data frame
   return(data.frame(fish1 = fish1, fish2 = fish2))
