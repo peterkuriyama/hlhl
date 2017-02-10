@@ -78,7 +78,7 @@ fish_population <- function(fish_area, ctl, kk = 0){
       yy$moved <- yy$check
       return(yy)
     })
-    
+
     ##---------------------------------------------------------------------------------------
     #Fish with sample_exp function
     #Do this in a for loop first, then maybe switch to an apply statement
@@ -93,14 +93,12 @@ fish_population <- function(fish_area, ctl, kk = 0){
   
     samps_out_drop <- vector('list', length = ndrops)
     fish_area_drop <- samps_out_drop
-  
+
     #Loop through drops and store catch  
     for(dd in 1:ndrops){
       for(ll in 1:nrow(location)){
-  
         temp <- fish_pop_loop(fish_area = temp_fish_area, loc_row = location[ll, ],
           ctl = ctl, kk = kk)   
-  
         temp_fish_area <- temp$fish_area  
         samps_out[ll, ] <- temp$samps
       }
