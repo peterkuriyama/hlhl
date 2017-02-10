@@ -44,7 +44,6 @@ conduct_survey <- function(ctl){
 
   #Loop over years of survey, specified in ctl
   for(kk in 2:nyear){
-    
     #Move fish based on function specified in ctl 
     temp_area[[1]] <- movement_function(temp_area[[1]], max_prob = ctl$max_prob, min_prob = ctl$min_prob)$final
     temp_area[[2]] <- movement_function(temp_area[[2]], max_prob = ctl$max_prob, min_prob = ctl$min_prob)$final    
