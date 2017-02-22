@@ -18,8 +18,8 @@ sample_exp <- function(nfish1, nfish2, prob1, prob2){
 
   #Might need to adjust the shape of this curve
   #Can adjust these to account for behavior of certain species
-  p1 <- 1 - exp(-nfish1 / 10 * prob1) #use prob 1 to define probability of catching fish 1
-  p2 <- 1 - exp(-nfish2 / 10 *  prob2) #use prob2 to define probability of catching fish 2
+  p1 <- 1 - exp(-nfish1 * prob1) #use prob 1 to define probability of catching fish 1
+  p2 <- 1 - exp(-nfish2 *  prob2) #use prob2 to define probability of catching fish 2
 
   #Probability of catching a fish
   hook_prob <- 1 - ((1 - p1) * (1 - p2))
