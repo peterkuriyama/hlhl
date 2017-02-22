@@ -65,6 +65,9 @@ initialize_population <- function(ctl, nfish){
     samp.df <- possible.picks[sample(1:nrow(possible.picks), size = nsamps), ] 
   }
     
+  if(distribute == 'patchy' & ctl$numrow == 1 & ctl$numrow == 1){
+    samp.df <- possible.picks
+  }  
   #---------------------------------------------------------------------------------------------------------
   #If distribution is area specific
   if(distribute == 'area'){
