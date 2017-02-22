@@ -9,15 +9,15 @@
 #' @param to_change Specify which value to modify in lapply statement. Should be the values in
 #' loop_over and be a character string 
 
-#' @export
 #' @examples
 #' ctl1 <- make_ctl(distribute = 'patchy', mortality = 0, move_out_prob = .5,
 #'       nfish1 = 0, nfish2 = 0, prob1 = .01, prob2 = 0, nyear = 15, scope = 1, seed = 4,
 #'       location = one_loc, numrow = 1, numcol = 1)  
 #' ttest <- run_scenario(ctl = ctl, loop_over = seq(100, 1500, by = 100), to_change = 'nfish1', 
 #'   ncores = 6)
+#' @export
 
-run_scenario <- function(ctl, loop_over, ncores = 1, to_change){
+run_scenarios <- function(ctl, loop_over, ncores = 1, to_change){
   
   #Set up number of cores, default is 1
   cl <- makeCluster(6)
