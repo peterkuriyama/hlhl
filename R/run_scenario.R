@@ -17,18 +17,18 @@
 #'   ncores = 6)
 #' @export
 
-run_scenario <- function(ctl, loop_over, ncores = 1, to_change){
-  
+run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change){
+
   #Set up number of cores, default is 1
-  cl <- makeCluster(6)
+  cl <- makeCluster(ncores)
   registerDoParallel(cl)
   cat(getDoParWorkers(), "cores registered", '\n')
   
   #Run outputs
   out_list <- mclapply(loop_over, mc.cores = ncores, FUN = function(xx){
     print(xx)
-    ctl[to_change] <- xx
-    out <- conduct_survey(ctl = ctl)
+    ctl_in[to_change] <- xx
+    out <- conduct_survey(ctl = ctl_in)
   })
 
   #Format inputs for plots
