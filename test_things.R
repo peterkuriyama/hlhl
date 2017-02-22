@@ -17,6 +17,9 @@ library(ggplot2)
   #Increasing/decreasing Trend
   #Gear saturation
   #Aggressive behavior
+
+#Default locations, 15% of available sites
+
 #--------------------------------------------------------------------------------------------
 #May need to track depletion by drop at some points, this is in conduct_survey
 #--------------------------------------------------------------------------------------------
@@ -34,41 +37,166 @@ locs$vessel <- 1
 names(locs)[1:2] <- c('x', 'y')
 locs <- locs[, c('vessel', 'x', 'y')]
 
-samps <- base::sample(1:100, 20)
+samps <- base::sample(1:100, 15)
 def_locs <- locs[samps, ]
 
+#----------------------------------------------------------------------------------------
+#Test in one location
+one_loc <- data.frame(vessel = 1, x = 1, y = 1)
+
+#Loop over different probabilities
+#Do this just with one species first, simplest possible
+nfish1s <- seq(100, 1500, by = 100)
+nfish1s_outs <- vector('list', length = length(nfish1s))
+nfish1s_inp <- vector('list', length = length(nfish1s))
+
+for(nf in 1:length(nfish1s)){
+  ctl <- make_ctl(distribute = 'patchy', mortality = 0, move_out_prob = .5,
+      nfish1 = nfish1s[nf], nfish2 = 0, prob1 = .01, prob2 = 0, nyear = 15, scope = 1, seed = 4,
+      location = one_loc, numrow = 1, numcol = 1)  
+
+  out <- conduct_survey(ctl = ctl)
+  inp <- format_plot_input(out = out)
+
+  nfish1s_outs[[nf]] <- out
+  nfish1s_inp[[nf]] <- inp
+}
+
+names(nfish1s_inp) <- as.character(nfish1s)
+nfish1s_inp <- ldply(nfish1s_inp)
+names(nfish1s_inp)[1] <- 'nfish1'
+
+for_plot1 <- nfish1s_inp %>% group_by(nfish1, year, variable) %>% summarize(cpue = mean(value),
+  nfish = unique(nfish)) %>% as.data.frame
+for_plot1$nfish1 <- as.numeric(for_plot$nfish1)
+
+png(width = 12.6, height = 8.37, units = 'in', res = 150, 
+  file = 'figs/one_cell_p.01.png')
+for_plot1 %>% filter(variable == 'cpue1') %>% ggplot() + geom_line(aes(x = nfish, y = cpue), 
+  size = 1) + theme_bw() + facet_wrap(~ nfish1)
+dev.off()
+
+#-------------------------------------
+#For p.02
+#Loop over different probabilities
+#Do this just with one species first, simplest possible
+nfish1s <- seq(100, 1500, by = 100)
+nfish1s_outs <- vector('list', length = length(nfish1s))
+nfish1s_inp <- vector('list', length = length(nfish1s))
+
+for(nf in 1:length(nfish1s)){
+  ctl <- make_ctl(distribute = 'patchy', mortality = 0, move_out_prob = .5,
+      nfish1 = nfish1s[nf], nfish2 = 0, prob1 = .02, prob2 = 0, nyear = 15, scope = 1, seed = 4,
+      location = one_loc, numrow = 1, numcol = 1)  
+
+  out <- conduct_survey(ctl = ctl)
+  inp <- format_plot_input(out = out)
+
+  nfish1s_outs[[nf]] <- out
+  nfish1s_inp[[nf]] <- inp
+}
+
+names(nfish1s_inp) <- as.character(nfish1s)
+nfish1s_inp <- ldply(nfish1s_inp)
+names(nfish1s_inp)[1] <- 'nfish1'
+
+for_plot2 <- nfish1s_inp %>% group_by(nfish1, year, variable) %>% summarize(cpue = mean(value),
+  nfish = unique(nfish)) %>% as.data.frame
+for_plot2$nfish1 <- as.numeric(for_plot$nfish1)
+
+png(width = 12.6, height = 8.37, units = 'in', res = 150, 
+  file = 'figs/one_cell_p.02.png')
+for_plot2 %>% filter(variable == 'cpue1') %>% ggplot() + geom_line(aes(x = nfish, y = cpue), 
+  size = 1) + theme_bw() + facet_wrap(~ nfish1)
+dev.off()
+
+#-------------------------------------
+#For p.03
+#Loop over different probabilities
+#Do this just with one species first, simplest possible
+nfish1s <- seq(100, 1500, by = 100)
+nfish1s_outs <- vector('list', length = length(nfish1s))
+nfish1s_inp <- vector('list', length = length(nfish1s))
+
+for(nf in 1:length(nfish1s)){
+  ctl <- make_ctl(distribute = 'patchy', mortality = 0, move_out_prob = .5,
+      nfish1 = nfish1s[nf], nfish2 = 0, prob1 = .03, prob2 = 0, nyear = 15, scope = 1, seed = 4,
+      location = one_loc, numrow = 1, numcol = 1)  
+
+  out <- conduct_survey(ctl = ctl)
+  inp <- format_plot_input(out = out)
+
+  nfish1s_outs[[nf]] <- out
+  nfish1s_inp[[nf]] <- inp
+}
+
+names(nfish1s_inp) <- as.character(nfish1s)
+nfish1s_inp <- ldply(nfish1s_inp)
+names(nfish1s_inp)[1] <- 'nfish1'
+
+for_plot3 <- nfish1s_inp %>% group_by(nfish1, year, variable) %>% summarize(cpue = mean(value),
+  nfish = unique(nfish)) %>% as.data.frame
+for_plot3$nfish1 <- as.numeric(for_plot$nfish1)
+for_plot3 %>% filter(variable == 'cpue1')
+
+# png(width = 12.6, height = 8.37, units = 'in', res = 150, 
+#   file = 'figs/one_cell_p.02.png')
+# for_plot2 %>% filter(variable == 'cpue1') %>% ggplot() + geom_line(aes(x = nfish, y = cpue), 
+#   size = 1) + theme_bw() + facet_wrap(~ nfish1)
+# dev.off()
+
 #--------------------------------------------------------------------------------------------
+#Plot both examples
+for_plot1$prob <- .01
+for_plot2$prob <- .02
+for_plot3$prob <- .03
+
+for_plot <- rbind(for_plot1, for_plot2, for_plot3)
+for_plot$prob <- as.factor(for_plot$prob)
+
+for_plot <- for_plot %>% filter(variable == 'cpue1')
+
+png(width = 12.6, height = 8.37, units = 'in', res = 150, 
+  file = 'figs/one_cell.png')
+ggplot(for_plot) + geom_line(aes(x = nfish, y = cpue, colour = prob, group = prob)) + 
+  facet_wrap(~ nfish1)
+dev.off()
+#--------------------------------------------------------------------------------------------
+###Uniformly distributed Fish
+#--------------------------------------------------------------------------------------------
+####Plot 1
+
 #Changes with increasing number of fishing locations
 {
-  set.seed(3)
-  locs <- expand.grid(1:10, 1:10)
-  locs$vessel <- 1
-  names(locs)[1:2] <- c('x', 'y')
-  locs <- locs[, c('vessel', 'x', 'y')]
+  # set.seed(3)
+  # locs <- expand.grid(1:10, 1:10)
+  # locs$vessel <- 1
+  # names(locs)[1:2] <- c('x', 'y')
+  # locs <- locs[, c('vessel', 'x', 'y')]
   
-  samps <- base::sample(1:100, 40)
-  locs <- locs[samps, ]
+  # samps <- base::sample(1:100, 40)
+  # locs <- locs[samps, ]
   
-  #Do this as a for loop
-  location_runs <- vector('list', length = nrow(locs))
+  # #Do this as a for loop
+  # location_runs <- vector('list', length = nrow(locs))
   
-  for(ii in 1:length(location_runs)){
-  print(ii)
-    temp_loc <- locs[1:ii, ]
+  # for(ii in 1:length(location_runs)){
+  # print(ii)
+  #   temp_loc <- locs[1:ii, ]
     
-    ctl <- make_ctl(distribute = 'patchy', mortality = .1, move_out_prob = .5,
-      nfish1 = 10000, nfish2 = 10000, prob1 = .01, prob2 = .99, nyear = 15, scope = 1, seed = 4,
-      location = temp_loc)  
-    out <- conduct_survey(ctl = ctl)
-    inp <- format_plot_input(out = out)
+  #   ctl <- make_ctl(distribute = 'patchy', mortality = .1, move_out_prob = .5,
+  #     nfish1 = 10000, nfish2 = 10000, prob1 = .01, prob2 = .99, nyear = 15, scope = 1, seed = 4,
+  #     location = temp_loc)  
+  #   out <- conduct_survey(ctl = ctl)
+  #   inp <- format_plot_input(out = out)
   
-    location_runs[[ii]] <- inp
-  }
+  #   location_runs[[ii]] <- inp
+  # }
   
-  #location_runs_plot
-  names(location_runs) <- 1:length(location_runs)
-  lrp <- ldply(location_runs)
-  names(lrp)[1] <- "nlocs"
+  # #location_runs_plot
+  # names(location_runs) <- 1:length(location_runs)
+  # lrp <- ldply(location_runs)
+  # names(lrp)[1] <- "nlocs"
   
   # save(lrp, file = 'output/location_runs.Rdata')
   load('output/location_runs.Rdata')
@@ -77,13 +205,23 @@ def_locs <- locs[samps, ]
     as.data.frame
   for_plot$nlocs <- as.numeric(for_plot$nlocs)
   
-  for_plot %>% filter(variable == 'cpue1') %>% ggplot() + geom_line(aes(x = nfish, y = cpue)) + 
-    facet_wrap(~ nlocs)
-  
+  png(width = 7, height = 7, units = 'in', res = 150, 
+    file = 'figs/40_locs.png') 
   ggplot(for_plot) + geom_line(aes(x = nfish, y = cpue, group = nlocs, colour = nlocs)) + 
     facet_wrap(~ variable)
+  dev.off()
+
+  #Plot cpue1
+  for_plot %>% filter(variable == 'cpue1') %>% ggplot() + geom_line(aes(x = nfish, y = cpue)) + 
+    facet_wrap(~ nlocs)
+
+  #plot cpue2
+  for_plot %>% filter(variable == 'cpue2') %>% ggplot() + geom_line(aes(x = nfish, y = cpue)) + 
+    facet_wrap(~ nlocs)
 }
 #--------------------------------------------------------------------------------------------
+####Plot 2
+
 #What effect does fish passing through certain parts is
 #Write this as a for loop
 {
@@ -116,26 +254,356 @@ def_locs <- locs[samps, ]
     nfish = unique(nfish)) %>% as.data.frame
   for_plot$y_value <- as.numeric(for_plot$y_value)
 
+  png(width = 7, height = 7, units = 'in', res = 200, file = 'figs/plot2_fish_move_left_uniform.png')
   ggplot(for_plot) + geom_line(aes(x = nfish, y = cpue, group = y_value, colour = y_value), 
-    size = 1.5) + facet_wrap(~ variable) + theme_bw()
+    size = 1) + facet_wrap(~ variable) + theme_bw()
+  dev.off()
 }
 
 #--------------------------------------------------------------------------------------------
-#Test Aggressive fish for one species,
-#Both species should have the same response
-p1s <- seq(.1, 1, by = .1)
-p_outs <- vector('list', length = length(p1s))
+####Plot 3
 
-#Figure out the location configurations
+#Look at effect of nfish and probabilities
+{
+  nfish1s <- seq(1000, 10000, by = 1000)
 
-for(pp in 1:length(p1s)){
-  lo
+#Uniform Distribution
+  nfish1s_outs <- vector('list', length = 10)
+
+  for(nnn in 1:length(nfish1s)){
+    #Only do fish 1 with .5 and .5 probabilities
+    ctl <- make_ctl(distribute = 'uniform', mortality = .1, move_out_prob = .5,
+      nfish1 = nfish1s[nnn], nfish2 = 10000, prob1 = .5, prob2 = .5, nyear = 15, scope = 1, seed = 4,
+      location = def_locs, movement_function = move_fish_left)  
+    out <- conduct_survey(ctl = ctl)
+    inp <- format_plot_input(out = out)  
+    nfish1s_outs[[nnn]] <- inp
+    print(nnn)
+  }
+  
+  names(nfish1s_outs) <- as.character(nfish1s)
+  nfish1s_outs <- ldply(nfish1s_outs)
+  names(nfish1s_outs)[1] <- 'nfish1'
+
+  for_plot <- nfish1s_outs %>% group_by(nfish1, year, variable) %>% summarize(cpue = mean(value),
+    nfish = unique(nfish)) %>% as.data.frame
+
+  for_plot$nfish1 <- as.numeric(for_plot$nfish1)
+  png(width = 11.5, height = 9.29, units = 'in', res = 200, file = 'figs/plot3_nfish1_uniform.png')
+  ggplot(for_plot) + geom_line(aes(x = nfish, y = cpue, group = variable, colour = variable), 
+    size = 1) + facet_wrap(~ nfish1) + theme_bw()
+  dev.off()
+
+#Patchy Distribution
+  nfish1s_outs <- vector('list', length = 10)
+
+  for(nnn in 1:length(nfish1s)){
+    #Only do fish 1 with .5 and .5 probabilities
+    ctl <- make_ctl(distribute = 'patchy', mortality = .1, move_out_prob = .5,
+      nfish1 = nfish1s[nnn], nfish2 = 10000, prob1 = .5, prob2 = .5, nyear = 15, scope = 1, seed = 4,
+      location = def_locs, movement_function = move_fish_left)  
+    out <- conduct_survey(ctl = ctl)
+    inp <- format_plot_input(out = out)  
+    nfish1s_outs[[nnn]] <- inp
+    print(nnn)
+  }
+  
+  names(nfish1s_outs) <- as.character(nfish1s)
+  nfish1s_outs <- ldply(nfish1s_outs)
+  names(nfish1s_outs)[1] <- 'nfish1'
+
+  for_plot <- nfish1s_outs %>% group_by(nfish1, year, variable) %>% summarize(cpue = mean(value),
+    nfish = unique(nfish)) %>% as.data.frame
+  for_plot$nfish1 <- as.numeric(for_plot$nfish1)
+  
+  png(width = 11.5, height = 9.29, units = 'in', res = 200, file = 'figs/plot3_nfish1_patchy.png')
+  ggplot(for_plot) + geom_line(aes(x = nfish, y = cpue, group = variable, colour = variable), 
+    size = 1) + facet_wrap(~ nfish1) + theme_bw()
+  dev.off()
 }
 
 
-ctl <- make_ctl(distribute = 'uniform', mortality = .1, move_out_prob = .5,
-    nfish1 = 10000, nfish2 = 5000, prob1 = .01, prob2 = .99, nyear = 15, scope = 1, seed = 4,
-    location = locs, movement_function = move_fish_left)  
+#What effect does fish movement left
+#Write this as a for loop
+{
+  y_vals <- 1:10
+  y_outs <- vector('list', length = length(y_vals))
+  
+  #Run this thing in for loop
+  for(yy in y_vals){
+    print(yy)
+    locs <- expand.grid(1:10, 1:10)
+    locs$vessel <- 1
+    names(locs)[1:2] <- c('x', 'y')
+  
+    locs <- locs[, c('vessel', 'x', 'y')]
+    locs %>% filter(y == yy & x %in% c(1, 5, 7, 9)) -> locs
+  
+    ctl <- make_ctl(distribute = 'uniform', mortality = .1, move_out_prob = .5,
+      nfish1 = 10000, nfish2 = 10000, prob1 = .01, prob2 = .99, nyear = 15, scope = 1, seed = 4,
+      location = locs, movement_function = move_fish_left)  
+    out <- conduct_survey(ctl = ctl)
+    inp <- format_plot_input(out = out)
+    y_outs[[yy]] <- inp
+  }
+
+
+  names(y_outs) <- as.character(y_vals)
+  y_outs <- ldply(y_outs)
+  names(y_outs)[1] <- 'y_value'
+
+  
+
+  for_plot <- y_outs %>% group_by(y_value, year, variable) %>% summarize(cpue = mean(value),
+    nfish = unique(nfish)) %>% as.data.frame
+  for_plot$y_value <- as.numeric(for_plot$y_value)
+
+
+  png(width = 7, height = 7, units = 'in', res = 200, file = 'figs/fish_move_left.png')
+  ggplot(for_plot) + geom_line(aes(x = nfish, y = cpue, group = y_value, colour = y_value), 
+    size = 1) + facet_wrap(~ variable) + theme_bw()
+  dev.off()
+}
+#--------------------------------------------------------------------------------------------
+####Plot 4
+
+#Test Aggressive fish for one species,
+#Both species should have the same response
+{
+
+#Uniform Distribution
+  p1s <- seq(.1, 1, by = .1)
+  p_outs <- vector('list', length = length(p1s))
+  
+  #Figure out the location configurations, use default locations
+  for(pp in 1:length(p1s)){
+    print(pp)
+    ctl <- make_ctl(distribute = 'uniform', mortality = .1, move_out_prob = .5,
+      nfish1 = 10000, nfish2 = 0, prob1 = p1s[pp], prob2 = 0, nyear = 15, scope = 1, seed = 4,
+      location = def_locs, movement_function = move_fish_none)  
+    out <- conduct_survey(ctl = ctl)
+    inp <- format_plot_input(out = out)
+  
+    p_outs[[pp]] <- inp
+  }
+
+
+  names(p_outs) <- as.character(p1s)
+  p_outs <- ldply(p_outs)
+  names(p_outs)[1] <- 'probs'
+
+  p_plot_10000 <- p_outs %>% group_by(probs, year, variable) %>% summarize(cpue = mean(value),
+    nfish = unique(nfish)) %>% as.data.frame
+  p_plot_10000$probs <- as.numeric(p_plot_10000$probs)
+
+  # png(width = 7, height = 7, units = 'in', res = 200, 
+  #   file = 'figs/plot4_10000fish_uniform.png')
+  p_plot_10000 %>% filter(variable == 'cpue1') %>% ggplot() + 
+    geom_line(aes(x = nfish, y = cpue, group = probs, colour = probs), 
+    size = 1.5) + facet_wrap(~ variable) + theme_bw() +
+    xlim(0, 1000)
+  # dev.off()
+
+#Patchy Distribution
+  p1s <- seq(.1, 1, by = .1)
+  p_outs <- vector('list', length = length(p1s))
+  
+  #Figure out the location configurations, use default locations
+  for(pp in 1:length(p1s)){
+    print(pp)
+    ctl <- make_ctl(distribute = 'patchy', mortality = .1, move_out_prob = .5,
+      nfish1 = 10000, nfish2 = 0, prob1 = p1s[pp], prob2 = 0, nyear = 15, scope = 1, seed = 4,
+      location = def_locs, movement_function = move_fish_none)  
+    out <- conduct_survey(ctl = ctl)
+    inp <- format_plot_input(out = out)
+  
+    p_outs[[pp]] <- inp
+  }
+
+  names(p_outs) <- as.character(p1s)
+  p_outs <- ldply(p_outs)
+  names(p_outs)[1] <- 'probs'
+
+  p_plot_10000 <- p_outs %>% group_by(probs, year, variable) %>% summarize(cpue = mean(value),
+    nfish = unique(nfish)) %>% as.data.frame
+  p_plot_10000$probs <- as.numeric(p_plot_10000$probs)
+
+  png(width = 7, height = 7, units = 'in', res = 200, 
+    file = 'figs/plot4_10000fish_patchy.png')
+  p_plot_10000 %>% filter(variable == 'cpue1') %>% ggplot() + 
+    geom_line(aes(x = nfish, y = cpue, group = probs, colour = probs), 
+    size = 1.5) + facet_wrap(~ variable) + theme_bw()
+  dev.off()
+
+
+#These are for 5000 fish initially, 50 in each cell
+#Uniform
+  p1s <- seq(.1, 1, by = .1)
+  p_outs <- vector('list', length = length(p1s))
+  
+  #Figure out the location configurations, use default locations
+  for(pp in 1:length(p1s)){
+    print(pp)
+    ctl <- make_ctl(distribute = 'uniform', mortality = .1, move_out_prob = .5,
+      nfish1 = 5000, nfish2 = 0, prob1 = p1s[pp], prob2 = 0, nyear = 15, scope = 1, seed = 4,
+      location = def_locs, movement_function = move_fish_none)  
+    out <- conduct_survey(ctl = ctl)
+    inp <- format_plot_input(out = out)
+  
+    p_outs[[pp]] <- inp
+  }
+
+  names(p_outs) <- as.character(p1s)
+  p_outs <- ldply(p_outs)
+  names(p_outs)[1] <- 'probs'
+
+  p_plot_5000 <- p_outs %>% group_by(probs, year, variable) %>% summarize(cpue = mean(value),
+    nfish = unique(nfish)) %>% as.data.frame
+  p_plot_5000$probs <- as.numeric(p_plot_5000$probs)
+
+  png(width = 7, height = 7, units = 'in', res = 200, 
+    file = 'figs/plot4_5000fish_uniform.png')
+  ggplot(p_plot_5000) + geom_line(aes(x = nfish, y = cpue, group = probs, colour = probs), 
+    size = 1.5) + facet_wrap(~ variable) + theme_bw()
+  dev.off()
+
+#Patchy
+  p1s <- seq(.1, 1, by = .1)
+  p_outs <- vector('list', length = length(p1s))
+  
+  #Figure out the location configurations, use default locations
+  for(pp in 1:length(p1s)){
+    print(pp)
+    ctl <- make_ctl(distribute = 'patchy', mortality = .1, move_out_prob = .5,
+      nfish1 = 5000, nfish2 = 0, prob1 = p1s[pp], prob2 = 0, nyear = 15, scope = 1, seed = 4,
+      location = def_locs, movement_function = move_fish_none)  
+    out <- conduct_survey(ctl = ctl)
+    inp <- format_plot_input(out = out)
+  
+    p_outs[[pp]] <- inp
+  }
+
+  names(p_outs) <- as.character(p1s)
+  p_outs <- ldply(p_outs)
+  names(p_outs)[1] <- 'probs'
+
+  p_plot_5000 <- p_outs %>% group_by(probs, year, variable) %>% summarize(cpue = mean(value),
+    nfish = unique(nfish)) %>% as.data.frame
+  p_plot_5000$probs <- as.numeric(p_plot_5000$probs)
+
+  png(width = 7, height = 7, units = 'in', res = 200, 
+    file = 'figs/plot4_5000fish_patchy.png')
+  ggplot(p_plot_5000) + geom_line(aes(x = nfish, y = cpue, group = probs, colour = probs), 
+    size = 1.5) + facet_wrap(~ variable) + theme_bw()
+  dev.off()
+
+
+#These are for 1000 fish initially, 10 in each cell
+#Uniform
+  p1s <- seq(.1, 1, by = .1)
+  p_outs <- vector('list', length = length(p1s))
+  
+  #Figure out the location configurations, use default locations
+  for(pp in 1:length(p1s)){
+    print(pp)
+    ctl <- make_ctl(distribute = 'uniform', mortality = .1, move_out_prob = .5,
+      nfish1 = 1000, nfish2 = 0, prob1 = p1s[pp], prob2 = 0, nyear = 15, scope = 1, seed = 4,
+      location = def_locs, movement_function = move_fish_none)  
+    out <- conduct_survey(ctl = ctl)
+    inp <- format_plot_input(out = out)
+  
+    p_outs[[pp]] <- inp
+  }
+
+  names(p_outs) <- as.character(p1s)
+  p_outs <- ldply(p_outs)
+  names(p_outs)[1] <- 'probs'
+
+  p_plot_1000 <- p_outs %>% group_by(probs, year, variable) %>% summarize(cpue = mean(value),
+    nfish = unique(nfish)) %>% as.data.frame
+  p_plot_1000$probs <- as.numeric(p_plot_1000$probs)
+
+  # ggplot(p_plot_1000) + geom_line(aes(x = nfish, y = cpue, group = probs, colour = probs), 
+  #   size = 1.5) + facet_wrap(~ variable) + theme_bw() + ylim(c(0, 1))
+
+p_plot_10000$start_fish <- 10000
+p_plot_5000$start_fish <- 5000
+p_plot_1000$start_fish <- 1000
+
+nfish_results <- rbind(p_plot_10000, p_plot_5000, p_plot_1000)
+nfish_results %>% filter(variable == 'cpue1')
+
+cpue1 <- nfish_results %>% filter(variable == 'cpue1')
+
+ggplot(cpue1) + geom_line(aes(x = nfish, y = cpue, group = probs, colour = probs),
+  size = 1) + facet_wrap(~ start_fish)
+
+
+#--------------------------------------------------------------------------------------------
+#Plot 5
+###Patchily distributed Fish
+#Say there are 15 really good sites,
+#Fish in the 10 best sites?
+#5 best sites
+#1 bet site
+
+
+ctl <- make_ctl(distribute = 'patchy', mortality = .1, move_out_prob = .5,
+      nfish1 = 5000, nfish2 = 10000, prob1 = .3, prob2 = .9, nyear = 15, scope = 1, seed = 4,
+      location = def_locs, movement_function = move_fish_none)  
+
+#Identify best fishing locations
+best <- initialize_population(ctl = ctl, nfish = 5000)
+best <- melt(best)
+best1 <- (best[best$value != 0, ])
+
+best1 <- best1[c(1, 3, 5, 7, 9, 11, 13, 15, 17, 19,
+  21, 23, 25, 27, 29), c('Var1', 'Var2')]
+
+fifteen_best <- data.frame(vessel = 1, x = best1$Var1, y = best1$Var2)
+ten_best <- fifteen_best[sample(1:15, 10), ]
+five_best <- fifteen_best[sample(1:15, 5), ]
+
+bests <- list(fifteen_best, ten_best, five_best)
+bests_outs <- vector('list', length = 3)
+
+#Loop over bests
+for(bb in 1:length(bests)){
+    ctl <- make_ctl(distribute = 'patchy', mortality = .1, move_out_prob = .5,
+        nfish1 = 5000, nfish2 = 10000, prob1 = .3, prob2 = .9, nyear = 15, scope = 1, seed = 4,
+        location = bests[[bb]], movement_function = move_fish_none)  
+  out <- conduct_survey(ctl = ctl)
+  inp <- format_plot_input(out = out)
+  
+  bests_outs[[bb]] <- inp
+}
+
+names(bests_outs) <- c('15', '10', '5')
+bests_outs1 <- ldply(bests_outs)
+names(bests_outs1)[1] <- 'nsites'
+
+bo <- bests_outs1 %>% group_by(nsites, year, variable) %>% summarize(cpue = mean(value),
+    nfish = unique(nfish)) %>% as.data.frame
+
+png(width = 7, height = 7, units = 'in', res = 200, 
+  file = 'figs/plot5_nsites.png')
+ggplot(bo) + geom
+s_line(aes(x = nfish, y = cpue, group = nsites, colour = nsites),
+  size = 1) + facet_wrap(~ variable)
+dev.off()
+
+#Visualize the initial conditions?
+
+
+  
+  
+
+
+
+
+
+#--------------------------------------------------------------------------------------------
+#Number of fish,
 
 
 #--------------------------------------------------------------------------------------------
