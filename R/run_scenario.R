@@ -31,53 +31,15 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change){
     return(ctl_temp)
   })
 
-####FOR LOOP CHECK
-  #Write this as a for loop
-  # out_list <- vector('list', length = length(ctl_list))
-
-  # for(ii in 1:length(ctl_list)){
-  #   thing <- ctl_list[[ii]]
-    
-  #   out <- conduct_survey(ctl = thing)
-  #   out_list[[ii]] <- out
-  #   print(ii)
-  # }
-
-  
-  # inner_function <- function(thing_in){
-  #   out <- conduct_survey(ctl = thing_in)
-  #   return(out)
-  # }
-
+  #Run the mclapply call
   out_list <- mclapply(ctl_list, mc.cores = ncores, FUN = function(xx){
     print(xx[to_change])
 
     ctl <- xx
     out <- conduct_survey(ctl = ctl)
-    return(out)
-    
-    # print(xx)
-    # ctl_temp <- ctl_in    
-    # ctl_temp[to_change] <- xx
-    # out <- conduct_survey(ctl = ctl_temp)
+    return(out)    
   })
-
-
-  # out_list <- lapply(loop_over, FUN = function(xx, ctl_in1 = ctl_in){
-  #   print(xx)
-  #   ctl_temp <- ctl_in1    
-  #   ctl_temp[to_change] <- xx
-  #   out <- conduct_survey(ctl = ctl_temp)
-  # })
   
-  # #Run outputs
-  # out_list <- mclapply(loop_over, mc.cores = ncores, FUN = function(xx, ctl_in = ctl_in){
-  #   print(xx)
-  #   ctl_temp <- ctl_in    
-  #   ctl_temp[to_change] <- xx
-  #   out <- conduct_survey(ctl = ctl_temp)
-  # })
-
   #Format inputs for plots
   inp_list <- lapply(out_list, function(xx){
     format_plot_input(out = xx)
