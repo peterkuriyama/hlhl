@@ -5,7 +5,7 @@ library(plyr)
 library(dplyr)
 library(reshape2)
 library(ggplot2)
-
+library(doParallel)
 #----------------------------------------------------------------------------------------
 # What range of catch per hooks provides a relative index of abundance?
 # What range of hooks without an aggressive species provides a relative index of abundance.
@@ -43,6 +43,17 @@ def_locs <- locs[samps, ]
 #----------------------------------------------------------------------------------------
 #Test in one location
 one_loc <- data.frame(vessel = 1, x = 1, y = 1)
+ctl <- make_ctl(distribute = 'patchy', mortality = 0, move_out_prob = .5,
+      nfish1 = 10, nfish2 = 0, prob1 = .01, prob2 = 0, nyear = 15, scope = 1, seed = 4,
+      location = one_loc, numrow = 1, numcol = 1)  
+
+one_loc_test <- run_scenario(ncores = 6, loop_over = seq(100, 1500, by = 100),
+  ctl_in = ctl, to_change = 'nfish1')
+
+ggplot(one_loc_test[[3]])
+
+
+
 
 #Loop over different probabilities
 #Do this just with one species first, simplest possible
