@@ -72,7 +72,14 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change){
       list(to_change = as.name(to_change)))
   for_plot <- eval(call)
 
+  #order for_plot stuff
+  if(class(loop_over) != 'list'){
+    for_plot[, to_change] <- as.numeric(for_plot[, to_change])
+    for_plot <- for_plot[order(for_plot[, to_change]), ]
+  }
+
   # stopCluster(cl)
+  # browser()
 
   #Now return everything
   return(list(outs = out_list, summ_out = inp_df, for_plot = for_plot))
