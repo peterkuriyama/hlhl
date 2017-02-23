@@ -23,14 +23,27 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change){
   # cl <- makeCluster(ncores)
   # registerDoParallel(cl)
   # cat(getDoParWorkers(), "cores registered", '\n')
-  
-  #Create list of ctls that based on inputs
-  ctl_list <- lapply(loop_over, function(xx){
-    ctl_temp <- ctl_in
-    ctl_temp[to_change] <- xx
-    return(ctl_temp)
-  })
 
+  #If loop over is a vector or a list, replace to_change in ctl_temp with different
+  #notation
+  if(class(loop_over) != 'list'){
+    ctl_list <- lapply(loop_over, function(xx){
+      ctl_temp <- ctl_in
+      ctl_temp[to_change] <- xx
+      return(ctl_temp)
+    })
+  }
+
+  if(class(loop_over) == 'list'){
+    ctl_list <- lapply(loop_over, function(xx){
+      ctl_temp <- ctl_in
+      ctl_temp[[to_change]] <- xx
+      return(ctl_temp)
+    })
+  }
+
+  #Create list of ctls that based on inputs
+  
   #Run the mclapply call
   out_list <- mclapply(ctl_list, mc.cores = ncores, FUN = function(xx){
     print(xx[to_change])
@@ -39,7 +52,7 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change){
     out <- conduct_survey(ctl = ctl)
     return(out)    
   })
-  
+
   #Format inputs for plots
   inp_list <- lapply(out_list, function(xx){
     format_plot_input(out = xx)
