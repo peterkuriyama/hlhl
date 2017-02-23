@@ -24,6 +24,7 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change){
   # registerDoParallel(cl)
   # cat(getDoParWorkers(), "cores registered", '\n')
 
+  #Create list of ctls that based on inputs
   #If loop over is a vector or a list, replace to_change in ctl_temp with different
   #notation
   if(class(loop_over) != 'list'){
@@ -42,12 +43,14 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change){
     })
   }
 
-  #Create list of ctls that based on inputs
-  
+  #Add index to ctl_list
+  for(nn in 1:length(ctl_list)){
+    ctl_list[[nn]]$nname <- nn
+  }
+
   #Run the mclapply call
   out_list <- mclapply(ctl_list, mc.cores = ncores, FUN = function(xx){
-    print(xx[to_change])
-
+    print(xx$nname)
     ctl <- xx
     out <- conduct_survey(ctl = ctl)
     return(out)    
