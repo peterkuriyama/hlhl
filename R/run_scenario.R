@@ -17,7 +17,7 @@
 #'   ncores = 6)
 #' @export
 
-run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change){
+run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = TRUE){
   
   #Set up number of cores, default is 1
   # cl <- makeCluster(ncores)
@@ -66,6 +66,7 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change){
   inp_df <- ldply(inp_list)
   names(inp_df)[1] <- to_change
 
+  
   #Use substitute to group_by the character column name in to_change
   call <- substitute(inp_df %>% group_by(to_change, year, variable) %>% 
       summarize(cpue = mean(value), nfish = unique(nfish)) %>% as.data.frame, 
@@ -78,8 +79,23 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change){
     for_plot <- for_plot[order(for_plot[, to_change]), ]
   }
 
+  #Add unique index if looping over a list of locations for example
+  if(add_index == TRUE){
+    col_1 <- unique(for_plot[1])
+    col_1 <- col_1[order(sapply(col_1, FUN = nchar)), ]
+
+    inds <- sapply(ctl_list, FUN = function(xx) xx$nn)
+    ind_df <- data.frame(col_1, inds = inds )
+    names(ind_df)[1] <- as.character(to_change)
+    ind_df[, to_change] <- as.character(ind_df[, to_change])
+
+    dd <- left_join(for_plot, ind_df, by = as.character(to_change))
+    dd[, to_change] <- dd$inds
+    dd$inds <- NULL
+    for_plot <- dd
+  }
+
   # stopCluster(cl)
-  # browser()
 
   #Now return everything
   return(list(outs = out_list, summ_out = inp_df, for_plot = for_plot))
