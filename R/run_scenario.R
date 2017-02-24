@@ -17,7 +17,7 @@
 #'   ncores = 6)
 #' @export
 
-run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = TRUE){
+run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = FALSE){
   
   #Set up number of cores, default is 1
   # cl <- makeCluster(ncores)
