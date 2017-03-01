@@ -13,9 +13,10 @@
 
 #plot cpue for each location
 format_plot_input <- function(out){
+
   #--------------------------------------------------------------
   #Calculate true number of each species
-  spp1 <- lapply(out$fished_areas, FUN = function(x) melt(x))
+  spp1 <- lapply(out$fished_areas, FUN = function(x) melt(x[1]))
   spp1 <- ldply(spp1)
   names(spp1)[1] <- 'year'
   
@@ -25,7 +26,7 @@ format_plot_input <- function(out){
             as.data.frame
   spp1$spp <- 'spp1'             
 
-  spp2 <- lapply(out$fished_areas, FUN = function(x) melt(x))
+  spp2 <- lapply(out$fished_areas, FUN = function(x) melt(x[2]))
   spp2 <- ldply(spp2)
   names(spp2)[1] <- 'year'
   
@@ -35,6 +36,7 @@ format_plot_input <- function(out){
             as.data.frame
   spp2$spp <- 'spp2'            
   spps <- rbind(spp1, spp2)
+  
   #--------------------------------------------------------------
   #plot indices from each location            
   samps <- melt(out$samples, id.vars = c("year", 'x', 'y') )
