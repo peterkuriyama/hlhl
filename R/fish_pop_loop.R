@@ -28,7 +28,7 @@ fish_pop_loop <- function(fish_area, loc_row, ctl = ctl, kk = 0){
       
       for(nn in 1:nsamps){                    
         temp_samp <- sample_exp(nfish1 = fish1, nfish2 = fish2, 
-          prob1 = ctl$prob1, prob2 = ctl$prob2)
+          prob1 = ctl$prob1, prob2 = ctl$prob2, comp_coeff = ctl$comp_coeff)
 
         temp_fish12[nn, 2:3] <- temp_samp
 
