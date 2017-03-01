@@ -66,10 +66,17 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
   inp_df <- ldply(inp_list)
   names(inp_df)[1] <- to_change
 
-  
+
+
   #Use substitute to group_by the character column name in to_change
   call <- substitute(inp_df %>% group_by(to_change, year, variable) %>% 
       summarize(cpue = mean(value), nfish = unique(nfish)) %>% as.data.frame, 
+      list(to_change = as.name(to_change)))
+  for_plot <- eval(call)
+
+  #add total number of fish in
+  call <- substitute(inp_df %>% group_by(to_change, year) %>% 
+      mutate(nfish_tot = sum(nfish)) %>% as.data.frame, 
       list(to_change = as.name(to_change)))
   for_plot <- eval(call)
 
@@ -96,6 +103,18 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
   }
 
   # stopCluster(cl)
+
+  #Add in values from the ctl file
+  add_these <- c('nfish1', 'nfish2', 'prob1', 'prob2')
+  already_in <- names(for_plot)[names(for_plot) %in% names(ctl)]
+
+  still_add <- add_these[add_these %in% already_in == FALSE]
+
+  #loop over still_add
+  for(ll in 1:length(still_add)){
+    run_this <- paste0("for_plot$", still_add[ll], " <- ", ctl[still_add][ll])
+    eval(parse(text = run_this))    
+  }
 
   #Now return everything
   return(list(outs = out_list, summ_out = inp_df, for_plot = for_plot))
