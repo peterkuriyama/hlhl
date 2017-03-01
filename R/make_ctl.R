@@ -32,6 +32,7 @@
 #' @param movement_function Specify the movement function, this occurs in year 2 of the survey, defaults to no movement
 #' @param max_prob Maximum movement probability for movement functions; defaults to 0.1
 #' @param min_prob Minimum movement probability for movement functions; defaults to 0.1
+#' @param comp_coeff Competition coefficient, how likely to catch species 1? Defaults to NA
 
 #' @examples
 #' make_ctl(p0 = .2)
@@ -64,7 +65,8 @@ make_ctl <- function(numrow = 10, numcol = 10, nfish1 = 10000, #initial number o
   mortality,
   movement_function = move_fish_none,
   max_prob = .1,
-  min_prob = .1
+  min_prob = .1,
+  comp_coeff = NA
   ){
 # browser()
   control <- list(numrow = numrow, numcol = numcol, nfish1 = nfish1, nfish2 = nfish2, prob1 = prob1, 
@@ -74,7 +76,7 @@ make_ctl <- function(numrow = 10, numcol = 10, nfish1 = 10000, #initial number o
     scope = scope, nhooks = nhooks, ndrops = ndrops, nangs = nangs, process = process, p0 = p0, 
     nyear = nyear, browser = browser,
     cpue_method = cpue_method, mortality = mortality, movement_function = movement_function,
-    max_prob = max_prob, min_prob = min_prob)
+    max_prob = max_prob, min_prob = min_prob, comp_coeff = comp_coeff)
 
   return(control)
 
