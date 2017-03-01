@@ -7,12 +7,14 @@
 #'@param nfish2 Number of fish2
 #'@param prob1 Probability of catching fish1
 #'@param prob2 Probability of catching fish2
+#'@param comp_coeff Competition coefficient. Higher the value the more likely to catch 
+#' species1. Specified in ctl file. If NA, use other probability formulation
 
 #'@examples
 #' Put Example Here
 #'@export
 
-sample_exp <- function(nfish1, nfish2, prob1, prob2){
+sample_exp <- function(nfish1, nfish2, prob1, prob2, comp_coeff){
   #------------------------------------------------
   #Define probabilities based on number of fish
 
@@ -32,9 +34,14 @@ sample_exp <- function(nfish1, nfish2, prob1, prob2){
   fish2 <- 0
   
   #If a fish was caught determine if it was fish1 or fish2
-  if(fish == 1){
+  if(fish == 1 & is.na(comp_coeff)){
     p1a <- p1 / (p1 + p2)  
     fish1 <- rbinom(n = 1, size = 1, prob = p1a)
+  }
+  
+  if(fish == 1 & is.na(comp_coeff) == FALSE){
+    # p1a <- p1 / (p1 + p2)  
+    fish1 <- rbinom(n = 1, size = 1, prob = comp_coeff)
   }
   
   if(fish1 == 0 & fish == 1){    

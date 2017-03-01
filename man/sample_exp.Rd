@@ -7,7 +7,7 @@ Function that samples based on exponential function. Catch probabilities depend 
 of fish and probabilities of catching each species. 
 Function to fish the population}
 \usage{
-sample_exp(nfish1, nfish2, prob1, prob2)
+sample_exp(nfish1, nfish2, prob1, prob2, comp_coeff)
 }
 \arguments{
 \item{nfish1}{Number of fish1}
@@ -17,6 +17,9 @@ sample_exp(nfish1, nfish2, prob1, prob2)
 \item{prob1}{Probability of catching fish1}
 
 \item{prob2}{Probability of catching fish2}
+
+\item{comp_coeff}{Competition coefficient. Higher the value the more likely to catch 
+species1. Specified in ctl file. If NA, use other probability formulation}
 }
 \description{
 Exponential Fish Sampling
