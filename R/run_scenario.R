@@ -75,7 +75,7 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
   for_plot <- eval(call)
 
   #add total number of fish in
-  call <- substitute(inp_df %>% group_by(to_change, year) %>% 
+  call <- substitute(for_plot %>% group_by(to_change, year) %>% 
       mutate(nfish_tot = sum(nfish)) %>% as.data.frame, 
       list(to_change = as.name(to_change)))
   for_plot <- eval(call)
