@@ -63,8 +63,8 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
   nfish <-  lapply(out_list, FUN = function(x){
     temp <- "["(x$fished_areas)
     out <- melt(temp) %>% group_by(L1, L2) %>% summarize(nfish = sum(value)) %>% as.data.frame %>%
-      dcast(L1 ~ L2)
-    # names(out) <- c('year', 'nfish1', 'nfish2')
+      dcast(L1 ~ L2, value.var = 'nfish')
+  
   })
   names(nfish) <- as.character(1:length(nfish))
   nfish <- ldply(nfish)
@@ -83,7 +83,9 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
   nsamps$year <- as.numeric(nsamps$year)
   
   nall <- left_join(nfish, nsamps, by = c('index', 'year'))
-
+  
+  #arrange nall by index then year
+  nall <- nall %>% arrange(index, year)
   #--------------------------------------------------------------------------------
   #Format input plots
   #Format inputs for plots
