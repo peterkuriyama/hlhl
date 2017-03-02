@@ -24,6 +24,7 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
   # registerDoParallel(cl)
   # cat(getDoParWorkers(), "cores registered", '\n')
 
+  #--------------------------------------------------------------------------------
   #Create list of ctls that based on inputs
   #If loop over is a vector or a list, replace to_change in ctl_temp with different
   #notation
@@ -56,18 +57,47 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
     return(out)    
   })
 
+
+  #--------------------------------------------------------------------------------
+  #Number of fish after each sampling
+  nfish <-  lapply(out_list, FUN = function(x){
+    temp <- "["(x$fished_areas)
+    out <- melt(temp) %>% group_by(L1, L2) %>% summarize(nfish = sum(value)) %>% as.data.frame %>%
+      dcast(L1 ~ L2)
+    # names(out) <- c('year', 'nfish1', 'nfish2')
+  })
+  names(nfish) <- as.character(1:length(nfish))
+  nfish <- ldply(nfish)
+  names(nfish) <- c('index', 'year', 'nfish1', 'nfish2')
+  #remove "year" from year values
+  nfish$year <- as.numeric(gsub("year", "", nfish$year))
+
+  #Record number of fish caught each year
+  nsamps <- lapply(out_list, FUN = function(x){
+    x$samples %>% group_by(year) %>% summarize(fish1samp = sum(fish1samp), fish2samp = sum(fish2samp)) %>%
+      arrange(desc(year)) %>% as.data.frame
+  })
+  names(nsamps) <- as.character(1:length(nsamps))
+  nsamps <- ldply(nsamps)
+  names(nsamps)[1] <- 'index'
+  nsamps$year <- as.numeric(nsamps$year)
+  
+  nall <- left_join(nfish, nsamps, by = c('index', 'year'))
+
+  #--------------------------------------------------------------------------------
+  #Format input plots
   #Format inputs for plots
   inp_list <- lapply(out_list, function(xx){
     format_plot_input(out = xx)
   })
-
+  
   #Format inp_list
   names(inp_list) <- as.character(loop_over)
   inp_df <- ldply(inp_list)
   names(inp_df)[1] <- to_change
 
-
-
+  #--------------------------------------------------------------------------------
+  #Format for_plot output
   #Use substitute to group_by the character column name in to_change
   call <- substitute(inp_df %>% group_by(to_change, year, variable) %>% 
       summarize(cpue = mean(value), nfish = unique(nfish)) %>% as.data.frame, 
@@ -102,8 +132,6 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
     for_plot <- dd
   }
 
-  # stopCluster(cl)
-
   #Add in values from the ctl file
   add_these <- c('nfish1', 'nfish2', 'prob1', 'prob2')
   already_in <- names(for_plot)[names(for_plot) %in% names(ctl)]
@@ -116,8 +144,9 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
     eval(parse(text = run_this))    
   }
 
+  #--------------------------------------------------------------------------------
   #Now return everything
-  return(list(outs = out_list, summ_out = inp_df, for_plot = for_plot))
+  return(list(outs = out_list, summ_out = inp_df, for_plot = for_plot, fish_count = nall))
 
 }
 
