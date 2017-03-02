@@ -102,20 +102,31 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
   names(inp_list) <- as.character(loop_over)
   inp_df <- ldply(inp_list)
   names(inp_df)[1] <- to_change
+  
+  #split up cpue and fish samples
+  one <- inp_df %>% filter(spp == "spp1")
+  done <- dcast(one, spp + location + year + loc ~ variable, value.var = 'value')
+  names(done)[5:6] <- c('cpue', 'fishsamp')
+
+  two <- inp_df %>% filter(spp == 'spp2')
+  dtwo <- dcast(two, spp + location + year + loc ~ variable, value.var = 'value')
+  names(dtwo)[5:6] <- c('cpue', 'fishsamp')
+  
+  inp_df <- rbind(done, dtwo)
 
   #--------------------------------------------------------------------------------
   #Format for_plot output
   #Use substitute to group_by the character column name in to_change
-  call <- substitute(inp_df %>% group_by(to_change, year, variable) %>% 
-      summarize(cpue = mean(value), nfish = unique(nfish)) %>% as.data.frame, 
+  call <- substitute(inp_df %>% group_by(to_change, year, spp) %>% 
+      summarize(cpue = mean(cpue), fishsamp = mean(fishsamp)) %>% as.data.frame, 
       list(to_change = as.name(to_change)))
   for_plot <- eval(call)
 
   #add total number of fish in
-  call <- substitute(for_plot %>% group_by(to_change, year) %>% 
-      mutate(nfish_tot = sum(nfish)) %>% as.data.frame, 
-      list(to_change = as.name(to_change)))
-  for_plot <- eval(call)
+  # call <- substitute(for_plot %>% group_by(to_change, year) %>% 
+  #     mutate(nfish_tot = sum(nfish)) %>% as.data.frame, 
+  #     list(to_change = as.name(to_change)))
+  # for_plot <- eval(call)
 
   #order for_plot stuff
   if(class(loop_over) != 'list'){
@@ -160,7 +171,7 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
 
   #--------------------------------------------------------------------------------
   #Now return everything
-  return(list(outs = out_list, summ_out = inp_df, for_plot = for_plot, fish_count = nall))
+  return(list(outs = out_list, loc_out = inp_df, for_plot = for_plot, fish_count = nall))
 
 }
 
