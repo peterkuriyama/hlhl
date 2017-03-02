@@ -70,9 +70,12 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
   names(nfish) <- as.character(1:length(nfish))
   nfish <- ldply(nfish)
   names(nfish) <- c('index', 'year', 'nfish1', 'nfish2')
-  
+
   #remove "year" from year values
   nfish$year <- as.numeric(gsub("year", "", nfish$year))
+  nfish <- melt(nfish, id.vars = c('index', 'year'))
+  names(nfish)[3:4] <- c('spp', 'nfish_total')
+  nfish$spp <- gsub("nfish", 'spp', nfish$spp )
 
   #Record number of fish caught each year
   nsamps <- lapply(out_list, FUN = function(x){
@@ -85,8 +88,20 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
   nsamps <- ldply(nsamps)
   names(nsamps)[1] <- 'index'
   nsamps$year <- as.numeric(nsamps$year)
+  nsamps <- melt(nsamps, id.vars = c('index', 'year'))
+
+  nsamps$spp <- nsamps$variable
+  nsamps$spp <- as.character(nsamps$spp)
+
+  nsamps[grep('1', nsamps$spp), 'spp'] <- 'spp1'
+  nsamps[grep('2', nsamps$spp), 'spp'] <- 'spp2'
   
-  nall <- left_join(nfish, nsamps, by = c('index', 'year'))
+  nsamps$variable <- as.character(nsamps$variable)
+  nsamps[grep('samp', nsamps$variable), 'variable'] <- 'fishsamp'
+  nsamps[grep('cpue', nsamps$variable), 'variable'] <- 'cpue'
+  nsamps <- dcast(nsamps, index + year + spp ~ variable)
+
+  nall <- left_join(nfish, nsamps, by = c('index', 'year', 'spp'))
   
   #arrange nall by index then year
   nall$index <- as.numeric(nall$index)
