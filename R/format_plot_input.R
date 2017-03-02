@@ -36,7 +36,7 @@ format_plot_input <- function(out){
             as.data.frame
   spp2$spp <- 'spp2'            
   spps <- rbind(spp1, spp2)
-  
+
   #--------------------------------------------------------------
   #plot indices from each location            
   samps <- melt(out$samples, id.vars = c("year", 'x', 'y') )
@@ -48,10 +48,12 @@ format_plot_input <- function(out){
   samps$loc <- paste(samps$x, samps$y)
   samps$variable <- as.character(samps$variable)
   samps$year <- as.numeric(samps$year)
-  for_plot <- left_join(samps, spps, by = c('year', 'spp'))
+  
+  # for_plot <- left_join(samps, spps, by = c('year', 'spp'))
+  # cpues <- for_plot %>% filter(variable %in% c('cpue1', 'cpue2'))
+  # cpues <- cpues[order(cpues$year), ]
 
-  cpues <- for_plot %>% filter(variable %in% c('cpue1', 'cpue2'))
-  cpues <- cpues[order(cpues$year), ]
+  cpues <- samps
 
   return(cpues)
 }
