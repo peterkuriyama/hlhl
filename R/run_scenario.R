@@ -25,6 +25,8 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
   # cat(getDoParWorkers(), "cores registered", '\n')
 
   #--------------------------------------------------------------------------------
+  #Run the function in parallel
+
   #Create list of ctls that based on inputs
   #If loop over is a vector or a list, replace to_change in ctl_temp with different
   #notation
@@ -56,7 +58,6 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
     out <- conduct_survey(ctl = ctl)
     return(out)    
   })
-
 
   #--------------------------------------------------------------------------------
   #Number of fish after each sampling
@@ -128,6 +129,13 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
     names(ind_df)[1] <- as.character(to_change)
     ind_df[, to_change] <- as.character(ind_df[, to_change])
 
+    #Add index to inp_df
+    idid <- left_join(inp_df, ind_df, by = as.character(to_change))
+    idid[, to_change] <- idid$inds
+    idid$inds <- NULL
+    inp_df <- idid
+
+    #Add index to for plot
     dd <- left_join(for_plot, ind_df, by = as.character(to_change))
     dd[, to_change] <- dd$inds
     dd$inds <- NULL
