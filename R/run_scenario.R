@@ -89,6 +89,7 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
   nall <- left_join(nfish, nsamps, by = c('index', 'year'))
   
   #arrange nall by index then year
+  nall$index <- as.numeric(nall$index)
   nall <- nall %>% arrange(index, year)
 
   #--------------------------------------------------------------------------------
