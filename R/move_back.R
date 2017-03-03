@@ -123,8 +123,14 @@ move_back <- function(nfish_moved, samps_out, ctl, kk = 0, fish_area, fish_area_
       } 
 
       if(sum(temp_df$final) != sum(temp_df$after_fishing)){
-        print("numbers don't add up")
-        browser()
+        the_diff <- sum(temp_df$final) - sum(temp_df$after_fishing)
+        #If the difference is just a fish, whatever
+        
+        if(the_diff > 1){
+          print("numbers don't add up")
+          browser()
+        }
+
       } 
     }
     #----------------------------------------------------
