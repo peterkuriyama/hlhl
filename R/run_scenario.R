@@ -61,6 +61,7 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
 
   #--------------------------------------------------------------------------------
   #Number of fish after each sampling
+# browser()  
   nfish <-  lapply(out_list, FUN = function(x){
     temp <- "["(x$fished_areas)
     out <- melt(temp) %>% group_by(L1, L2) %>% summarize(nfish = sum(value)) %>% as.data.frame %>%
