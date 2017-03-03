@@ -45,6 +45,7 @@ fish_population <- function(fish_area, ctl, kk = 0){
   mortality <- ctl$mortality
 
   if(class(location) != "data.frame") stop("location must be a data frame")
+# if(kk == 2) browser()
   
   #Add on samples for each drop into location data frame  
   add_ons <- as.data.frame(matrix(999, nrow = nrow(location), ncol = ndrops))
