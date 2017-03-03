@@ -26,11 +26,13 @@ move_fish <- function(fish_range1 = fish_range, nfish_outside1 = nfish_outside,
   fish_df[zero_index1, 'prob'] <- 0
 
   #Use binomial distribution to find number of fish moving
-  fish_df$moving <- apply(fish_df, MAR = 1, FUN = function(x) rbinom(n = 1, size = x['value'],
-    prob = x['prob']))
+  fish_df$moving <- apply(fish_df, MAR = 1, FUN = function(x){
+    rbinom(n = 1, size = as.integer(x['value']), prob = x['prob'])
+  })
 
   #now update the number of fish
   fish_df$moved <- fish_df$value - fish_df$moving #moved column indicates nfish after movement
+
   fish_df[zero_index1, 'moved'] <- fish_df[zero_index1, 'value'] + sum(fish_df$moving)
 
   return(fish_df)
