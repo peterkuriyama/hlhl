@@ -12,7 +12,7 @@
 #' conduct_survey(ctl)
 
 conduct_survey <- function(ctl){  
-  
+
   #Specify movement probabilities
   max_prob <- ctl$max_prob
   min_prob <- ctl$min_prob
