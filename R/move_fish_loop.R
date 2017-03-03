@@ -26,12 +26,19 @@ move_fish_loop <- function(location, ff){
   #at once
   #Now calculate the number of fish that move in each location
 
+# ff <- ff_orig
+# fish_area <- ff
+# x <- location[zz, 'x']
+# y <- location[zz, 'y']
+# scope <- scope
+
   for(zz in 1:nrow(location)){
     moves <- define_movement(fish_area = ff, x = location[zz, 'x'],
       y = location[zz, 'y'], scope = scope)
     
     moved <- move_fish(fish_range1 = moves$fish_range, nfish_outside1 = moves$nfish_outside,
       zero_index1 = moves$zero_index)
+
     orig_inds <- expand.grid(moves$row_range, moves$col_range)
 
     moved$x <- orig_inds$Var1
@@ -100,6 +107,7 @@ move_fish_loop <- function(location, ff){
 
   #Check
   check <- inner_join(nfish_moved1[, c('moved', 'unq')], ff_melt[, c('value', 'unq')], by = 'unq')
+
   if(sum(check$moved == check$value) != nrow(check)){
     print('error in number of fish')
     browser()
