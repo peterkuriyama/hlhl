@@ -185,9 +185,14 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
     eval(parse(text = run_this))    
   }
 
+  #Summarize nall
+  nall <- nall %>% group_by(index, spp) %>% mutate(nfish_orig = nfish_total[1], 
+    prop_of_unfished = fishsamp / nfish_orig, prop_of_pop = fishsamp / nfish_total) %>%
+    as.data.frame
+    
   #--------------------------------------------------------------------------------
   #Now return everything
-  return(list(outs = out_list, loc_out = inp_df, for_plot = for_plot, fish_count = nall))
+  return(list(outs = out_list, loc_out = inp_df, for_plot = nall))
 
 }
 
