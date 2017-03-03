@@ -41,7 +41,7 @@ conduct_survey <- function(ctl){
 
   #Specify movement function if there is one
   movement_function <- ctl$movement_function
-
+  
   #Loop over years of survey, specified in ctl
   for(kk in 2:nyear){
     #Move fish based on function specified in ctl 
