@@ -53,7 +53,7 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
 
   #Run the mclapply call
   out_list <- mclapply(ctl_list, mc.cores = ncores, FUN = function(xx){
-    print(xx$nname)
+    # print(xx$nname)
     ctl <- xx
     out <- conduct_survey(ctl = ctl)
     return(out)    
