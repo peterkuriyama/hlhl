@@ -39,6 +39,182 @@ samps <- base::sample(1:100, 15)
 def_locs <- locs[samps, ]
 
 #----------------------------------------------------------------------------------------
+##Number of hooks/locations vs. number of total fish
+#Does patchiness affect the relationship?
+
+#----------------------------------------
+#For one species, uniformly distributed fish
+  #no mortality
+
+#Define Locations to fish in
+set.seed(3)
+locs <- expand.grid(1:10, 1:10)
+locs$vessel <- 1
+names(locs)[1:2] <- c('x', 'y')
+locs <- locs[, c('vessel', 'x', 'y')]  
+samps <- base::sample(1:100, 20)
+
+locs <- locs[samps, ]  
+
+locs_list <- vector('list', length = nrow(locs))
+for(ii in 1:nrow(locs)){
+  locs_list[[ii]] <- locs[1:ii, ]
+}
+
+ctl <- make_ctl(distribute = 'uniform', mortality = 0, move_out_prob = .5,
+      nfish1 = 20000, nfish2 = 0, prob1 = .02, prob2 = .05, nyear = 15, scope = 1, seed = 4,
+      location = def_locs, numrow = 10, numcol = 10)  
+
+#2000 fish per cell, you shouldn't fish it down really
+nlocs_onespp_out <- run_scenario(ctl_in = ctl, loop_over = locs_list, ncores = 6,
+  to_change = 'location', add_index = TRUE)
+ 
+#Plot 
+nlocs_onespp_out[[3]] %>% filter(spp == 'spp1') %>% ggplot() + 
+  geom_line(aes(x = nfish_total, y = cpue)) + 
+  geom_point(aes(x = nfish_total, y = cpue, size = prop_of_unfished)) + 
+  facet_wrap(~ index)
+
+#Straight line
+nlocs_onespp_out[[3]] %>% filter(spp == 'spp1') %>% ggplot() + 
+  geom_line(aes(x = prop_of_unfished, y = cpue))  + 
+  facet_wrap(~ index)
+
+#Doesn't matter if 1000 fish are in each place, 
+#Doesn't matter if 500 fish in each site
+#200 fish start to see declines
+#If 100 fish in each site, pattern is like connect the dots going down
+
+#----------------------------------------
+#Repeat plot above, but with patchy fish distribution
+
+#Check initial population
+initialize_population(ctl = ctl, nfish = 10000)
+
+#Effect of patch distribution and number of fishing locations
+#Keep number of fish per cell standardized
+perc <- seq(0.1, 1, by = .1)
+perc_outs <- vector('list', length = length(perc))
+
+for(pp in 1:length(perc)){
+  print(pp)  
+  ctl <- make_ctl(distribute = 'patchy', mortality = 0, move_out_prob = .5,
+      nfish1 = 20000, nfish2 = 0, prob1 = .02, prob2 = .05, nyear = 15, scope = 1, seed = 10,
+      location = def_locs, numrow = 10, numcol = 10, percent = perc[pp])  
+  perc_outs[[pp]] <- run_scenario(ctl_in = ctl, loop_over = locs_list, ncores = 6,
+    to_change = 'location', add_index = TRUE)  
+}
+
+#Look at overlap between fish distribution and fishing locations
+locs_list
+
+
+for(pp in 1:length(perc)){
+  print(pp)  
+  ctl <- make_ctl(distribute = 'patchy', mortality = 0, move_out_prob = .5,
+      nfish1 = 20000, nfish2 = 0, prob1 = .02, prob2 = .05, nyear = 15, scope = 1, seed = 10,
+      location = def_locs, numrow = 10, numcol = 10, percent = perc[pp])  
+  perc_outs[[pp]] <- run_scenario(ctl_in = ctl, loop_over = locs_list, ncores = 6,
+    to_change = 'location', add_index = TRUE)  
+}
+
+
+#Pull relevant stuff for plots
+perc_outs_plot <- lapply(perc_outs, FUN = function(x) x[[3]])
+names(perc_outs_plot) <- as.character(perc)
+
+perc_outs_plot <- ldply(perc_outs_plot)
+names(perc_outs_plot)[1] <- "perc_distributed"
+
+#Plot as number of fish
+perc_outs_plot %>% filter(spp == 'spp1') %>% ggplot() + 
+  geom_line(aes(x = nfish_total, y = cpue, colour = perc_distributed)) +
+  geom_point(aes(x = nfish_total, y = cpue, colour = perc_distributed)) +
+  facet_wrap(~ index)
+
+#Plot as proportion of unfished population
+perc_outs_plot %>% filter(spp == 'spp1') %>% ggplot() + 
+  geom_line(aes(x = prop_of_pop, y = cpue, colour = perc_distributed)) +
+  geom_point(aes(x = prop_of_pop, y = cpue, colour = perc_distributed)) +
+  facet_wrap(~ index)
+
+
+
+#----------------------------------------
+#Fishing in the best areas? Fishing next to best areas? Fishing in shitty areas?
+#Repeat plot above, but with patchy fish distribution
+
+
+ 
+
+
+#----------------------------------
+###Increasing number of fishing locations, uniform distribution, one species
+
+ctl <- make_ctl(distribute = 'uniform', mortality = .1, move_out_prob = .5,
+  nfish1 = 10000, nfish2 = 0, prob1 = .01, prob2 = 0, nyear = 15, scope = 1, seed = 4,
+  location = def_locs)  
+
+nlocs_out_u <- run_scenario(ctl_in = ctl, loop_over = locs_list, ncores = 6,
+  to_change = 'location', add_index = TRUE)
+
+#Plot these
+nlocs_out_u[[3]] %>% filter(variable == 'cpue1') %>% ggplot() + 
+  geom_line(aes(x = nfish, y = cpue, colour = location, group = location)) + 
+  geom_point(aes(x = nfish, y = cpue, colour = location, group = location))
+
+
+
+
+
+
+
+
+
+
+
+
+#----------------------------------------------------------------------------------------
+##Competition effects 
+
+#For one cell
+one_loc <- data.frame(vessel = 1, x = 1, y = 1)
+ctl <- make_ctl(distribute = 'patchy', mortality = 0, move_out_prob = .5,
+      nfish1 = 500, nfish2 = 1000, prob1 = .05, prob2 = .05, nyear = 15, scope = 1, seed = 4,
+      location = one_loc, numrow = 1, numcol = 1, comp_coeff = .7)  
+
+comp_effects <- run_scenario(ncores = 6, loop_over = seq(500, 1500, by = 100),
+  ctl_in = ctl, to_change = 'nfish1', add_index = FALSE)
+
+png(width = 12, height = 8.4, units = 'in', res = 100, 
+  file = 'fig1_effects_of_competition.png')
+ggplot(comp_effects$for_plot) + geom_line(aes(x = year, y = value, group = variable, 
+  colour = variable)) + geom_point(aes(x = year, y = value, group = variable,
+  colour = variable, size = nfish)) + facet_wrap(~ nfish1)
+dev.off()
+
+#----------------------------------------
+#For multiple fishing locations, fish in default locations
+ctl <- make_ctl(distribute = 'patchy', mortality = 0, move_out_prob = .5,
+      nfish1 = 50000, nfish2 = 100000, prob1 = .05, prob2 = .05, nyear = 15, scope = 1, seed = 4,
+      location = def_locs, numrow = 10, numcol = 10, comp_coeff = .7)  
+
+comp_effects_locs <- run_scenario(ncores = 6, loop_over = seq(50000, 150000, by = 10000),
+  ctl_in = ctl, to_change = 'nfish1', add_index = FALSE)
+
+# png(width = 12, height = 8.4, units = 'in', res = 100, 
+#   file = 'fig1_effects_of_competition_multlocs.png')
+
+ggplot(comp_effects_locs$for_plot) + geom_line(aes(x = year, y = cpue, group = variable, 
+  colour = variable)) + geom_point(aes(x = year, y = cpue, group = variable,
+  colour = variable, size = nfish)) + facet_wrap(~ nfish1)
+
+# dev.off()
+
+
+
+
+#----------------------------------------------------------------------------------------
 #Loop over probabilities and number of fish
 #Find critical numbers of fish for each individual cell
 
@@ -141,73 +317,74 @@ fish2s <- seq(100, 1500, by = 100)
 
 ctl <- make_ctl(distribute = 'patchy', mortality = 0, move_out_prob = .5,
       nfish1 = 10000, nfish2 = 0, prob1 = .05, prob2 = .01, nyear = 15, scope = 1, seed = 4,
-      location = one_loc, numrow = 1, numcol = 1)  
+      location = one_loc, numrow = 1, numcol = 1, comp_coeff = .9)  
 fish2_out <- run_scenario(ncores = 6, loop_over = fish2s, ctl_in = ctl, to_change = 'nfish2',
   add_index = FALSE)
 ggplot(fish2_out$for_plot) + geom_line(aes(x = nfish_tot, y = value, group = variable,
   colour = variable)) + facet_wrap(~ nfish2)
 
+
+
 #Can't get a ton of spread by modifying prob1 and prob2 or numbers of fish
+#Try getting a difference
+#comp_coeff is competition coefficient
+n1start <- 100
+n2start <- 100
+comp_coeff <- .9 #Favor species 1...
 
+sample_exp1(nfish1 = n1start, nfish2 = n2start, prob1 = .05, prob2 = .05, 
+  comp_coeff = .9)
 
+sample_exp1 <- function(nfish1, nfish2, prob1, prob2, comp_coeff){
+  #------------------------------------------------
+  #Define probabilities based on number of fish
 
+  #Might need to adjust the shape of this curve
+  #Can adjust these to account for behavior of certain species
+  p1 <- 1 - exp(-nfish1 * prob1) #use prob 1 to define probability of catching fish 1
+  p2 <- 1 - exp(-nfish2 *  prob2) #use prob2 to define probability of catching fish 2
 
+  #Probability of catching a fish
+  hook_prob <- 1 - ((1 - p1) * (1 - p2))
 
+  fish <- rbinom(n = 1, size = 1,  prob = hook_prob)  
+  #------------------------------------------------
+  # Which fish was caught?
+  #initially declare both as 0
+  fish1 <- 0
+  fish2 <- 0
 
+  #If a fish was caught determine if it was fish1 or fish2
+  if(fish == 1 & is.na(comp_coeff)){
+    p1a <- p1 / (p1 + p2)  
+    fish1 <- rbinom(n = 1, size = 1, prob = p1a)
+  }
+  
+  if(fish == 1 & is.na(comp_coeff) == FALSE){
+    # p1a <- p1 / (p1 + p2)  
+    fish1 <- rbinom(n = 1, size = 1, prob = comp_coeff)
+  }
 
-
-
-
-
-
-
-#--------------------------------------------------------------------------------------------
-###Increasing number of fishing locations, patchy distribution
-#This is kind of hook saturation  
-set.seed(3)
-locs <- expand.grid(1:10, 1:10)
-locs$vessel <- 1
-names(locs)[1:2] <- c('x', 'y')
-locs <- locs[, c('vessel', 'x', 'y')]  
-samps <- base::sample(1:100, 45)
-locs <- locs[samps, ]  
-
-locs_list <- vector('list', length = nrow(locs))
-for(ii in 1:nrow(locs)){
-  locs_list[[ii]] <- locs[1:ii, ]
+  if(fish1 == 0 & fish == 1){    
+    fish2 <- 1
+  } 
+  
+  #Return values as data frame
+  return(data.frame(fish1 = fish1, fish2 = fish2))
+  
 }
 
-#Use only odd numbered things in locs_list
-pull_these <- which(1:length(locs_list) %% 2 == 1)
-locs_list <- locs_list[pull_these]
 
-ctl <- make_ctl(distribute = 'uniform', mortality = .1, move_out_prob = .5,
-  nfish1 = 200000, nfish2 = 0, prob1 = .01, prob2 = 0, nyear = 15, scope = 1, seed = 4,
-  location = def_locs)  
 
-#2000 fish per cell, you shouldn't fish it down really
-nlocs_out <- run_scenario(ctl_in = ctl, loop_over = locs_list, ncores = 6,
-  to_change = 'location', add_index = TRUE)
 
-#Plot these
-nlocs_out[[3]] %>% filter(variable == 'cpue1') %>% ggplot() + 
-  geom_line(aes(x = nfish, y = cpue, colour = location, group = location)) +
-  geom_point(aes(x = nfish, y = cpue, colour = location, group = location))
 
-#----------------------------------
-###Increasing number of fishing locations, uniform distribution, one species
 
-ctl <- make_ctl(distribute = 'uniform', mortality = .1, move_out_prob = .5,
-  nfish1 = 10000, nfish2 = 0, prob1 = .01, prob2 = 0, nyear = 15, scope = 1, seed = 4,
-  location = def_locs)  
 
-nlocs_out_u <- run_scenario(ctl_in = ctl, loop_over = locs_list, ncores = 6,
-  to_change = 'location', add_index = TRUE)
 
-#Plot these
-nlocs_out_u[[3]] %>% filter(variable == 'cpue1') %>% ggplot() + 
-  geom_line(aes(x = nfish, y = cpue, colour = location, group = location)) + 
-  geom_point(aes(x = nfish, y = cpue, colour = location, group = location))
+
+
+
+
 
 #--------------------------------------------------------------------------------------------
 #1000 of species 1 with p = 0.02
