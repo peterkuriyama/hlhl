@@ -26,13 +26,8 @@ move_fish_loop <- function(location, ff){
   #at once
   #Now calculate the number of fish that move in each location
 
-# ff <- ff_orig
-# fish_area <- ff
-# x <- location[zz, 'x']
-# y <- location[zz, 'y']
-# scope <- scope
-
   for(zz in 1:nrow(location)){
+
     moves <- define_movement(fish_area = ff, x = location[zz, 'x'],
       y = location[zz, 'y'], scope = scope)
     
@@ -72,6 +67,7 @@ move_fish_loop <- function(location, ff){
   
   #Here's the number of fish moving into each location
   moved_in <- nfish_moved %>% group_by(loc) %>% summarize(nmoving = sum(moving)) %>% as.data.frame
+  
   #Add on the location
   moved_in <- left_join(moved_in, location[, c('unq', 'loc')], by = 'loc')
     
@@ -89,14 +85,13 @@ move_fish_loop <- function(location, ff){
 
   #Now add in the fish that moved in 
   # nfish_moved1[nfish_moved1$unq %in% moved_in$unq, ]
-
   t1 <- nfish_moved1[nfish_moved1$unq %in% moved_in$unq, ]
   tf <- left_join(t1, moved_in[, c('nmoving', 'unq')], by = 'unq')
   tf$moved <- tf$moved + tf$nmoving  
   
-  #Now replace in nfisH_moved1
+  #Now replace in nfish_moved1
   nfish_moved1[nfish_moved1$unq %in% moved_in$unq, 'moved'] <- tf$moved
-  
+
   #Clean up the data frames
   nfish_moved1$loc <- NULL
   nfish_moved1$unq <- NULL
