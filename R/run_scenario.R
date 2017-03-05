@@ -18,7 +18,7 @@
 #' @export
 
 run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = FALSE){
-  
+  start_time <- Sys.time()
   #Set up number of cores, default is 1
   # cl <- makeCluster(ncores)
   # registerDoParallel(cl)
@@ -61,7 +61,6 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
 
   #--------------------------------------------------------------------------------
   #Number of fish after each sampling
-# browser()  
   nfish <-  lapply(out_list, FUN = function(x){
     temp <- "["(x$fished_areas)
     out <- melt(temp) %>% group_by(L1, L2) %>% summarize(nfish = sum(value)) %>% as.data.frame %>%
@@ -121,13 +120,29 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
   names(inp_df)[1] <- to_change
   
   #split up cpue and fish samples
-  one <- inp_df %>% filter(spp == "spp1")
-  done <- dcast(one, spp + location + year + loc ~ variable, value.var = 'value')
-  names(done)[5:6] <- c('cpue', 'fishsamp')
+  if(to_change == 'location'){
+    one <- inp_df %>% filter(spp == "spp1")
+    done <- dcast(one, spp + location + year + loc ~ variable, value.var = 'value')
+    names(done)[5:6] <- c('cpue', 'fishsamp')
+  
+    two <- inp_df %>% filter(spp == 'spp2')
+    dtwo <- dcast(two, spp + location + year + loc ~ variable, value.var = 'value')
+    names(dtwo)[5:6] <- c('cpue', 'fishsamp')  
+  }
 
-  two <- inp_df %>% filter(spp == 'spp2')
-  dtwo <- dcast(two, spp + location + year + loc ~ variable, value.var = 'value')
-  names(dtwo)[5:6] <- c('cpue', 'fishsamp')
+  if(to_change != 'location'){
+    one <- inp_df %>% filter(spp == "spp1")
+    call1 <- substitute(dcast(one, spp + year + to_change + loc ~ variable, value.var = 'value'),
+      list(to_change = as.name(to_change)))
+    done <- eval(call1)
+    names(done)[5:6] <- c('cpue', 'fishsamp')
+   
+    two <- inp_df %>% filter(spp == 'spp2')
+    call2 <- substitute(dcast(two, spp + year + to_change + loc ~ variable, value.var = 'value'),
+      list(to_change = as.name(to_change)))
+    dtwo <- eval(call2)
+    names(dtwo)[5:6] <- c('cpue', 'fishsamp')   
+  }
   
   inp_df <- rbind(done, dtwo)
 
@@ -191,6 +206,7 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
     prop_of_unfished = fishsamp / nfish_orig, prop_of_pop = fishsamp / nfish_total) %>%
     as.data.frame
     
+  print(Sys.time() - start_time)
   #--------------------------------------------------------------------------------
   #Now return everything
   return(list(outs = out_list, loc_out = inp_df, for_plot = nall))
