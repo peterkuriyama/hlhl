@@ -43,6 +43,7 @@ def_locs <- locs[samps, ]
 #Does patchiness affect the relationship?
 
 #----------------------------------------
+#Run1
 #For one species, uniformly distributed fish
   #no mortality
 
@@ -62,7 +63,7 @@ for(ii in 1:nrow(locs)){
 }
 
 ctl <- make_ctl(distribute = 'uniform', mortality = 0, move_out_prob = .5,
-      nfish1 = 20000, nfish2 = 0, prob1 = .02, prob2 = .05, nyear = 15, scope = 1, seed = 4,
+      nfish1 = 40000, nfish2 = 0, prob1 = .02, prob2 = .05, nyear = 15, scope = 1, seed = 4,
       location = def_locs, numrow = 10, numcol = 10)  
 
 #2000 fish per cell, you shouldn't fish it down really
@@ -70,10 +71,34 @@ nlocs_onespp_out <- run_scenario(ctl_in = ctl, loop_over = locs_list, ncores = 6
   to_change = 'location', add_index = TRUE)
  
 #Plot 
+png(width = 13, height = 8, res = 100, file = 'figs/run1_400.png', units = 'in')
 nlocs_onespp_out[[3]] %>% filter(spp == 'spp1') %>% ggplot() + 
   geom_line(aes(x = nfish_total, y = cpue)) + 
   geom_point(aes(x = nfish_total, y = cpue, size = prop_of_unfished)) + 
-  facet_wrap(~ index)
+  facet_wrap(~ index) + ylim(c(0, 1))
+dev.off()
+
+#Now with two species
+ctl <- make_ctl(distribute = 'uniform', mortality = 0, move_out_prob = .5,
+      nfish1 = 5000, nfish2 = 30000, prob1 = .02, prob2 = .05, nyear = 15, scope = 1, seed = 4,
+      location = def_locs, numrow = 10, numcol = 10, comp_coeff = .7)  
+
+#2000 fish per cell, you shouldn't fish it down really
+nlocs_twospp_out <- run_scenario(ctl_in = ctl, loop_over = locs_list, ncores = 6,
+  to_change = 'location', add_index = TRUE)
+ 
+#Plot 
+# png(width = 13, height = 8, res = 100, file = 'figs/run1_twospp_400_300.png', units = 'in')
+
+nlocs_twospp_out[[3]] %>% ggplot() + 
+  geom_line(aes(x = nfish_total, y = cpue, colour = spp)) + 
+  geom_point(aes(x = nfish_total, y = cpue, colour = spp, size = prop_of_unfished / 4)) + 
+  facet_wrap(~ index) + ylim(c(0, 1))
+
+# dev.off()
+
+
+
 
 #Straight line
 nlocs_onespp_out[[3]] %>% filter(spp == 'spp1') %>% ggplot() + 
@@ -86,16 +111,21 @@ nlocs_onespp_out[[3]] %>% filter(spp == 'spp1') %>% ggplot() +
 #If 100 fish in each site, pattern is like connect the dots going down
 
 #----------------------------------------
+#Run2
 #Repeat plot above, but with patchy fish distribution
-
-#Check initial population
-initialize_population(ctl = ctl, nfish = 10000)
 
 #Effect of patch distribution and number of fishing locations
 #Keep number of fish per cell standardized
 perc <- seq(0.1, 1, by = .1)
 perc_outs <- vector('list', length = length(perc))
 
+#Check initial population
+ctl <- make_ctl(distribute = 'patchy', mortality = 0, move_out_prob = .5,
+      nfish1 = 20000, nfish2 = 0, prob1 = .02, prob2 = .05, nyear = 15, scope = 1, seed = 10,
+      location = def_locs, numrow = 10, numcol = 10, percent = perc[3])  
+initialize_population(ctl = ctl, nfish = 10000)
+
+
 for(pp in 1:length(perc)){
   print(pp)  
   ctl <- make_ctl(distribute = 'patchy', mortality = 0, move_out_prob = .5,
@@ -105,18 +135,93 @@ for(pp in 1:length(perc)){
     to_change = 'location', add_index = TRUE)  
 }
 
-#Look at overlap between fish distribution and fishing locations
-locs_list
 
+#----------------------------------------
+#Run3
+#What percentage of best spots do you fish in?
 
-for(pp in 1:length(perc)){
-  print(pp)  
-  ctl <- make_ctl(distribute = 'patchy', mortality = 0, move_out_prob = .5,
+ctl <- make_ctl(distribute = 'patchy', mortality = 0, move_out_prob = .5,
       nfish1 = 20000, nfish2 = 0, prob1 = .02, prob2 = .05, nyear = 15, scope = 1, seed = 10,
-      location = def_locs, numrow = 10, numcol = 10, percent = perc[pp])  
-  perc_outs[[pp]] <- run_scenario(ctl_in = ctl, loop_over = locs_list, ncores = 6,
-    to_change = 'location', add_index = TRUE)  
-}
+      location = def_locs, numrow = 10, numcol = 10, percent = .3)  
+
+#15 spots
+#5 spots in high areas, 5 next to some cells, 5 far from anything
+#10 next to some cells, 5 far from anything
+#10 in high areas, 5 next to something
+#15 in places with fish
+
+locs_good_bad <- vector('list', length = 4)
+
+#Look at everything to find it
+initialize_population(ctl = ctl, nfish = ctl$nfish1)
+find_gb <- melt(initialize_population(ctl = ctl, nfish = ctl$nfish1))
+
+five_bad <- as.data.frame(rbind(c(4, 2), c(1, 9), c(5, 5), c(1, 10), c(8, 9)))
+names(five_bad) <- c('Var1', 'Var2')
+
+these_zero <- which(diff(find_gb$value) == 0)
+next_to <- which(diff(find_gb$value) != 0) - 1
+
+set.seed(3)
+five_next <- find_gb[sample(these_zero[these_zero %in% next_to], 5), c("Var1", 'Var2')]
+ten_next <- find_gb[sample(these_zero[these_zero %in% next_to], 10, replace = FALSE), c('Var1', 'Var2')]
+
+five_good <- find_gb[sample(which(find_gb$value != 0), 5), c("Var1", "Var2")]
+ten_good <- find_gb[sample(which(find_gb$value != 0), 10), c("Var1", "Var2")]
+fifteen_good <- find_gb[sample(which(find_gb$value != 0), 15), c("Var1", "Var2")]
+
+locs_good_bad[[1]] <- rbind(five_good, five_next, five_bad)
+locs_good_bad[[2]] <- rbind(ten_next, five_bad)
+locs_good_bad[[3]] <- rbind(ten_good, five_next)
+locs_good_bad[[4]] <- fifteen_good
+
+#Check for duplicates
+sum(duplicated(locs_good_bad[[1]]))
+
+locs_good_bad <- lapply(locs_good_bad, FUN = function(x){
+  x$vessel <- rep(1, nrow(x))
+  names(x)[1:2] <- c('x', 'y')
+  x <- x[, c('vessel', 'x', 'y')]
+  return(x)  
+})
+
+#Run the scenario
+ctl <- make_ctl(distribute = 'patchy', mortality = 0, move_out_prob = .5,
+      nfish1 = 10000, nfish2 = 0, prob1 = .02, prob2 = .05, nyear = 15, scope = 1, seed = 10,
+      location = def_locs, numrow = 10, numcol = 10, percent = .5)  
+
+good_bad <- run_scenario(ctl_in = ctl, loop_over = locs_good_bad, ncores = 6,
+    to_change = 'location', add_index = TRUE)[[3]]
+
+#Plots
+good_bad %>% filter(spp == 'spp1') %>% ggplot() + 
+  geom_line(aes(x = nfish_total, y = cpue)) + 
+  geom_point(aes(x = nfish_total, y = cpue, size = prop_of_unfished)) + 
+  facet_wrap(~ index)
+
+#Straight line
+good_bad %>% filter(spp == 'spp1') %>% ggplot() + 
+  geom_line(aes(x = prop_of_unfished, y = cpue, colour = index))
+
+good_bad %>% filter(spp == 'spp1') %>% group_by(index) %>%
+   summarize(mean(prop_of_pop, na.rm = TRUE))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #Pull relevant stuff for plots
@@ -185,6 +290,8 @@ ctl <- make_ctl(distribute = 'patchy', mortality = 0, move_out_prob = .5,
 
 comp_effects <- run_scenario(ncores = 6, loop_over = seq(500, 1500, by = 100),
   ctl_in = ctl, to_change = 'nfish1', add_index = FALSE)
+
+
 
 png(width = 12, height = 8.4, units = 'in', res = 100, 
   file = 'fig1_effects_of_competition.png')
