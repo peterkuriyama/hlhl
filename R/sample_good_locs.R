@@ -1,0 +1,32 @@
+#' Sample Good Locations
+
+#' Conduct survey in a proportion of locations with fish. 
+
+#' @param ctl Control file
+#' @param prop_good Proportion of good site to sample
+#' @param ngoods Number of total good sites
+#' @param which_spp Specify spp1 or spp2
+
+#' @export
+
+sample_good_locs <- function(ctl, prop_good, ngoods, which_spp){
+  #Function to calculate the proportions of sampling locations that are good and bad
+  prop_good <- .3
+  ngoods <- 15
+  
+  set.seed(ctl$seed)
+  pick_from <- suppressWarnings(melt(initialize_population(ctl = ctl, nfish = ctl$nfish1)))
+  
+  goods <- sample(which(pick_from$value != 0), round(ngoods * prop_good))
+  bads <- sample(which(pick_from$value == 0), ngoods - length(goods))
+  picked <- pick_from[c(goods, bads), c('Var1', 'Var2')]
+  names(picked) <- c('x', 'y')
+  
+  picked$vessel <- rep(1, nrow(picked))
+  picked <- picked[, c('vessel', 'x', 'y')]
+  
+  return(picked)
+
+}
+
+
