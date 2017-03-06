@@ -13,9 +13,11 @@ sample_good_locs <- function(ctl, prop_good, ngoods, which_spp){
   #Function to calculate the proportions of sampling locations that are good and bad
   prop_good <- .3
   ngoods <- 15
-  
+
   set.seed(ctl$seed)
-  pick_from <- suppressWarnings(melt(initialize_population(ctl = ctl, nfish = ctl$nfish1)))
+  
+  nfish <- paste0("nfish", substr(which_spp, 4, 4))
+  pick_from <- suppressWarnings(melt(initialize_population(ctl = ctl, nfish = as.numeric(ctl[nfish]))))
   
   goods <- sample(which(pick_from$value != 0), round(ngoods * prop_good))
   bads <- sample(which(pick_from$value == 0), ngoods - length(goods))
