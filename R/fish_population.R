@@ -130,11 +130,11 @@ fish_population <- function(fish_area, ctl, kk = 0){
    # Move Fish Back
    # Need to remove this eventually
    #Need to make sure that the move back uses the same info
-
-   if(ctl$scope != 0){
+# browser()
+   # if(ctl$scope != 0){
      nfish_back <- move_back(nfish_moved = nfish_moved, samps_out = samps_out, kk = kk, ctl = ctl,
       fish_area = temp_fish_area, fish_area_orig = temp_fish_area_orig) 
-   }
+   # }
 
    #Add these into the overall fish_area
    fish_out <- vector('list', length = 2)
