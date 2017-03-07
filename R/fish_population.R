@@ -61,6 +61,17 @@ fish_population <- function(fish_area, ctl, kk = 0){
   #Do all this if there are fishing locations specified
 
   if(sum(location$x %in% 0) == 0){
+    ##---------------------------------------------------------------------------------------    
+    #Add Recruitment if in a recruitment year
+    #year 1 is when kk = 0 here
+    if(kk == 0) kk <- 1
+
+    if(sum(kk %in% ctl$rec_years)){
+      fish_area <- lapply(fish_area, FUN = function(xx){
+                            xx + round(xx * ctl$rec_rate)
+                          }) 
+    } 
+
     ##---------------------------------------------------------------------------------------
     #Move Fish into locations
     #Call this fish_temp because to keep the original, and
@@ -119,11 +130,12 @@ fish_population <- function(fish_area, ctl, kk = 0){
    # Move Fish Back
    # Need to remove this eventually
    #Need to make sure that the move back uses the same info
+
    if(ctl$scope != 0){
      nfish_back <- move_back(nfish_moved = nfish_moved, samps_out = samps_out, kk = kk, ctl = ctl,
       fish_area = temp_fish_area, fish_area_orig = temp_fish_area_orig) 
    }
-   
+
    #Add these into the overall fish_area
    fish_out <- vector('list', length = 2)
   
