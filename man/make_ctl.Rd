@@ -11,7 +11,8 @@ make_ctl(numrow = 10, numcol = 10, nfish1 = 10000, nfish2 = 0,
   scope = 1, nhooks = 5, ndrops = 5, nangs = 3,
   process = "equal_prob", p0 = 0.4, nyear = 10, browser = FALSE,
   cpue_method = "average", mortality, movement_function = move_fish_none,
-  max_prob = 0.1, min_prob = 0.1, comp_coeff = NA)
+  max_prob = 0.1, min_prob = 0.1, comp_coeff = NA, rec_rate = NA,
+  rec_years = NA)
 }
 \arguments{
 \item{numrow}{Number of rows in matrix}
@@ -71,6 +72,10 @@ options are 'average', '75hooks' to aggregate by hooks, and 'weighted_average' i
 \item{min_prob}{Minimum movement probability for movement functions; defaults to 0.1}
 
 \item{comp_coeff}{Competition coefficient, how likely to catch species 1? Defaults to NA}
+
+\item{rec_rate}{Recruitment rate}
+
+\item{rec_years}{Years of recruitment,}
 }
 \description{
 Define arguments for hook and line simulations
