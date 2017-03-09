@@ -48,7 +48,7 @@ fish_population <- function(fish_area, ctl, kk = 0){
 # if(kk == 2) browser()
   
   #Add on samples for each drop into location data frame  
-  add_ons <- as.data.frame(matrix(999, nrow = nrow(location), ncol = ndrops))
+  add_ons <- as.data.frame(matrix(999, nrow = nrow(location), ncol = ndrops, byrow = FALSE))
   names(add_ons) <- paste0('drop', 1:ndrops)
 
   location <- cbind(location, add_ons)
@@ -82,7 +82,7 @@ fish_population <- function(fish_area, ctl, kk = 0){
   
     #convert fish_area into matrices
     to_fish <- lapply(fish_temp, FUN = function(x){
-      matrix(x$fish_area$value, nrow = ctl$numrow, ncol = ctl$numcol)
+      matrix(x$fish_area$value, nrow = ctl$numrow, ncol = ctl$numcol, byrow = FALSE)
     })
   
     nfish_moved <- lapply(fish_temp, FUN = function(x){
@@ -148,7 +148,7 @@ fish_population <- function(fish_area, ctl, kk = 0){
      na_ind <- is.na(fish_out1$final)
      fish_out1[na_ind, 'final'] <- fish_out1[na_ind, 'value']
      fish_out[[uu]] <- matrix(fish_out1$final, nrow = ctl$numrow, ncol = ctl$numcol, 
-        byrow = TRUE)
+        byrow = FALSE)
     }    
   }
 
