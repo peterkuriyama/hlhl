@@ -32,8 +32,8 @@ initialize_population <- function(ctl, nfish){
   area <- ctl$area
 
   #initial check
-  if(distribute %in% c('area', 'patchy', 'uniform') == FALSE){
-    stop('specify distribute as area, patchy, or uniform')
+  if(distribute %in% c('area', 'patchy', 'uniform', 'hs') == FALSE){
+    stop('specify distribute as area, patchy, uniform, or hotspot')
   } 
 
   #Create matrix of zeroes
@@ -54,6 +54,8 @@ initialize_population <- function(ctl, nfish){
     nfish <- nfish - nfish.uni
   }
   
+  #---------------------------------------------------------------------------------------------------------
+
   #---------------------------------------------------------------------------------------------------------
   #Patchily Distributed Fish
   if(distribute == 'patchy'){
@@ -147,5 +149,65 @@ initialize_population <- function(ctl, nfish){
   for(ii in 1:nrow(samp.df)){
     fishArea[samp.df[ii, 1], samp.df[ii, 2]] <- samp.df[ii, 3]
   }  
+
+  #Hotspot distribution
+  if(distribute == 'hs'){    
+    #intialize values of interest
+    nnfish <- sum(fishArea)
+    hs <- ctl$hs_loc
+    hs$unq <- paste(hs$x, hs$y)
+
+    probs <- melt(fishArea)
+    names(probs) <- c('x', 'y', 'prob')
+    probs$prob <- 0
+    probs$unq <- paste(probs$x, probs$y)
+    
+    hs_scope <- ctl$hs_scope
+    delta <- ctl$delta
+
+    if(hs_scope == 0){
+      probs[which(probs$unq %in% hs$unq), "prob"] <- 1 / nrow(hs)    
+    } 
+
+    if(hs_scope == 1){
+      #Define proportions for each hot spot
+      nlocs <- nrow(hs)
+      
+      #Calculate proportions
+      xx <- 1 / (nlocs * (1 + 8 / delta))
+      yy <- xx / delta
+    
+      #define highest dist proportions
+      probs[which(probs$unq %in% hs$unq), 'prob'] <- xx
+  
+      #define lower proportions
+      for(nn in 1:nlocs){
+        xxx <- hs[nn, 'x']
+        yyy <- hs[nn, 'y']
+            
+        row_range <- (xxx - hs_scope): (xxx + hs_scope)
+        row_range <- row_range[row_range %in% unique(probs$x)] #If there's a border case maybe?
+    
+        col_range <- (yyy - hs_scope):(yyy + hs_scope)
+        col_range <- col_range[col_range %in% unique(probs$y)] # for border cases
+  
+        #indices of things to change
+        change_inds <- which(probs$x %in% row_range & probs$y %in% col_range)
+        change_inds <- change_inds[-which(probs[change_inds, 'unq'] %in% paste(xxx, yyy))]
+  
+        probs[change_inds, 'prob'] <- probs[change_inds, 'prob'] + yy
+      }
+    }    
+
+    probs$unq <- NULL
+    probs <- matrix(probs$prob, nrow = ctl$numrow, ncol = ctl$numcol, byrow = FALSE )
+    fishArea <- probs * nnfish
+
+  }
+
+
   return(fishArea)
 }
+
+
+
