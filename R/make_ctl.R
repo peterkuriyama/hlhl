@@ -34,7 +34,10 @@
 #' @param min_prob Minimum movement probability for movement functions; defaults to 0.1
 #' @param comp_coeff Competition coefficient, how likely to catch species 1? Defaults to NA
 #' @param rec_rate Recruitment rate
-#' @param rec_years Years of recruitment, 
+#' @param rec_years Years of recruitment
+#' @param hs_loc Locations of hotspots
+#' @param hs_scope Scope of hotspot range. Amount of diffusion of fish
+#' @param delta Difference between center of hotspot and surrounding cells
 
 #' @examples
 #' make_ctl(p0 = .2)
@@ -70,7 +73,10 @@ make_ctl <- function(numrow = 10, numcol = 10, nfish1 = 10000, #initial number o
   min_prob = .1,
   comp_coeff = NA,
   rec_rate = NA,
-  rec_years = NA
+  rec_years = NA,
+  hs_loc = NA,
+  hs_scope = NA, 
+  delta = NA
 
   )
 {
@@ -82,7 +88,7 @@ make_ctl <- function(numrow = 10, numcol = 10, nfish1 = 10000, #initial number o
     nyear = nyear, browser = browser,
     cpue_method = cpue_method, mortality = mortality, movement_function = movement_function,
     max_prob = max_prob, min_prob = min_prob, comp_coeff = comp_coeff, rec_rate = rec_rate,
-    rec_years = rec_years)
+    rec_years = rec_years, hs_loc = hs_loc, hs_scope = hs_scope, delta = delta)
 
   return(control)
 
