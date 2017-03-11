@@ -19,10 +19,6 @@
 
 run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = FALSE){
   start_time <- Sys.time()
-  #Set up number of cores, default is 1
-  # cl <- makeCluster(ncores)
-  # registerDoParallel(cl)
-  # cat(getDoParWorkers(), "cores registered", '\n')
 
   #--------------------------------------------------------------------------------
   #Run the function in parallel
@@ -60,6 +56,19 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
   })
 
   #--------------------------------------------------------------------------------
+  #Dataframe to track changes in fish population
+  
+  #Just in case you need to track the changes in fish at each location
+  fish_melt <- lapply(out_list, FUN = function(x){
+    temp <- "["(x$fished_areas)
+    return(melt(temp))
+  })
+  names(fish_melt) <- as.character(loop_over)
+  fish_melt <- ldply(fish_melt)
+  names(fish_melt) <- c(to_change, 'x', 'y', 'value', 'spp', 'year')
+  fish_melt$spp <- paste0('spp', fish_melt$spp )
+
+
   #Number of fish after each sampling
   nfish <-  lapply(out_list, FUN = function(x){
     temp <- "["(x$fished_areas)
@@ -209,7 +218,7 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
   print(Sys.time() - start_time)
   #--------------------------------------------------------------------------------
   #Now return everything
-  return(list(outs = out_list, loc_out = inp_df, for_plot = nall))
+  return(list(fish_melt = fish_melt, loc_out = inp_df, for_plot = nall))
 
 }
 
