@@ -8,7 +8,7 @@
 #' @export
 
 pick_sites <- function(ctl, nbest = 0, nmed = 0, nbad = 0){
-browser()
+
   #Set Seed
   set.seed(ctl$seed)
   
