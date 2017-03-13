@@ -7,7 +7,8 @@
 #' @param nbest Number of bad sites to samle
 #' @export
 
-pick_sites <- function(ctl = ctl, nbest = 0, nmed = 0, nbad = 0){
+pick_sites <- function(ctl, nbest = 0, nmed = 0, nbad = 0){
+browser()
   #Set Seed
   set.seed(ctl$seed)
   
@@ -15,6 +16,8 @@ pick_sites <- function(ctl = ctl, nbest = 0, nmed = 0, nbad = 0){
   fishes <- initialize_population(ctl = ctl, nfish = ctl$nfish1)
   fishes <- melt(fishes)
   names(fishes) <- c('x', 'y', 'value')
+
+  fishes$int <- findInterval(fishes$value, quantile(fishes$value))
 
   #Sample sites based on quantiles
   best <- sample(which(fishes$int >= 3), size = nbest, replace = FALSE)
