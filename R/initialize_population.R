@@ -22,6 +22,7 @@
 #' @export
 
 initialize_population <- function(ctl, nfish){
+  nfish_orig <- nfish
   numrow <- ctl$numrow
   numcol <- ctl$numcol
   # nfish <- ctl$nfish
@@ -32,12 +33,12 @@ initialize_population <- function(ctl, nfish){
   area <- ctl$area
 
   #initial check
-  if(distribute %in% c('area', 'patchy', 'uniform', 'hs') == FALSE){
+  if(distribute %in% c('area', 'patchy', 'uniform', 'hs', 'beta') == FALSE){
     stop('specify distribute as area, patchy, uniform, or hotspot')
   } 
 
   #Create matrix of zeroes
-  fishArea <- matrix(0, nrow = numrow, ncol = numcol)
+  fishArea <- matrix(0, nrow = numrow, ncol = numcol, byrow = FALSE)
   
   #Create data frame with matrix indices of interest
   samp.df <- expand.grid(1:numrow, 1:numcol) #rows and columns are set depending on arguments
@@ -54,8 +55,6 @@ initialize_population <- function(ctl, nfish){
     nfish <- nfish - nfish.uni
   }
   
-  #---------------------------------------------------------------------------------------------------------
-
   #---------------------------------------------------------------------------------------------------------
   #Patchily Distributed Fish
   if(distribute == 'patchy'){
@@ -137,7 +136,7 @@ initialize_population <- function(ctl, nfish){
 
   #Ensure that the length of sample vec is a multiple of number of rows in samp.df
   samp.vec <- c(samp.vec, rep(0, length(samp.vec) %% nrow(samp.df)))
-  samp.mat <- matrix(samp.vec, nrow = nrow(samp.df))
+  samp.mat <- matrix(samp.vec, nrow = nrow(samp.df), byrow = FALSE)
   samp.df$fish <- rowSums(samp.mat)
 
   #Add uniform # of fish to each cell
@@ -150,6 +149,20 @@ initialize_population <- function(ctl, nfish){
     fishArea[samp.df[ii, 1], samp.df[ii, 2]] <- samp.df[ii, 3]
   }  
 
+  #---------------------------------------------------------------------------------------------------------
+  #Beta distributed fish distribution
+  if(distribute == 'beta'){
+    #Fill in matrix of fish
+    bsamps <- rbeta(ctl$numrow * ctl$numcol, shape1 = ctl$shapes[1], shape2 = ctl$shapes[2])
+    bsamps <- bsamps / sum(bsamps)
+
+    bfish <- nfish_orig * bsamps
+    bfish <- round(bfish)
+    
+    fishArea <- matrix(bfish, nrow = ctl$numrow, ncol = ctl$numcol, byrow = FALSE)
+  }
+
+  #---------------------------------------------------------------------------------------------------------
   #Hotspot distribution
   if(distribute == 'hs'){    
     #intialize values of interest
@@ -201,10 +214,8 @@ initialize_population <- function(ctl, nfish){
 
     probs$unq <- NULL
     probs <- matrix(probs$prob, nrow = ctl$numrow, ncol = ctl$numcol, byrow = FALSE )
-    fishArea <- probs * nnfish
-
+    fishArea <- probs * nfish_orig
   }
-
 
   return(fishArea)
 }
