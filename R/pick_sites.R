@@ -7,7 +7,7 @@
 #' @param nbest Number of bad sites to samle
 #' @export
 
-pick_sites <- function(ctl = ctl, nbest, nmed, nbad){
+pick_sites <- function(ctl = ctl, nbest = 0, nmed = 0, nbad = 0){
   #Set Seed
   set.seed(ctl$seed)
   
