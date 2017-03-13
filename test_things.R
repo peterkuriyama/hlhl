@@ -27,6 +27,7 @@ library(hlsimulator)
   #Aggressive behavior
 
 #Default locations, 15% of available sites
+
 #--------------------------------------------------------------------------------------------
 #Define default locations that will be used for other scenarios
 set.seed(3)
@@ -37,6 +38,134 @@ locs <- locs[, c('vessel', 'x', 'y')]
 
 samps <- base::sample(1:100, 15)
 def_locs <- locs[samps, ]
+
+#--------------------------------------------------------------------------------------------
+#Add option to distribute fish with beta distribution
+#normal distribution, 10, 10
+#Equal high and low, 1, 1
+
+#Few sites with many fish, .1, 10, very patchy
+#Many sites with many fish c(3, 1) - approaches uniform numbers of fish
+xx <- seq(0, 1, length = 21)
+
+#--------------------------------------------------------------------------------------------
+#Patchy fishing with beta distribution
+#patchy, .1, .1
+
+ctl <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05,
+        nfish1 = 20000, nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 2, scope = 0, seed = 4,
+        location = def_locs, numrow = 10, numcol = 10, 
+        shapes = c(.1, .1))  
+
+#Define sites
+sites <- list(pick_sites(ctl = ctl, nbest = 30),
+              pick_sites(ctl = ctl, nbest = 10, nmed = 10, nbad = 10),
+              pick_sites(ctl = ctl, nbest = 20, nbad = 10))
+
+#Loop over fish numbers
+ttest <- change_two(thing1 = seq(1000, 50000, by = 2000), name1 = 'nfish1',
+                    thing2 = sites, name2 = 'location', ncores = 6, add_index = TRUE,
+                    ctl = ctl)
+focus <- ttest[[3]] %>% filter(spp == 'spp1' & year == 1)
+focus$dep <- focus$nfish_total / max(focus$nfish_total)
+
+
+png()
+ggplot(focus, aes(x = dep, y = cpue, group = index, colour = index)) + 
+  geom_point(aes(size = nfish_total)) + facet_wrap(~ index)
+
+#--------------------------------------------
+#Only good and bad sites...
+nbests <- 1:20
+gb_sites <- lapply(nbests, FUN = function(x){
+  pick_sites(ctl = ctl, nbest = x, nbad = 20 - x)
+})
+
+gb_test <- change_two(thing1 = seq(1000, 50000, by = 2000), name1 = 'nfish1',
+                    thing2 = gb_sites, name2 = 'location', ncores = 6, add_index = TRUE,
+                    ctl = ctl)
+
+
+focus <- gb_test[[3]] %>% filter(spp == 'spp1' & year == 1)
+focus$dep <- focus$nfish_total / max(focus$nfish_total)
+
+#round depletion leve
+focus$rd_dep <- round(focus$dep, digits = 2)
+
+ggplot(focus, aes(x = dep, y = cpue, group = index, colour = index)) + 
+  geom_point() + facet_wrap(~ index)
+
+#Look at this as a boxplot for rounded depletion levels
+ggplot(focus) + geom_boxplot(aes(factor(rd_dep), cpue))
+
+
+#--------------------------------------------
+#Run 50 iterations of one location and number of fish
+temp_loc <- gb_sites[[20]]
+seeds <- 1:50
+
+gb_iters <- change_two(thing1 = seq(1000, 50000, by = 1000), name1 = 'nfish1',
+  thing2 = seeds, name2 = "seed", ncores = 6, ctl = ctl)
+focus <- gb_iters[[3]] %>% filter(spp == 'spp1' & year == 1)
+focus$dep <- focus$nfish_total / max(focus$nfish_total)
+focus$rd_dep <- round(focus$dep, digits = 2)
+
+ggplot(focus, aes(x = dep, y = cpue, group = index, colour = index)) + geom_point()
+
+ggplot(focus) + geom_violin(aes(factor(rd_dep), cpue))
+
+
+
+seq(1000, 50000, by = 2000)
+
+
+
+
+
+
+
+
+#--------------------------------------------------------------------------------------------
+#Fish once for specific number of fish, loop over number of initial fish
+ctl <- make_ctl(distribute = 'uniform', mortality = 0, move_out_prob = .05,
+        nfish1 = 20000, nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 2, scope = 0, seed = 4,
+        location = def_locs, numrow = 10, numcol = 10)  
+
+dd <- change_two(thing1 = seq(.01, .05, by = .01), thing2 = seq(1000, 50000, by = 1000),
+  name1 = 'prob1', name2 = 'nfish1', ncores = 2, ctl = ctl)
+
+focus <- dd[[3]] %>% filter(spp == 'spp1' & year == 1 & cpue <= 0.9)
+focus$dep <- focus$nfish_total / max(focus$nfish_total)
+
+#standardize the nfish_total
+focus %>% ggplot(aes(x = dep, y = cpue, group = prob1, colour = prob1)) + 
+  geom_point(aes(size = nfish_total)) + geom_line()
+
+
+#-------------------------------------
+#Two Species
+ 
+conduct_survey(ctl)
+
+
+
+
+
+
+
+
+
+
+#----------------------------------------------------------------------------------------
+#Add in hotspot feature
+
+
+ctl <- make_ctl(distribute = 'hs', mortality = 0, move_out_prob = .05,
+      nfish1 = 20000, nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 15, scope = 0, seed = 4,
+      location = def_locs, numrow = 10, numcol = 10, hs_loc = data.frame(x = c(3, 4), 
+        y = c(5, 5)), hs_scope = 1, delta = 2)  
+dd <- conduct_survey(ctl = ctl)
+
 
 #----------------------------------------------------------------------------------------
 ##Number of hooks/locations vs. number of total fish
@@ -63,7 +192,7 @@ for(ii in 1:nrow(locs)){
 }
 
 ctl <- make_ctl(distribute = 'uniform', mortality = 0, move_out_prob = .5,
-      nfish1 = 40000, nfish2 = 0, prob1 = .02, prob2 = .05, nyear = 15, scope = 1, seed = 4,
+      nfish1 = 20000, nfish2 = 0, prob1 = .02, prob2 = .05, nyear = 15, scope = 1, seed = 4,
       location = def_locs, numrow = 10, numcol = 10)  
 
 #2000 fish per cell, you shouldn't fish it down really
@@ -71,7 +200,7 @@ nlocs_onespp_out <- run_scenario(ctl_in = ctl, loop_over = locs_list, ncores = 6
   to_change = 'location', add_index = TRUE)
  
 #Plot 
-png(width = 13, height = 8, res = 100, file = 'figs/run1_400.png', units = 'in')
+png(width = 13, height = 8, res = 100, file = 'figs/run1_200.png', units = 'in')
 nlocs_onespp_out[[3]] %>% filter(spp == 'spp1') %>% ggplot() + 
   geom_line(aes(x = nfish_total, y = cpue)) + 
   geom_point(aes(x = nfish_total, y = cpue, size = prop_of_unfished)) + 
@@ -79,8 +208,9 @@ nlocs_onespp_out[[3]] %>% filter(spp == 'spp1') %>% ggplot() +
 dev.off()
 
 #Now with two species
+#Cpue goes up as you fish one spp down
 ctl <- make_ctl(distribute = 'uniform', mortality = 0, move_out_prob = .5,
-      nfish1 = 5000, nfish2 = 30000, prob1 = .02, prob2 = .05, nyear = 15, scope = 1, seed = 4,
+      nfish1 = 5000, nfish2 = 30000, prob1 = .01, prob2 = .01, nyear = 15, scope = 1, seed = 4,
       location = def_locs, numrow = 10, numcol = 10, comp_coeff = .7)  
 
 #2000 fish per cell, you shouldn't fish it down really
@@ -88,16 +218,30 @@ nlocs_twospp_out <- run_scenario(ctl_in = ctl, loop_over = locs_list, ncores = 6
   to_change = 'location', add_index = TRUE)
  
 #Plot 
-# png(width = 13, height = 8, res = 100, file = 'figs/run1_twospp_400_300.png', units = 'in')
-
+png(width = 13, height = 8, res = 100, file = 'figs/run1_twospp_fishdown.png', units = 'in')
 nlocs_twospp_out[[3]] %>% ggplot() + 
   geom_line(aes(x = nfish_total, y = cpue, colour = spp)) + 
-  geom_point(aes(x = nfish_total, y = cpue, colour = spp, size = prop_of_unfished / 4)) + 
+  geom_point(aes(x = nfish_total, y = cpue, colour = spp)) + 
   facet_wrap(~ index) + ylim(c(0, 1))
+dev.off()
 
-# dev.off()
 
+#Both species at relatively even levels, slight competition
+ctl <- make_ctl(distribute = 'uniform', mortality = 0, move_out_prob = .5,
+      nfish1 = 30000, nfish2 = 30000, prob1 = .02, prob2 = .05, nyear = 15, scope = 1, seed = 4,
+      location = def_locs, numrow = 10, numcol = 10, comp_coeff = .7)  
 
+#2000 fish per cell, you shouldn't fish it down really
+nlocs_twospp_out <- run_scenario(ctl_in = ctl, loop_over = locs_list, ncores = 6,
+  to_change = 'location', add_index = TRUE)
+ 
+#Plot 
+png(width = 13, height = 8, res = 100, file = 'figs/run1_twospp_even.png', units = 'in')
+nlocs_twospp_out[[3]] %>% ggplot() + 
+  geom_line(aes(x = nfish_total, y = cpue, colour = spp)) + 
+  geom_point(aes(x = nfish_total, y = cpue, colour = spp)) + 
+  facet_wrap(~ index) + ylim(c(0, 1))
+dev.off()
 
 
 #Straight line
@@ -119,6 +263,8 @@ nlocs_onespp_out[[3]] %>% filter(spp == 'spp1') %>% ggplot() +
 perc <- seq(0.1, 1, by = .1)
 perc_outs <- vector('list', length = length(perc))
 
+# Come up with way to visualize overlap
+
 #Check initial population
 ctl <- make_ctl(distribute = 'patchy', mortality = 0, move_out_prob = .5,
       nfish1 = 20000, nfish2 = 0, prob1 = .02, prob2 = .05, nyear = 15, scope = 1, seed = 10,
@@ -135,14 +281,56 @@ for(pp in 1:length(perc)){
     to_change = 'location', add_index = TRUE)  
 }
 
+po_plots <- lapply(perc_outs, FUN = function(xx) xx[[3]])
+names(po_plots) <- as.character(perc)
+po_plots <- ldply(po_plots)
+names(po_plots)[1] <- 'perc_dist'
+
+
+#Fish in more locations with different distributions of fish
+png(width = 12, height = 7.5, units = 'in', res = 100, file = 'figs/run2.png')
+po_plots %>% filter(spp == 'spp1') %>% ggplot(aes(x = nfish_total, y = cpue)) + 
+  geom_line(aes(group = index, colour = index)) +
+  geom_point(aes(group = index, colour = index)) + facet_wrap(~ perc_dist)
+dev.off()
+
 
 #----------------------------------------
 #Run3
 #What percentage of best spots do you fish in?
 
+#####Do this but loop over nfish 1 and look at the effect of sampling a larger
+#and larger proportion of the total population
 ctl <- make_ctl(distribute = 'patchy', mortality = 0, move_out_prob = .5,
-      nfish1 = 20000, nfish2 = 0, prob1 = .02, prob2 = .05, nyear = 15, scope = 1, seed = 10,
-      location = def_locs, numrow = 10, numcol = 10, percent = .3)  
+      nfish1 = 80000, nfish2 = 0, prob1 = .02, prob2 = .05, nyear = 15, scope = 1, seed = 10,
+      location = def_locs, numrow = 10, numcol = 10, percent = .5)  
+
+initialize_population(ctl = ctl, nfish = ctl$nfish1)
+
+sum(melt(initialize_population(ctl = ctl, nfish = ctl$nfish1))$value != 0)
+
+props <- seq(.1, 1, .1)
+locs_props <- lapply(props, FUN = function(yy){
+                out <- sample_good_locs(ctl = ctl, prop_good = yy, ngoods = 30, 
+                  which_spp = 'spp1')
+              })
+
+locs_props_outs <- run_scenario(ctl_in = ctl, loop_over = locs_props, 
+    ncores = 6, to_change = 'location', add_index = TRUE)[[3]]
+
+locs_props_outs %>% filter(spp == 'spp1') %>% ggplot() + 
+  geom_line(aes(x = nfish_total, y = cpue)) + 
+  geom_point(aes(x = nfish_total, y = cpue)) + 
+   ylim(c(0, 1)) + facet_wrap(~ index)
+
+
+locs_props_outs %>% filter(spp == 'spp1') %>% ggplot() + 
+  geom_line(aes(x = prop_of_pop, y = cpue)) + facet_wrap(~ index)
+
+locs_props_outs %>% filter(index == 1 & spp == 'spp1')
+
+
+#Sampling large part of population, get pretty consistent results
 
 #15 spots
 #5 spots in high areas, 5 next to some cells, 5 far from anything
@@ -154,6 +342,14 @@ locs_good_bad <- vector('list', length = 4)
 
 #Look at everything to find it
 initialize_population(ctl = ctl, nfish = ctl$nfish1)
+
+#Function to calculate the proportions of sampling locations that are good and bad
+sample_good_locs(ctl = ctl, prop_good = .5, ngoods = 15)
+
+
+
+
+
 find_gb <- melt(initialize_population(ctl = ctl, nfish = ctl$nfish1))
 
 five_bad <- as.data.frame(rbind(c(4, 2), c(1, 9), c(5, 5), c(1, 10), c(8, 9)))
@@ -511,8 +707,16 @@ ggplot(two_spp[[3]]) + geom_line(aes(x = nfish, y = cpue, colour = location, gro
 
 
 
+#--------------------------------------------------------------------------------------------
+#Debugging place
 
-
+#add in recruitment
+ctl <- make_ctl(distribute = 'patchy', mortality = 0, move_out_prob = .5,
+      nfish1 = 80000, nfish2 = 0, prob1 = .02, prob2 = .05, nyear = 15, scope = 0, seed = 10,
+      location = locs_props[[1]][1, ], numrow = 10, numcol = 10, percent = .5, 
+      rec_years = 1:15,
+      rec_rate = .1)  
+outs <- conduct_survey(ctl = ctl)
 
 
 
