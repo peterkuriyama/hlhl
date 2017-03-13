@@ -12,7 +12,7 @@ make_ctl(numrow = 10, numcol = 10, nfish1 = 10000, nfish2 = 0,
   process = "equal_prob", p0 = 0.4, nyear = 10, browser = FALSE,
   cpue_method = "average", mortality, movement_function = move_fish_none,
   max_prob = 0.1, min_prob = 0.1, comp_coeff = NA, rec_rate = NA,
-  rec_years = NA, hs_loc = NA, hs_scope = NA, delta = NA)
+  rec_years = NA, hs_loc = NA, hs_scope = NA, delta = NA, shapes = NA)
 }
 \arguments{
 \item{numrow}{Number of rows in matrix}
@@ -82,6 +82,8 @@ options are 'average', '75hooks' to aggregate by hooks, and 'weighted_average' i
 \item{hs_scope}{Scope of hotspot range. Amount of diffusion of fish}
 
 \item{delta}{Difference between center of hotspot and surrounding cells}
+
+\item{shapes}{Shape Parameters for beta distribution in initialize_population}
 }
 \description{
 Define arguments for hook and line simulations
