@@ -71,9 +71,11 @@ focus <- ttest[[3]] %>% filter(spp == 'spp1' & year == 1)
 focus$dep <- focus$nfish_total / max(focus$nfish_total)
 
 
-png()
-ggplot(focus, aes(x = dep, y = cpue, group = index, colour = index)) + 
-  geom_point(aes(size = nfish_total)) + facet_wrap(~ index)
+
+
+
+
+
 
 #--------------------------------------------
 #Only good and bad sites...
@@ -81,6 +83,14 @@ nbests <- 1:20
 gb_sites <- lapply(nbests, FUN = function(x){
   pick_sites(ctl = ctl, nbest = x, nbad = 20 - x)
 })
+
+two_sites <- gb_sites[1:2]
+
+#Try running this for multiple replicates
+reps <- run_replicates(niters = 5, thing1 = seq(1000, 2000, by = 1000), name1 = 'nfish1',
+  thing2 = two_sites, name2 = 'location', ncores = 2, add_index = TRUE, ctl = ctl)
+
+
 
 gb_test <- change_two(thing1 = seq(1000, 50000, by = 2000), name1 = 'nfish1',
                     thing2 = gb_sites, name2 = 'location', ncores = 6, add_index = TRUE,
