@@ -31,7 +31,11 @@ run_replicates <- function(niters, thing1, name1, thing2, name2, ncores, add_ind
 
   print(Sys.time() - start_time)
 
-browser()
+  #Format the output
+  names(reps) <- as.character(seeds2)
+  reps <- ldply(reps)
+  names(reps)[1] <- 'seed'
+
   return(reps)
 
 }
