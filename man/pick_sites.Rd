@@ -5,7 +5,7 @@
 \title{Pick Sites
 Function to pick number of good, medium, and bad sites}
 \usage{
-pick_sites(ctl = ctl, nbest, nmed, nbad)
+pick_sites(ctl, nbest = 0, nmed = 0, nbad = 0)
 }
 \arguments{
 \item{ctl}{Control file}
