@@ -59,23 +59,24 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
       return(out)    
     })  
   }
-  
-  if(sys == 'Windows'){
-    print('windows bro')    
-    cl <- makeCluster(getOption("cl.cores", ncores))
     
+  if(sys == 'Windows'){
+
+    cl <- makeCluster(getOption("cl.cores", ncores))
+    aa <- clusterEvalQ(cl, library(hlsimulator))
+    aa <- clusterEvalQ(cl, library(plyr))
+    aa <- clusterEvalQ(cl, library(dplyr))
+    aa <- clusterEvalQ(cl, library(reshape2))
+    dd <- clusterExport(cl, "ctl", envir = environment())
+      
     out_list <- parLapply(cl, ctl_list, function(xx) {
       ctl <- xx
-      out <- conduct_survey(ctl = ctl)
+      out <- conduct_survey(ctl = xx)
       return(out)
     })
 
     stopCluster(cl)
   }
-
-
-  #
-
 
   #--------------------------------------------------------------------------------
   #Dataframe to track changes in fish population
