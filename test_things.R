@@ -6,6 +6,7 @@ library(dplyr)
 library(reshape2)
 library(ggplot2)
 library(doParallel)
+library(parallel)
 #--------------------------------------------------------------------------------------------
 #May need to track depletion by drop at some points, this is in conduct_survey
 #--------------------------------------------------------------------------------------------
@@ -97,6 +98,10 @@ ggplot(focus, aes(x = dep, y = cpue, group = index, colour = index)) +
 
 #Look at this as a boxplot for rounded depletion levels
 ggplot(focus) + geom_boxplot(aes(factor(rd_dep), cpue))
+
+
+#--------------------------------------------
+# Test many iterations of each gb_sites
 
 
 #--------------------------------------------
