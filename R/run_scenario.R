@@ -47,13 +47,32 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
     ctl_list[[nn]]$nname <- nn
   }
 
+  #Specify operating system
+  sys <- Sys.info()['sysname']
+  
   #Run the mclapply call
-  out_list <- mclapply(ctl_list, mc.cores = ncores, FUN = function(xx){
-    # print(xx$nname)
-    ctl <- xx
-    out <- conduct_survey(ctl = ctl)
-    return(out)    
-  })
+  if(sys != "Windows"){
+    out_list <- mclapply(ctl_list, mc.cores = ncores, FUN = function(xx){
+      # print(xx$nname)
+      ctl <- xx
+      out <- conduct_survey(ctl = ctl)
+      return(out)    
+    })  
+  }
+  
+  if(sys == 'Windows'){
+    print('windows bro')    
+    cl <- makeCluster(getOption("cl.cores", ncores))
+    
+    out_list <- parLapply(cl, ctl_list, function(xx) {
+      ctl <- xx
+      out <- conduct_survey(ctl = ctl)
+      return(out)
+    })
+  }
+
+  #
+
 
   #--------------------------------------------------------------------------------
   #Dataframe to track changes in fish population
