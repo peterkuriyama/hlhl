@@ -9,5 +9,5 @@
 send_email <- function(from = "<pkuriyama@gmail.com>", to = "<pkuriyama@gmail.com>",
   subject = "run done", body = 'run done', mailcontrol = list(smtpServer="ASPMX.L.GOOGLE.COM")){
  
-  sendmail(from=from,to=to,subject=subject,msg=body,control=mailControl)
+  sendmail(from=from, to=to, subject=subject, msg=body, control=mailcontrol)
 }
