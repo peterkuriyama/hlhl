@@ -2,17 +2,36 @@
 
 
 ##Set working directory
+setwd("C://Users//Peter//Desktop//hlsimulator")
 
+library(devtools)
+library(plyr)
+library(dplyr)
+library(reshape2)
+library(ggplot2)
+library(doParallel)
+library(parallel)
+
+#--------------------------------------------------------------------------------------------
+#Options to load the package
+
+#From github straight
+install_github('peterkuriyama/hlsimulator')
+library(hlsimulator)
+
+#--------------------------------------------------------------------------------------------
+#Run with increasing number of locations
+#--------------------------------------------------------------------------------------------
 
 #patchy distribution run
 #Effect of increasing 
 ctl <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05,
         nfish1 = 20000, nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 2, scope = 0, seed = 4,
-        location = def_locs, numrow = 10, numcol = 10, 
+        location = data.frame(vessel = 1, x = 1, y = 1), numrow = 10, numcol = 10, 
         shapes = c(.1, .1))  
 
 ##Specify number of iterations
-seeds <- 1:10
+seeds <- 1:2
 
 seeds_out <- vector('list', length = length(seeds))
 
@@ -25,17 +44,17 @@ for(ss in 1:length(seeds)){
 
 ##Specify number of initial fish
   #Increase number of locations
-  twenty_locs <- pick_sites(ctl = ctl, nbest = 20)
+  twenty_locs <- pick_sites(ctl = ctl, nbest = 2)
 
   #List with increasing number of locations
-  tl_list <- vector('list', length = 20)
+  tl_list <- vector('list', length = 2)
   
-  for(tt in 1:20){
+  for(tt in 1:2){
     tl_list[[tt]] <- twenty_locs[1:tt, ]
   }
 
 ##Specify number of initial fish
-  seeds_out[[ss]] <- change_two(thing1 = seq(1000, 50000, by = 1000), name1 = 'nfish1',
+  seeds_out[[ss]] <- change_two(thing1 = seq(1000, 2000, by = 1000), name1 = 'nfish1',
                               thing2 = tl_list, name2 = 'location', ctl = ctl,
                               ncores = )[[3]]
 
@@ -48,6 +67,8 @@ s_out <- ldply(seeds_out)
 names(s_out)[1] <- 'seed'
 
 #Save the data 
+save(s_out, file = "output//run1.Rdata")
+
 
 # send_email
 
