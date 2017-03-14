@@ -69,7 +69,10 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
       out <- conduct_survey(ctl = ctl)
       return(out)
     })
+
+    stopCluster(cl)
   }
+
 
   #
 
