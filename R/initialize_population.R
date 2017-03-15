@@ -152,19 +152,31 @@ initialize_population <- function(ctl, nfish){
   #---------------------------------------------------------------------------------------------------------
   #Beta distributed fish distribution
   if(distribute == 'beta'){
-    
+  
     #Fill in matrix of fish
     bsamps <- rbeta(ctl$numrow * ctl$numcol, shape1 = ctl$shapes[1], shape2 = ctl$shapes[2])
     bsamps <- bsamps / sum(bsamps)
 
-    bfish <- nfish_orig * bsampss
+    bfish <- nfish_orig * bsamps
     bfish <- round(bfish)
 
     #Make sure bfish == nfish_orig
-    rm_fish <- sum(bfish) - nfish_orig
-    rm_ind <- sample(1:length(bfish), size = rm_fish)
+    diff_fish <- sum(bfish) - nfish_orig
 
-    bfish[rm_ind] <- bfish[rm_ind] - 1
+    #Remove fish
+    if(diff_fish > 0){
+      inds <- which(bfish != 0)
+      rm_ind <- sample(inds, size = diff_fish)
+      bfish[rm_ind] <- bfish[rm_ind] - 1
+    }
+
+    #Add fish
+    if(diff_fish < 0){
+      inds <- which(bfish != 0)
+      rm_ind <- sample(inds, size = abs(diff_fish))
+      bfish[rm_ind] <- bfish[rm_ind] + 1
+    }
+
     if(sum(bfish) != nfish_orig) browser()
 
     #Export file
