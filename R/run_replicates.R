@@ -14,7 +14,6 @@
 #' @export
 
 run_replicates <- function(niters, thing1, name1, thing2, name2, ncores, add_index = FALSE, ctl){
-  
   start_time <- Sys.time()
   
   seeds <- 1:niters
