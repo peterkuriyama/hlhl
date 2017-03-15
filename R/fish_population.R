@@ -75,9 +75,9 @@ fish_population <- function(fish_area, ...){
     ##---------------------------------------------------------------------------------------
     #Move Fish into locations
     #Call this fish_temp because to keep the original, and
-browser()  
+
     fish_temp <- lapply(fish_area, FUN = function(z){
-        move_fish_loop(location = location, ff = z)
+        move_fish_loop(location = location, ff = z, scope = scope)
     })
   
     #convert fish_area into matrices
@@ -106,12 +106,11 @@ browser()
     samps_out_drop <- vector('list', length = ndrops)
     fish_area_drop <- samps_out_drop
 
-browser()
     #Loop through drops and store catch  
     for(dd in 1:ndrops){
       for(ll in 1:nrow(location)){
         temp <- fish_pop_loop(fish_area = temp_fish_area, loc_row = location[ll, ],
-          ctl = ctl, kk = kk)   
+          nhooks = nhooks, nangs = nangs, prob1 = prob1, prob2 = prob2)   
         temp_fish_area <- temp$fish_area  
         samps_out[ll, ] <- temp$samps
       }
@@ -119,6 +118,7 @@ browser()
       fish_area_drop[[dd]] <- temp_fish_area
     }
   
+browser()
     names(samps_out_drop) <- paste0('drop', 1:ndrops)
     samps_out_drop <- ldply(samps_out_drop)
     names(samps_out_drop)[1] <- 'drop'
