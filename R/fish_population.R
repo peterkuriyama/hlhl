@@ -118,7 +118,6 @@ fish_population <- function(fish_area, ...){
       fish_area_drop[[dd]] <- temp_fish_area
     }
   
-browser()
     names(samps_out_drop) <- paste0('drop', 1:ndrops)
     samps_out_drop <- ldply(samps_out_drop)
     names(samps_out_drop)[1] <- 'drop'
@@ -131,9 +130,9 @@ browser()
    # Move Fish Back
    # Need to remove this eventually
    #Need to make sure that the move back uses the same info
-# browser()
+
    # if(ctl$scope != 0){
-     nfish_back <- move_back(nfish_moved = nfish_moved, samps_out = samps_out, kk = kk, ctl = ctl,
+     nfish_back <- move_back(nfish_moved = nfish_moved, samps_out = samps_out, scope = scope,
       fish_area = temp_fish_area, fish_area_orig = temp_fish_area_orig) 
    # }
 
@@ -148,7 +147,7 @@ browser()
   
      na_ind <- is.na(fish_out1$final)
      fish_out1[na_ind, 'final'] <- fish_out1[na_ind, 'value']
-     fish_out[[uu]] <- matrix(fish_out1$final, nrow = ctl$numrow, ncol = ctl$numcol, 
+     fish_out[[uu]] <- matrix(fish_out1$final, nrow = numrow, ncol = numcol, 
         byrow = FALSE)
     }    
   }
