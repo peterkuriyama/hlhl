@@ -12,14 +12,6 @@
 ##'
 
 #'@export
-#may need to add angler specifications in at each time
-#currently it's just 15 hooks per drop, without the ability to specify angler
-#location on boat
-
-#also play with sampling probabilities and movements
-
-# fish_population <- function(fish_area, location, scope = 1, nhooks, ndrops,
-#   ...){
 
 fish_population <- function(fish_area, ...){
   #Should have Four steps or so
@@ -28,20 +20,7 @@ fish_population <- function(fish_area, ...){
   #Fish Die
   #Move Fish again
 
-  ##---------------------------------------------------------------------------------------
-  #Unpack Ctl File
-  ##---------------------------------------------------------------------------------------
-  # location <- ctl$location
-  # scope <- ctl$scope
-  # nhooks <- ctl$nhooks
-  # ndrops <- ctl$ndrops
-  # process <- ctl$process
-  # p0 <- ctl$p0
-  # browser <- ctl$browser
-  # mortality <- ctl$mortality
-
   if(class(location) != "data.frame") stop("location must be a data frame")
-# if(kk == 2) browser()
   
   #Add on samples for each drop into location data frame  
   add_ons <- as.data.frame(matrix(999, nrow = nrow(location), ncol = ndrops, byrow = FALSE))
@@ -71,7 +50,6 @@ fish_population <- function(fish_area, ...){
     ##---------------------------------------------------------------------------------------
     #Move Fish into locations
     #Call this fish_temp because to keep the original, and
-
     fish_temp <- lapply(fish_area, FUN = function(z){
         move_fish_loop(location = location, ff = z, scope = scope)
     })
@@ -96,7 +74,6 @@ fish_population <- function(fish_area, ...){
     names(samps_out) <- c('vessel', 'x', 'y', 'fish1samp', 'fish2samp')
     
     temp_fish_area <- to_fish
-  
     temp_fish_area_orig <- temp_fish_area
   
     samps_out_drop <- vector('list', length = ndrops)
@@ -124,14 +101,9 @@ fish_population <- function(fish_area, ...){
   
    ##---------------------------------------------------------------------------------------
    # Move Fish Back
-   # Need to remove this eventually
-   #Need to make sure that the move back uses the same info
-
-   # if(ctl$scope != 0){
-     nfish_back <- move_back(nfish_moved = nfish_moved, samps_out = samps_out, scope = scope,
+    nfish_back <- move_back(nfish_moved = nfish_moved, samps_out = samps_out, scope = scope,
       fish_area = temp_fish_area, fish_area_orig = temp_fish_area_orig) 
-   # }
-
+   
    #Add these into the overall fish_area
    fish_out <- vector('list', length = 2)
   
@@ -155,9 +127,8 @@ fish_population <- function(fish_area, ...){
   samps_out <- data.frame(x = location$x, y = location$y, fish1samp = 0, fish2samp = 0)
  }
 
- ##---------------------------------------------------------------------------------------
- #Add in Mortality
- 
+  ##---------------------------------------------------------------------------------------
+  #Add in Mortality
   #Add in rounded mortality numbers
   fish_out <- lapply(fish_out, FUN = function(x){
     x - round(x * mortality)    
