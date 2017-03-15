@@ -46,7 +46,7 @@ change_two <- function(thing1, thing2, name1, name2, ctl, ncores = 6,
     #       par_func = par_func)
     #   })
     # }
-    browser()
+    # browser()
     
     # if(sys == 'Windows'){
       cl <- makeCluster(getOption("cl.cores", ncores))
@@ -54,8 +54,7 @@ change_two <- function(thing1, thing2, name1, name2, ctl, ncores = 6,
       aa <- clusterEvalQ(cl, library(plyr))
       aa <- clusterEvalQ(cl, library(dplyr))
       aa <- clusterEvalQ(cl, library(reshape2))
-      dd <- clusterExport(cl, "par_func", envir = environment())
-      dd <- clusterExport(cl, c("par_func", "name2",  "thing2"), envir = environment())
+      dd <- clusterExport(cl, c("ctl", "par_func", "name2",  "thing2"), envir = environment())
 
       thing1_outs <- parLapply(cl, ctl_list, function(xx){
         run_scenario(ctl_in = xx, loop_over = thing2, ncores = ncores,
