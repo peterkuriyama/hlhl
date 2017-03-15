@@ -7,6 +7,7 @@ library(reshape2)
 library(ggplot2)
 library(doParallel)
 library(parallel)
+library(foreach)
 #--------------------------------------------------------------------------------------------
 #May need to track depletion by drop at some points, this is in conduct_survey
 #--------------------------------------------------------------------------------------------
@@ -53,10 +54,7 @@ xx <- seq(0, 1, length = 21)
 #Patchy fishing with beta distribution
 #patchy, .1, .1
 
-ctl <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05,
-        nfish1 = 20000, nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 2, scope = 0, seed = 4,
-        location = def_locs, numrow = 10, numcol = 10, 
-        shapes = c(.1, .1))  
+
 
 #Define sites
 sites <- list(pick_sites(ctl = ctl, nbest = 30),
@@ -69,6 +67,26 @@ ttest <- change_two(thing1 = seq(1000, 50000, by = 2000), name1 = 'nfish1',
                     ctl = ctl)
 focus <- ttest[[3]] %>% filter(spp == 'spp1' & year == 1)
 focus$dep <- focus$nfish_total / max(focus$nfish_total)
+
+
+
+#--------------------------------------------
+#Figure out how to control which function runs in parallel
+
+#easy example
+ctl <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05,
+        nfish1 = 20000, nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 2, scope = 0, seed = 4,
+        location = data.frame(vessel = 1, x = 1, y = 1), numrow = 10, numcol = 10, 
+        shapes = c(.1, .1))  
+
+for(tt in 1:2){
+  tl_list[[tt]] <- twenty_locs[1:tt, ]
+}
+
+#I think this works
+ttt <- change_two(thing1 = seq(1000, 3000, by = 1000), name1 = 'nfish1',
+  thing2 = tl_list, name2 = 'location', ctl = ctl, ncores = 3, 
+  par_func = 'change_two', add_index = FALSE)
 
 
 
