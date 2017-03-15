@@ -1,19 +1,15 @@
 #'Fish the Population
 #'
 #'Function to fish the population
-# #'@param fish_area Matrix with the distribution of fish
-# #'@param location Data frame of locations with column for vessel, rows, and columns of fish are to fish in. 
-# # '@param location list of locations specifying rows and columns of fish_area to fish in. The length of the list will correspond to the number of vessels
-# #'@param scope the scope of fishing movement, default to 1 so fish in surrounding 1 cells can move in
-# #'@param nhooks number of hooks at the smallest sampling size
-# #'@param ndrops number of drops, default is 5 following hook and line protocol
-# #'@param process specify process by which fish are sampled, options are 'multinomial', 'hypergeometric', and 'equal_prob'
-#'@examples
+#' @param fish_area Matrix with the distribution of fish
+#' @param ... Arguments specified in previous function
 
-#' control <- make_ctl()
-#' init <- initialize_population(control)
-#' fish_population(fish_area = init, ctl = control)
-#'
+# '@examples
+
+##' control <- make_ctl()
+##' init <- initialize_population(control)
+##' fish_population(fish_area = init, ctl = control)
+##'
 
 #'@export
 #may need to add angler specifications in at each time
