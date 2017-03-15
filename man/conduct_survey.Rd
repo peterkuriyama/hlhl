@@ -7,9 +7,11 @@ Wrapper to repeatedly run fish_population function
 Give function arguments for
 This function initializes the spatial distribution of the fish population}
 \usage{
-conduct_survey(ctl)
+conduct_survey(init_area, ...)
 }
 \arguments{
+\item{init_area}{list of intialized areas}
+
 \item{ctl}{control list defined in make_ctl function}
 }
 \description{
