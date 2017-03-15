@@ -5,20 +5,21 @@
 
 #' @keywords survey
 #' @param ctl control list defined in make_ctl function
+#' @param init_area list of intialized areas
 #' @export
 #' @examples
 #'
 #' ctl <- make_ctl()
 #' conduct_survey(ctl)
 
-conduct_survey <- function(ctl){  
-
-  #Specify movement probabilities
-  max_prob <- ctl$max_prob
-  min_prob <- ctl$min_prob
-
-  nyear <- ctl$nyear
+conduct_survey <- function(init_area, ...){  
+#Specify movement probabilities
+# max_prob <- ctl$max_prob
+# min_prob <- ctl$min_prob
+  # dots <- list(...)
+  # nyear <- ctl$nyear
   # survey_samples <- vector('list', length = nyear)
+
   drop_samples <- vector('list', length = nyear)
   fished_areas <- vector('list', length = nyear)
   
@@ -27,12 +28,12 @@ conduct_survey <- function(ctl){
   names(fished_areas) <- 1:nyear
 
   #initialize population  
-  init_area1 <- initialize_population(ctl = ctl, nfish = ctl$nfish1)
-  init_area2 <- initialize_population(ctl = ctl, nfish = ctl$nfish2)
+  # init_area1 <- initialize_population(ctl = ctl, nfish = ctl$nfish1)
+  # init_area2 <- initialize_population(ctl = ctl, nfish = ctl$nfish2)
   
   #Fish Area Once
-  init_area <- list(init_area1, init_area2)
-  after_first <- fish_population(init_area, ctl = ctl)
+  # init_area <- list(init_area1, init_area2)
+  after_first <- fish_population(init_area, ...)
 
   drop_samples[[1]] <- after_first$angler_samples
   fished_areas[[1]] <- after_first$updated_area
@@ -40,13 +41,13 @@ conduct_survey <- function(ctl){
   temp_area <- after_first$updated_area #Define temporary area for use in the for loop
 
   #Specify movement function if there is one
-  movement_function <- ctl$movement_function
+  # movement_function <- ctl$movement_function
   
   #Loop over years of survey, specified in ctl
   for(kk in 2:nyear){
     #Move fish based on function specified in ctl 
-    temp_area[[1]] <- movement_function(temp_area[[1]], max_prob = ctl$max_prob, min_prob = ctl$min_prob)$final
-    temp_area[[2]] <- movement_function(temp_area[[2]], max_prob = ctl$max_prob, min_prob = ctl$min_prob)$final    
+    # temp_area[[1]] <- movement_function(temp_area[[1]], max_prob = ctl$max_prob, min_prob = ctl$min_prob)$final
+    # temp_area[[2]] <- movement_function(temp_area[[2]], max_prob = ctl$max_prob, min_prob = ctl$min_prob)$final    
 
     temp <- fish_population(fish_area = temp_area, ctl = ctl, kk = kk)
 
