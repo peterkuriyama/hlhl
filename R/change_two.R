@@ -13,14 +13,13 @@
 
 change_two <- function(thing1, thing2, name1, name2, ctl, ncores = 6,
   add_index = FALSE, par_func = "run_scenario"){
+
   thing1_outs <- vector('list', length = length(thing1))
 
-  #Run the simulation
-  
   #Specify which function to run in parallel
-  #parallel run_scenario
+  #------------------------------------
+  #Parallelize over run_scenario function
   if(par_func == 'run_scenario'){
-
     for(tt in 1:length(thing1)){
       ctl[name1] <- thing1[tt]
       thing1_outs[[tt]] <- run_scenario(ctl_in = ctl, loop_over = thing2,
@@ -28,6 +27,8 @@ change_two <- function(thing1, thing2, name1, name2, ctl, ncores = 6,
     }
   }
 
+  #------------------------------------
+  #Parallelize ovr change_two function
   if(par_func == 'change_two'){
 
     ctl_list1 <- lapply(thing1, FUN = function(yy){
@@ -37,39 +38,30 @@ change_two <- function(thing1, thing2, name1, name2, ctl, ncores = 6,
     })
 
     #Specify which call to use
-    # sys <- Sys.info()['sysname']
-
-    # #Run simulations in parallel
-    # if(sys != "Windows"){
-    #   thing1_outs <- mclapply(ctl_list, mc.cores = ncores, FUN = function(xx){
-    #     run_scenario(ctl_in = xx, loop_over = thing2, ncores = ncores, to_change = name2,
-    #       par_func = par_func)
-    #   })
-    # }
-    # browser()
+    sys <- Sys.info()['sysname']
     
-    # if(sys == 'Windows'){
-      cl <- makeCluster(getOption("cl.cores", ncores))
-      aa <- clusterEvalQ(cl, library(hlsimulator))
-      aa <- clusterEvalQ(cl, library(plyr))
-      aa <- clusterEvalQ(cl, library(dplyr))
-      aa <- clusterEvalQ(cl, library(reshape2))
-      dd <- clusterExport(cl, c("ctl", "par_func", "name2",  "thing2"), envir = environment())
-
-      thing1_outs <- parLapply(cl, ctl_list, function(xx){
-        run_scenario(ctl_in = xx, loop_over = thing2, ncores = ncores,
-          to_change = name2, par_func = par_func)
+    #Do this with foreach
+    # cl <- makeCluster(ncores)
+    
+    # #Run simulations in parallel
+    if(sys != "Windows"){
+      thing1_outs <- mclapply(ctl_list, mc.cores = ncores, FUN = function(xx){
+        run_scenario(ctl_in = xx, loop_over = thing2, ncores = ncores, to_change = name2,
+          par_func = par_func, add_index = add_index)
       })
+    }
+    
+    if(sys == 'Windows'){
+      registerDoParallel(ncores)
 
-      stopCluster(cl)
-    # }
+      thing1_outs <- foreach(index = 1:length(ctl_list1)) %dopar%
+        run_scenario(ctl_in = ctl_list1[[index]], loop_over = thing2, to_change = name2,
+          par_func = par_func, add_index = add_index)
 
+      stopImplicitCluster()
+    } 
   }
 
-
-
-
-  
   #Format the output, should have thing1, thing2 as columns and the different results
   #Combine all the data frames so   
 
@@ -109,3 +101,28 @@ change_two <- function(thing1, thing2, name1, name2, ctl, ncores = 6,
   #Return outputs
   return(list(fish_melt = fish_melt, samps = samps, for_plot = for_plot))
 }
+
+
+#In case I want to try using parLapply which sucks
+
+      # cl <- makeCluster(getOption("cl.cores", ncores))
+      # aa <- clusterEvalQ(cl, library(hlsimulator))
+      # aa <- clusterEvalQ(cl, library(plyr))
+      # aa <- clusterEvalQ(cl, library(dplyr))
+      # aa <- clusterEvalQ(cl, library(reshape2))
+      # dd <- clusterExport(cl, c("ctl_list1", "par_func", "name2",  "thing2"), envir = environment())
+
+      
+      # run_scenario(ctl_in = ctl_list1[[1]], loop_over = thing2, 
+      #   to_change = name2, par_func = par_func)
+
+
+      # thing1_outs <- parLapply(cl, ctl_list1, function(pp){
+      #   ctlctl <- pp
+      #   pp
+      # #   run_scenario(ctl_in = ctlctl, loop_over = thing2,
+      # #     to_change = name2, par_func = par_func)
+      # })
+
+      # stopCluster(cl)
+    # }
