@@ -25,7 +25,7 @@
 # fish_population <- function(fish_area, location, scope = 1, nhooks, ndrops,
 #   ...){
 
-fish_population <- function(fish_area, ctl, kk = 0){
+fish_population <- function(fish_area, ...){
   #Should have Four steps or so
   #Move Fish
   #Catch Fish
@@ -35,14 +35,14 @@ fish_population <- function(fish_area, ctl, kk = 0){
   ##---------------------------------------------------------------------------------------
   #Unpack Ctl File
   ##---------------------------------------------------------------------------------------
-  location <- ctl$location
-  scope <- ctl$scope
-  nhooks <- ctl$nhooks
-  ndrops <- ctl$ndrops
-  process <- ctl$process
-  p0 <- ctl$p0
-  browser <- ctl$browser
-  mortality <- ctl$mortality
+  # location <- ctl$location
+  # scope <- ctl$scope
+  # nhooks <- ctl$nhooks
+  # ndrops <- ctl$ndrops
+  # process <- ctl$process
+  # p0 <- ctl$p0
+  # browser <- ctl$browser
+  # mortality <- ctl$mortality
 
   if(class(location) != "data.frame") stop("location must be a data frame")
 # if(kk == 2) browser()
@@ -64,25 +64,25 @@ fish_population <- function(fish_area, ctl, kk = 0){
     ##---------------------------------------------------------------------------------------    
     #Add Recruitment if in a recruitment year
     #year 1 is when kk = 0 here
-    if(kk == 0) kk <- 1
+    # if(kk == 0) kk <- 1
 
-    if(sum(kk %in% ctl$rec_years)){
-      fish_area <- lapply(fish_area, FUN = function(xx){
-                            xx + round(xx * ctl$rec_rate)
-                          }) 
-    } 
+    # if(sum(kk %in% rec_years)){
+    #   fish_area <- lapply(fish_area, FUN = function(xx){
+    #                         xx + round(xx * rec_rate)
+    #                       }) 
+    # } 
 
     ##---------------------------------------------------------------------------------------
     #Move Fish into locations
     #Call this fish_temp because to keep the original, and
-  
+browser()  
     fish_temp <- lapply(fish_area, FUN = function(z){
         move_fish_loop(location = location, ff = z)
     })
   
     #convert fish_area into matrices
     to_fish <- lapply(fish_temp, FUN = function(x){
-      matrix(x$fish_area$value, nrow = ctl$numrow, ncol = ctl$numcol, byrow = FALSE)
+      matrix(x$fish_area$value, nrow = numrow, ncol = numcol, byrow = FALSE)
     })
   
     nfish_moved <- lapply(fish_temp, FUN = function(x){
@@ -106,6 +106,7 @@ fish_population <- function(fish_area, ctl, kk = 0){
     samps_out_drop <- vector('list', length = ndrops)
     fish_area_drop <- samps_out_drop
 
+browser()
     #Loop through drops and store catch  
     for(dd in 1:ndrops){
       for(ll in 1:nrow(location)){
