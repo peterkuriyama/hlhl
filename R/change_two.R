@@ -47,14 +47,15 @@ change_two <- function(thing1, thing2, name1, name2, ctl, ncores = 6,
     #   })
     # }
     browser()
+    
     # if(sys == 'Windows'){
       cl <- makeCluster(getOption("cl.cores", ncores))
       aa <- clusterEvalQ(cl, library(hlsimulator))
       aa <- clusterEvalQ(cl, library(plyr))
       aa <- clusterEvalQ(cl, library(dplyr))
       aa <- clusterEvalQ(cl, library(reshape2))
-      # dd <- clusterExport(cl, "ctl", envir = environment())
       dd <- clusterExport(cl, "par_func", envir = environment())
+      dd <- clusterExport(cl, c("par_func", "name2",  "thing2"), envir = environment())
 
       thing1_outs <- parLapply(cl, ctl_list, function(xx){
         run_scenario(ctl_in = xx, loop_over = thing2, ncores = ncores,
@@ -64,22 +65,6 @@ change_two <- function(thing1, thing2, name1, name2, ctl, ncores = 6,
       stopCluster(cl)
     # }
 
-         
- #    if(sys == 'Windows'){
- #      cl <- makeCluster(getOption("cl.cores", ncores))
- 
-        
- #      out_list <- parLapply(cl, ctl_list, function(xx) {
- #        ctl <- xx
- #        out <- conduct_survey(ctl = xx)
- #        return(out)
- #      })
-  
- #      stopCluster(cl)
- #    }
- #  }
-
-    ctl_list <- lapply(thing1, FUN = function(yy) ctl[name1] <- yy)
   }
 
 
