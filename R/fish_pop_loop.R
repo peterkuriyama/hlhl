@@ -10,7 +10,7 @@
 
 #Input fish_area, one row of location data frame and the ctl file
 
-fish_pop_loop <- function(fish_area, loc_row, ctl = ctl, kk = 0){
+fish_pop_loop <- function(fish_area, loc_row, nhooks, nangs, prob1, prob2, comp_coeff){
     temp_loc <- c(loc_row$x, loc_row$y)
 
     fish1 <- fish_area[[1]][temp_loc[1], temp_loc[2]]
