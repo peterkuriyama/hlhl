@@ -8,6 +8,7 @@ library(ggplot2)
 library(doParallel)
 library(parallel)
 library(foreach)
+library(stringr)
 #--------------------------------------------------------------------------------------------
 #May need to track depletion by drop at some points, this is in conduct_survey
 #--------------------------------------------------------------------------------------------
@@ -48,13 +49,69 @@ def_locs <- locs[samps, ]
 
 #Few sites with many fish, .1, 10, very patchy
 #Many sites with many fish c(3, 1) - approaches uniform numbers of fish
-xx <- seq(0, 1, length = 21)
+
+#--------------------------------------------------------------------------------------------
+#Some replicates from whitefish
+initialize_population(ctl = ctl, nfish = ctl$nfish1)
+
+
+ctl <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05,
+        nfish1 = 20000, nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 2, scope = 0, seed = 4,
+        location = data.frame(vessel = 1, x = 1, y = 1), numrow = 10, numcol = 10, 
+        shapes = c(.1, .1))  
+
+##Specify number of iterations
+seeds <- 1:2
+seeds_out <- vector('list', length = length(seeds))
+
+start_time <- Sys.time()
+
+for(ss in 1:length(seeds)){
+  
+  ctl$seed <- ss
+
+##Specify number of initial fish
+  #Increase number of locations
+  twenty_locs <- pick_sites(ctl = ctl, nbest = 100)
+
+  #List with increasing number of locations
+  tl_list <- vector('list', length = 100)
+  
+  for(tt in 1:100){
+    tl_list[[tt]] <- twenty_locs[1:tt, ]
+  }
+
+##Specify number of initial fish
+  seeds_out[[ss]] <- change_two(thing1 = tl_list, name1 = 'location',
+    thing2 = seq(10000, 20000, by = 10000), name2 = 'nfish1', ctl = ctl,
+    ncores = 6, par_func = "change_two")[[3]]
+}
+
+run_time <- Sys.time() - start_time
+
+names(seeds_out) <- as.character(seeds)
+s_out <- ldply(seeds_out)
+names(s_out)[1] <- 'seed'
+
+#Index locations based on number of certain character
+one <- ldply(strsplit(s_out$location, split = ' x'))
+s_out$location <- as.numeric(sapply(one$V1, FUN = function(yy) str_count(yy, '1')))
+
+
+s_out$dep <- s_out$nfish_total / max(s_out$nfish_total)
+
+# png(width = 10.6, height = 6.86, units = 'in', res = 200, 
+#   file = 'figs/inc_locations.png')
+s_out %>% filter(spp == 'spp1' & year == 1) %>% ggplot(aes(x = dep,
+  y = cpue)) + geom_point(alpha = 2/10) + facet_wrap(~ location)
+dev.off()
+
+
+
 
 #--------------------------------------------------------------------------------------------
 #Patchy fishing with beta distribution
 #patchy, .1, .1
-
-
 
 #Define sites
 sites <- list(pick_sites(ctl = ctl, nbest = 30),
@@ -79,9 +136,13 @@ ctl <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05,
         location = data.frame(vessel = 1, x = 1, y = 1), numrow = 10, numcol = 10, 
         shapes = c(.1, .1))  
 
+twenty_locs <- pick_sites(ctl = ctl, nbest = 20)
+tl_list <- vector('list', length = 2)
+
 for(tt in 1:2){
   tl_list[[tt]] <- twenty_locs[1:tt, ]
 }
+
 
 #I think this works
 ttt <- change_two(thing1 = seq(1000, 3000, by = 1000), name1 = 'nfish1',
