@@ -7,11 +7,7 @@
 #' @param ff Fish area, called ff because I couldnt' think of a better name for it
 #' @export
 
-move_fish_loop <- function(location, ff){
-
-  #Define the scope based on ctl file
-  scope <- ctl$scope
-  
+move_fish_loop <- function(location, ff, scope){
   #Store the original data frame to compare
   ff_orig <- ff
 
@@ -49,7 +45,7 @@ move_fish_loop <- function(location, ff){
     ff_melt[update_these[moves$zero_index], 'value'] <- moved[moves$zero_index, 'moved']
 
     #update ff that goes into movement functions
-    ff <- matrix(ff_melt$value, nrow = max(ff_melt$x), ncol = max(ff_melt$y))
+    ff <- matrix(ff_melt$value, nrow = max(ff_melt$x), ncol = max(ff_melt$y), byrow = FALSE)
 
     nfish_moved[[zz]] <- moved
   }

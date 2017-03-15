@@ -6,7 +6,7 @@
 Function that moves fish by looping through locations. Do this rather than apply statement
 to avoid weird fish movement if nfish in a certain cell isn't enough.}
 \usage{
-move_fish_loop(location, ff)
+move_fish_loop(location, ff, scope)
 }
 \arguments{
 \item{location}{Data frame of locations}

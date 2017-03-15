@@ -4,14 +4,16 @@
 \alias{fish_population}
 \title{Fish the Population}
 \usage{
-fish_population(fish_area, ctl, kk = 0)
+fish_population(fish_area, ...)
+}
+\arguments{
+\item{fish_area}{Matrix with the distribution of fish}
+
+\item{...}{Arguments specified in previous function
+control <- make_ctl()
+init <- initialize_population(control)
+fish_population(fish_area = init, ctl = control)}
 }
 \description{
 Function to fish the population
-}
-\examples{
-control <- make_ctl()
-init <- initialize_population(control)
-fish_population(fish_area = init, ctl = control)
-
 }

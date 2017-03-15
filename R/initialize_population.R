@@ -29,7 +29,7 @@ initialize_population <- function(ctl, nfish){
   distribute <- ctl$distribute
   maxfish <- ctl$maxfish
   percent <- ctl$percent
-  seed <- ctl$seed
+  # seed <- ctl$seed
   area <- ctl$area
 
   #initial check
@@ -45,7 +45,7 @@ initialize_population <- function(ctl, nfish){
   names(samp.df) <- c('x', 'y')
 
   #Set Seed, should apply to all downstream sampling function
-  set.seed(seed)
+  set.seed(ctl$seed)
   #---------------------------------------------------------------------------------------------------------
   # Uniformly populate matrix, work on this
   if(distribute == 'uniform'){
@@ -152,11 +152,13 @@ initialize_population <- function(ctl, nfish){
   #---------------------------------------------------------------------------------------------------------
   #Beta distributed fish distribution
   if(distribute == 'beta'){
-  
+    #reset seed for beta function
+    set.seed(ctl$seed)
+    
     #Fill in matrix of fish
     bsamps <- rbeta(ctl$numrow * ctl$numcol, shape1 = ctl$shapes[1], shape2 = ctl$shapes[2])
     bsamps <- bsamps / sum(bsamps)
-
+    
     bfish <- nfish_orig * bsamps
     bfish <- round(bfish)
 

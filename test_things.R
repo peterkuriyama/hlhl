@@ -33,14 +33,14 @@ library(hlsimulator)
 
 #--------------------------------------------------------------------------------------------
 #Define default locations that will be used for other scenarios
-set.seed(3)
-locs <- expand.grid(1:10, 1:10)
-locs$vessel <- 1
-names(locs)[1:2] <- c('x', 'y')
-locs <- locs[, c('vessel', 'x', 'y')]
+# set.seed(3)
+# locs <- expand.grid(1:10, 1:10)
+# locs$vessel <- 1
+# names(locs)[1:2] <- c('x', 'y')
+# locs <- locs[, c('vessel', 'x', 'y')]
 
-samps <- base::sample(1:100, 15)
-def_locs <- locs[samps, ]
+# samps <- base::sample(1:100, 15)
+# def_locs <- locs[samps, ]
 
 #--------------------------------------------------------------------------------------------
 #Add option to distribute fish with beta distribution
@@ -51,20 +51,37 @@ def_locs <- locs[samps, ]
 #Many sites with many fish c(3, 1) - approaches uniform numbers of fish
 
 #--------------------------------------------------------------------------------------------
-#Some replicates from whitefish
-initialize_population(ctl = ctl, nfish = ctl$nfish1)
-
-
+#With 1000 location area
+# define 100 fishing locations
 ctl <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05,
-        nfish1 = 20000, nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 2, scope = 0, seed = 4,
-        location = data.frame(vessel = 1, x = 1, y = 1), numrow = 10, numcol = 10, 
+        nfish1 = 2000000, nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 2, scope = 0, seed = 4,
+        location = data.frame(vessel = 1, x = 1, y = 1), numrow = 100, numcol = 100, 
         shapes = c(.1, .1))  
+
+
+#Define fishing area
+#Define fishing locations
+
+#Move the seed setting to the outside of all the functions?
+ctl$seed <- 1
+initialize_population()
+
+#Move the seed setting to the outside of all the functions?
+#Maybe rewrite the functions?
+
+
+
+
 
 ##Specify number of iterations
 seeds <- 1:2
 seeds_out <- vector('list', length = length(seeds))
 
 start_time <- Sys.time()
+
+
+
+
 
 for(ss in 1:length(seeds)){
   

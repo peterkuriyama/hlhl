@@ -1,51 +1,26 @@
 #'Fish the Population
 #'
 #'Function to fish the population
-# #'@param fish_area Matrix with the distribution of fish
-# #'@param location Data frame of locations with column for vessel, rows, and columns of fish are to fish in. 
-# # '@param location list of locations specifying rows and columns of fish_area to fish in. The length of the list will correspond to the number of vessels
-# #'@param scope the scope of fishing movement, default to 1 so fish in surrounding 1 cells can move in
-# #'@param nhooks number of hooks at the smallest sampling size
-# #'@param ndrops number of drops, default is 5 following hook and line protocol
-# #'@param process specify process by which fish are sampled, options are 'multinomial', 'hypergeometric', and 'equal_prob'
-#'@examples
+#' @param fish_area Matrix with the distribution of fish
+#' @param ... Arguments specified in previous function
 
-#' control <- make_ctl()
-#' init <- initialize_population(control)
-#' fish_population(fish_area = init, ctl = control)
-#'
+# '@examples
+
+##' control <- make_ctl()
+##' init <- initialize_population(control)
+##' fish_population(fish_area = init, ctl = control)
+##'
 
 #'@export
-#may need to add angler specifications in at each time
-#currently it's just 15 hooks per drop, without the ability to specify angler
-#location on boat
 
-#also play with sampling probabilities and movements
-
-# fish_population <- function(fish_area, location, scope = 1, nhooks, ndrops,
-#   ...){
-
-fish_population <- function(fish_area, ctl, kk = 0){
+fish_population <- function(fish_area, ...){
   #Should have Four steps or so
   #Move Fish
   #Catch Fish
   #Fish Die
   #Move Fish again
 
-  ##---------------------------------------------------------------------------------------
-  #Unpack Ctl File
-  ##---------------------------------------------------------------------------------------
-  location <- ctl$location
-  scope <- ctl$scope
-  nhooks <- ctl$nhooks
-  ndrops <- ctl$ndrops
-  process <- ctl$process
-  p0 <- ctl$p0
-  browser <- ctl$browser
-  mortality <- ctl$mortality
-
   if(class(location) != "data.frame") stop("location must be a data frame")
-# if(kk == 2) browser()
   
   #Add on samples for each drop into location data frame  
   add_ons <- as.data.frame(matrix(999, nrow = nrow(location), ncol = ndrops, byrow = FALSE))
@@ -64,25 +39,24 @@ fish_population <- function(fish_area, ctl, kk = 0){
     ##---------------------------------------------------------------------------------------    
     #Add Recruitment if in a recruitment year
     #year 1 is when kk = 0 here
-    if(kk == 0) kk <- 1
+    # if(kk == 0) kk <- 1
 
-    if(sum(kk %in% ctl$rec_years)){
-      fish_area <- lapply(fish_area, FUN = function(xx){
-                            xx + round(xx * ctl$rec_rate)
-                          }) 
-    } 
+    # if(sum(kk %in% rec_years)){
+    #   fish_area <- lapply(fish_area, FUN = function(xx){
+    #                         xx + round(xx * rec_rate)
+    #                       }) 
+    # } 
 
     ##---------------------------------------------------------------------------------------
     #Move Fish into locations
     #Call this fish_temp because to keep the original, and
-  
     fish_temp <- lapply(fish_area, FUN = function(z){
-        move_fish_loop(location = location, ff = z)
+        move_fish_loop(location = location, ff = z, scope = scope)
     })
   
     #convert fish_area into matrices
     to_fish <- lapply(fish_temp, FUN = function(x){
-      matrix(x$fish_area$value, nrow = ctl$numrow, ncol = ctl$numcol, byrow = FALSE)
+      matrix(x$fish_area$value, nrow = numrow, ncol = numcol, byrow = FALSE)
     })
   
     nfish_moved <- lapply(fish_temp, FUN = function(x){
@@ -100,7 +74,6 @@ fish_population <- function(fish_area, ctl, kk = 0){
     names(samps_out) <- c('vessel', 'x', 'y', 'fish1samp', 'fish2samp')
     
     temp_fish_area <- to_fish
-  
     temp_fish_area_orig <- temp_fish_area
   
     samps_out_drop <- vector('list', length = ndrops)
@@ -110,7 +83,7 @@ fish_population <- function(fish_area, ctl, kk = 0){
     for(dd in 1:ndrops){
       for(ll in 1:nrow(location)){
         temp <- fish_pop_loop(fish_area = temp_fish_area, loc_row = location[ll, ],
-          ctl = ctl, kk = kk)   
+          nhooks = nhooks, nangs = nangs, prob1 = prob1, prob2 = prob2)   
         temp_fish_area <- temp$fish_area  
         samps_out[ll, ] <- temp$samps
       }
@@ -128,14 +101,9 @@ fish_population <- function(fish_area, ctl, kk = 0){
   
    ##---------------------------------------------------------------------------------------
    # Move Fish Back
-   # Need to remove this eventually
-   #Need to make sure that the move back uses the same info
-# browser()
-   # if(ctl$scope != 0){
-     nfish_back <- move_back(nfish_moved = nfish_moved, samps_out = samps_out, kk = kk, ctl = ctl,
+    nfish_back <- move_back(nfish_moved = nfish_moved, samps_out = samps_out, scope = scope,
       fish_area = temp_fish_area, fish_area_orig = temp_fish_area_orig) 
-   # }
-
+   
    #Add these into the overall fish_area
    fish_out <- vector('list', length = 2)
   
@@ -147,7 +115,7 @@ fish_population <- function(fish_area, ctl, kk = 0){
   
      na_ind <- is.na(fish_out1$final)
      fish_out1[na_ind, 'final'] <- fish_out1[na_ind, 'value']
-     fish_out[[uu]] <- matrix(fish_out1$final, nrow = ctl$numrow, ncol = ctl$numcol, 
+     fish_out[[uu]] <- matrix(fish_out1$final, nrow = numrow, ncol = numcol, 
         byrow = FALSE)
     }    
   }
@@ -159,9 +127,8 @@ fish_population <- function(fish_area, ctl, kk = 0){
   samps_out <- data.frame(x = location$x, y = location$y, fish1samp = 0, fish2samp = 0)
  }
 
- ##---------------------------------------------------------------------------------------
- #Add in Mortality
- 
+  ##---------------------------------------------------------------------------------------
+  #Add in Mortality
   #Add in rounded mortality numbers
   fish_out <- lapply(fish_out, FUN = function(x){
     x - round(x * mortality)    

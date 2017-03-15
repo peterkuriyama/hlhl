@@ -5,14 +5,14 @@
 \title{Pick Sites
 Function to pick number of good, medium, and bad sites}
 \usage{
-pick_sites(ctl, nbest = 0, nmed = 0, nbad = 0)
+pick_sites(nbest = 0, nmed = 0, nbad = 0, fish_mat)
 }
 \arguments{
-\item{ctl}{Control file}
-
 \item{nbest}{Number of best/good sites to samle}
 
 \item{nmed}{Number of medium sites to samle}
+
+\item{ctl}{Control file}
 
 \item{nbest}{Number of bad sites to samle}
 }

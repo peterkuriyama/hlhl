@@ -5,7 +5,8 @@
 \title{Function to modify two factors
 Function to modify two factors}
 \usage{
-change_two(thing1, thing2, name1, name2, ctl, ncores = 6, add_index = FALSE)
+change_two(thing1, thing2, name1, name2, ctl, ncores = 6, add_index = FALSE,
+  par_func = "run_scenario")
 }
 \arguments{
 \item{thing1}{Vector of things to loop over}
@@ -16,9 +17,11 @@ change_two(thing1, thing2, name1, name2, ctl, ncores = 6, add_index = FALSE)
 
 \item{name2}{Name of thing1 in the ctl file}
 
+\item{ctl}{Control file to modify}
+
 \item{ncores}{Number of cores to use in computation}
 
-\item{ctl_in}{Control file to modify}
+\item{par_func}{Specify full name of function to run in parallel}
 }
 \description{
 Function to modify two factors

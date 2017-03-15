@@ -7,13 +7,9 @@
 #' @param nbest Number of bad sites to samle
 #' @export
 
-pick_sites <- function(ctl, nbest = 0, nmed = 0, nbad = 0){
-
-  #Set Seed
-  set.seed(ctl$seed)
+pick_sites <- function(nbest = 0, nmed = 0, nbad = 0, fish_mat){
   
-  #Initialize the population
-  fishes <- initialize_population(ctl = ctl, nfish = ctl$nfish1)
+  fishes <- fish_mat
   fishes <- melt(fishes)
   names(fishes) <- c('x', 'y', 'value')
 
@@ -23,7 +19,6 @@ pick_sites <- function(ctl, nbest = 0, nmed = 0, nbad = 0){
   best <- sample(which(fishes$int >= 3), size = nbest, replace = FALSE)
   med <- sample(which(fishes$int == 2), size = nmed, replace = FALSE)
   bad <- sample(which(fishes$int == 1), size = nbad, replace = FALSE)
-
 
   locs_out <- fishes[c(best, med, bad), ]
   locs_out$vessel <- 1

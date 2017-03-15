@@ -5,7 +5,7 @@
 \title{Fish population in a loop function
 Function to fish population in a for loop.}
 \usage{
-fish_pop_loop(fish_area, loc_row, ctl = ctl, kk = 0)
+fish_pop_loop(fish_area, loc_row, nhooks, nangs, prob1, prob2, comp_coeff)
 }
 \arguments{
 \item{fish_area}{List that has the matrices of fish, needs to be list}

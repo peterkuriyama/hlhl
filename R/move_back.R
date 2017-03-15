@@ -8,7 +8,7 @@
 #' @export
 
 #Figure out inputs
-move_back <- function(nfish_moved, samps_out, ctl, kk = 0, fish_area, fish_area_orig){
+move_back <- function(nfish_moved, samps_out, scope, fish_area, fish_area_orig){
   nfish_moved[[1]] <- suppressMessages(left_join(nfish_moved[[1]], samps_out[, c('x', 'y', 'fish1samp')], 
     by = c('x', 'y')))
   nfish_moved[[2]] <- suppressMessages(left_join(nfish_moved[[2]], samps_out[, c('x', 'y', 'fish2samp')],
@@ -47,8 +47,8 @@ move_back <- function(nfish_moved, samps_out, ctl, kk = 0, fish_area, fish_area_
         
       #Find all the rows nearby
       ranges <- apply(froms, MAR = 1, FUN = function(x){
-                  expand.grid(((x[1]) - ctl$scope) : (x[1] + ctl$scope), 
-                    (x[2] - ctl$scope) : (x[2] + ctl$scope))
+                  expand.grid(((x[1]) - scope) : (x[1] + scope), 
+                    (x[2] - scope) : (x[2] + scope))
       })
   
       #Set up zero column to store the move samples

@@ -15,4 +15,4 @@ Imports:
   dplyr,
   reshape2,
   ggplot2
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.0
