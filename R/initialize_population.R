@@ -45,7 +45,7 @@ initialize_population <- function(ctl, nfish){
   names(samp.df) <- c('x', 'y')
 
   #Set Seed, should apply to all downstream sampling function
-  # set.seed(seed)
+  set.seed(ctl$seed)
   #---------------------------------------------------------------------------------------------------------
   # Uniformly populate matrix, work on this
   if(distribute == 'uniform'){
