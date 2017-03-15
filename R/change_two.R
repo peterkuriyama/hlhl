@@ -30,27 +30,35 @@ change_two <- function(thing1, thing2, name1, name2, ctl, ncores = 6,
   #------------------------------------
   #Parallelize ovr change_two function
   if(par_func == 'change_two'){
-
-    ctl_list1 <- lapply(thing1, FUN = function(yy){
-      ctl_temp <- ctl
-      ctl_temp[name1] <- yy
-      return(ctl_temp)
-    })
+    
+    if(class(thing1) != 'list'){
+      ctl_list1 <- lapply(thing1, FUN = function(yy){
+        ctl_temp <- ctl
+        ctl_temp[name1] <- yy
+        return(ctl_temp)
+      })  
+    }
+    
+    if(class(thing1) == 'list'){
+      ctl_list1 <- lapply(thing1, FUN = function(yy){
+        ctl_temp <- ctl
+        ctl_temp[[name1]] <- yy
+        return(ctl_temp)
+      })
+    }
 
     #Specify which call to use
     sys <- Sys.info()['sysname']
     
     #Do this with foreach
-    # cl <- makeCluster(ncores)
-    
     # #Run simulations in parallel
     if(sys != "Windows"){
-      thing1_outs <- mclapply(ctl_list, mc.cores = ncores, FUN = function(xx){
+      thing1_outs <- mclapply(ctl_list1, mc.cores = ncores, FUN = function(xx){
         run_scenario(ctl_in = xx, loop_over = thing2, ncores = ncores, to_change = name2,
           par_func = par_func, add_index = add_index)
       })
     }
-    
+
     if(sys == 'Windows'){
       registerDoParallel(ncores)
 
