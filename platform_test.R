@@ -29,7 +29,7 @@ library(hlsimulator)
 ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05,
         nfish1 = 20000, nfish2 = 10000, prob1 = .01, prob2 = .05, nyear = 2, scope = 0, seed = 7, 
         location = data.frame(vessel = 1, x = 1, y = 1), numrow = 10, numcol = 10, 
-        shapes = c(.1, .1), max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 10)  
+        shapes = c(.1, .1), max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 60)  
 # Specify fishing locations before from ctl
 
 #Initialize populations
@@ -41,21 +41,60 @@ locs2 <- pick_sites(nbad = 2, fish_mat = init_area1)
 
 #Update location here
 ctl1$location <- locs1
+locs <- list(locs1, locs2)
 
 # dd <- run_replicates(ctl_in = ctl1)
 
-locs <- list(locs1, locs2)
 
-dd <- run_scenario(ctl_start = ctl1, loop_over = locs, to_change = 'location', add_index = TRUE,
-  ncores = 2, par_func = "run_scenario")
+
+# dd <- run_scenario(ctl_start = ctl1, loop_over = locs, to_change = 'location', add_index = TRUE,
+#   ncores = 2, par_func = "run_scenario")
 
 #Now with different numbers of fish
-thing2 <- locs
-thing1 <- 
+dd <- change_two(thing1 = seq(10000, 50000, by = 10000), name1 = 'nfish1',
+  thing2 = locs, name2 = 'location', ctl = ctl1, ncores = 5, index1 = FALSE, 
+  index2 = TRUE, par_func = 'change_two')
 
-dd <- change_two(thing1 = seq(10000, 20000, by = 10000), name1 = 'nfish1',
-  thing2 = locs, name2 = 'location', ctl = ctl1, ncores = 2, index1 = FALSE, 
-  index2 = TRUE)
+
+#test sample_exp function
+nsamps <- 75
+fish1 <- 10
+fish2 <- 5
+prob1 <- .01
+prob2 <- .05
+comp_coeff <- 0.5
+
+temp_fish12 <- data.frame(nsamps = 1:nsamps, fish1 = rep(999, nsamps),
+  fish2 = rep(999, nsamps))
+      
+for(nn in 1:nsamps){                    
+
+  temp_samp <- sample_exp(nfish1 = fish1, nfish2 = fish2, 
+    prob1 = prob1, prob2 = prob2, comp_coeff = comp_coeff)
+
+  #Make sure that catch of fish can't exceed number of fish      
+  if(fish1 - temp_samp$fish1 < 0) {
+    print('sp1')
+    # browser()
+    temp_samp$fish1 <- 0
+  }
+
+  if(fish2 - temp_samp$fish2 < 0){
+    print('sp2')
+    browser()
+    temp_samp$fish2 <- 0
+  }
+   temp_fish12[nn, 2:3] <- temp_samp
+        
+   #update counts of fish1 and fish2
+   fish1 <- fish1 - temp_samp$fish1
+   fish2 <- fish2 - temp_samp$fish2
+
+   #Change the probabilities if there aren't any more fish
+   if(fish1 == 0) prob1 <- 0
+   if(fish2 == 0) prob2 <- 0
+}
+ 
 
 
 
