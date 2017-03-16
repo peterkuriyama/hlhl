@@ -121,10 +121,25 @@ run_scenario <- function(ctl_start, loop_over, ncores = 1, to_change, add_index 
   loc_out <- ldply(loc_out)
   names(loc_out)[1] <- to_change
 
+  #--------------------------------------------------------------------------------
+  #Format input plots
+  #Format inputs for plots
+  plot_list <- lapply(out_list, function(xx){
+    "["(xx$for_plot)
+  })
+  
+  #Format inp_list
+  names(plot_list) <- as.character(loop_over1)
+  for_plot <- ldply(plot_list)
+  names(for_plot)[1] <- to_change
 
 
+  print(Sys.time() - start_time)
+  #--------------------------------------------------------------------------------
+  #Now return everything
+  return(list(fish_melt = fish_melt, loc_out = loc_out, for_plot = for_plot))
 
-
+}
 
 
 
@@ -174,18 +189,6 @@ run_scenario <- function(ctl_start, loop_over, ncores = 1, to_change, add_index 
   # #arrange nall by index then year
   # nall$index <- as.numeric(nall$index)
   # nall <- nall %>% arrange(index, year)
-
-  #--------------------------------------------------------------------------------
-  #Format input plots
-  #Format inputs for plots
-  plot_list <- lapply(out_list, function(xx){
-    "["(xx$for_plot)
-  })
-  
-  #Format inp_list
-  names(plot_list) <- as.character(loop_over1)
-  for_plot <- ldply(plot_list)
-  names(for_plot)[1] <- to_change
   
   #split up cpue and fish samples
   # if(to_change == 'location'){
@@ -274,12 +277,3 @@ run_scenario <- function(ctl_start, loop_over, ncores = 1, to_change, add_index 
   #   prop_of_unfished = fishsamp / nfish_orig, prop_of_pop = fishsamp / nfish_total) %>%
   #   as.data.frame
   
-
-  print(Sys.time() - start_time)
-  #--------------------------------------------------------------------------------
-  #Now return everything
-  return(list(fish_melt = fish_melt, loc_out = loc_out, for_plot = for_plot))
-
-}
-
-
