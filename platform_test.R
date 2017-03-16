@@ -29,7 +29,7 @@ library(hlsimulator)
 ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05,
         nfish1 = 20000, nfish2 = 10000, prob1 = .01, prob2 = .05, nyear = 2, scope = 0, seed = 7, 
         location = data.frame(vessel = 1, x = 1, y = 1), numrow = 10, numcol = 10, 
-        shapes = c(.1, .1), max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 2)  
+        shapes = c(.1, .1), max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 10)  
 # Specify fishing locations before from ctl
 
 #Initialize populations
@@ -42,12 +42,21 @@ locs2 <- pick_sites(nbad = 2, fish_mat = init_area1)
 #Update location here
 ctl1$location <- locs1
 
-dd <- run_replicates(ctl_in = ctl1)
+# dd <- run_replicates(ctl_in = ctl1)
 
 locs <- list(locs1, locs2)
 
 dd <- run_scenario(ctl_start = ctl1, loop_over = locs, to_change = 'location', add_index = TRUE,
-  ncores = 2, par_func = "change_two")
+  ncores = 2, par_func = "run_scenario")
+
+#Now with different numbers of fish
+thing2 <- locs
+thing1 <- 
+
+dd <- change_two(thing1 = seq(10000, 20000, by = 10000), name1 = 'nfish1',
+  thing2 = locs, name2 = 'location', ctl = ctl1, ncores = 2, index1 = FALSE, 
+  index2 = TRUE)
+
 
 
 
