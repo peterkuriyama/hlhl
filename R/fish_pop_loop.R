@@ -47,6 +47,10 @@ fish_pop_loop <- function(fish_area, loc_row, nhooks, nangs, prob1, prob2, comp_
         #update counts of fish1 and fish2
         fish1 <- fish1 - temp_samp$fish1
         fish2 <- fish2 - temp_samp$fish2
+
+        #Change the probabilities if there aren't any more fish
+        if(fish1 == 0) prob1 <- 0
+        if(fish2 == 0) prob2 <- 0
       }
     
     #Format Output
