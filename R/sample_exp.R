@@ -28,14 +28,13 @@ sample_exp <- function(nfish1, nfish2, prob1, prob2, comp_coeff){
   
   fish <- rbinom(n = 1, size = 1,  prob = hook_prob)  
 
-  if(fish == 1 & )
   #------------------------------------------------
   # Which fish was caught?
   #initially declare both as 0
   fish1 <- 0
   fish2 <- 0
 
-#Scale this so that prob goes down as the numbers go down maybe?  
+  #Scale this so that prob goes down as the numbers go down maybe?  
 
   #If a fish was caught determine if it was fish1 or fish2
   if(fish == 1 & is.na(comp_coeff)){
