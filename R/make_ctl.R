@@ -39,8 +39,7 @@
 #' @param hs_scope Scope of hotspot range. Amount of diffusion of fish
 #' @param delta Difference between center of hotspot and surrounding cells
 #' @param shapes Shape Parameters for beta distribution in initialize_population
-#' @param iters Number of iterations to run for each scenario
-
+#' @param niters Number of iterations to run for each scenario
 #' @examples
 #' make_ctl(p0 = .2)
 
@@ -80,7 +79,7 @@ make_ctl <- function(numrow = 10, numcol = 10, nfish1 = 10000, #initial number o
   hs_scope = NA, 
   delta = NA,
   shapes = NA,
-  iters = 1
+  niters = 1
 
   )
 {
@@ -93,7 +92,7 @@ make_ctl <- function(numrow = 10, numcol = 10, nfish1 = 10000, #initial number o
     cpue_method = cpue_method, mortality = mortality, movement_function = movement_function,
     max_prob = max_prob, min_prob = min_prob, comp_coeff = comp_coeff, rec_rate = rec_rate,
     rec_years = rec_years, hs_loc = hs_loc, hs_scope = hs_scope, delta = delta, shapes = shapes,
-    iters = iters)
+    niters = niters)
 
   return(control)
 
