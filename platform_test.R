@@ -46,8 +46,8 @@ dd <- run_replicates(ctl_in = ctl1)
 
 locs <- list(locs1, locs2)
 
-run_scenario(ctl_start = ctl1, loop_over = locs, to_change = 'location', add_index = TRUE,
-  ncores = 1, par_func = "change_two")
+dd <- run_scenario(ctl_start = ctl1, loop_over = locs, to_change = 'location', add_index = TRUE,
+  ncores = 2, par_func = "change_two")
 
 
 
