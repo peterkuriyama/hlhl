@@ -4,8 +4,8 @@
 #' This function initializes the spatial distribution of the fish population
 
 #' @keywords survey
-#' @param ctl control list defined in make_ctl function
 #' @param init_area list of intialized areas
+#' @param ... arguments from other thing
 #' @export
 #' @examples
 #'
@@ -19,8 +19,9 @@ conduct_survey <- function(init_area, ...){
   
   names(drop_samples) <- 1:nyear
   names(fished_areas) <- 1:nyear  
+  
   #Fish Area Once
-  after_first <- fish_population(init_area, ...)
+  after_first <- fish_population(fish_area = init_area, ...)
 
   drop_samples[[1]] <- after_first$angler_samples
   fished_areas[[1]] <- after_first$updated_area
@@ -32,11 +33,13 @@ conduct_survey <- function(init_area, ...){
   
   #Loop over years of survey, specified in ctl
   for(kk in 2:nyear){
+  
+    #Leave this in case I want to add movement in 
     #Move fish based on function specified in ctl 
     # temp_area[[1]] <- movement_function(temp_area[[1]], max_prob = ctl$max_prob, min_prob = ctl$min_prob)$final
     # temp_area[[2]] <- movement_function(temp_area[[2]], max_prob = ctl$max_prob, min_prob = ctl$min_prob)$final    
-
-    temp <- fish_population(fish_area = temp_area, ctl = ctl, kk = kk)
+# browser()
+    temp <- fish_population(fish_area = temp_area, ...)
 
     # survey_samples[[kk]] <- temp$samples
     drop_samples[[kk]] <- temp$angler_samples
@@ -52,7 +55,7 @@ conduct_survey <- function(init_area, ...){
   names(samples)[1] <- 'year'
 
   #calculate CPUE based on number of hooks
-  effort <- ctl$nhooks * ctl$nangs * ctl$ndrops
+  effort <- nhooks * nangs * ndrops
   samples$cpue1 <- samples$fish1samp / effort
   samples$cpue2 <- samples$fish2samp / effort
 

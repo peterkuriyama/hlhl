@@ -83,7 +83,7 @@ fish_population <- function(fish_area, ...){
     for(dd in 1:ndrops){
       for(ll in 1:nrow(location)){
         temp <- fish_pop_loop(fish_area = temp_fish_area, loc_row = location[ll, ],
-          nhooks = nhooks, nangs = nangs, prob1 = prob1, prob2 = prob2)   
+          nhooks = nhooks, nangs = nangs, prob1 = prob1, prob2 = prob2, comp_coeff = comp_coeff)   
         temp_fish_area <- temp$fish_area  
         samps_out[ll, ] <- temp$samps
       }
