@@ -109,8 +109,8 @@ run_scenario <- function(ctl_start, loop_over, ncores = 1, to_change, add_index 
 
   names(fish_melt) <- as.character(loop_over1)
   fish_melt <- ldply(fish_melt)
-  names(fish_melt) <- c(to_change, 'x', 'y', 'value', 'spp', 'year')
-  
+  names(fish_melt)[1] <- to_change
+
   #Format loc_out  
   loc_out <- lapply(out_list, FUN = function(x){
     temp <- "["(x$loc_out)
