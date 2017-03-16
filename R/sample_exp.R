@@ -25,7 +25,7 @@ sample_exp <- function(nfish1, nfish2, prob1, prob2, comp_coeff){
 
   #Probability of catching a fish
   hook_prob <- 1 - ((1 - p1) * (1 - p2))
-
+  
   fish <- rbinom(n = 1, size = 1,  prob = hook_prob)  
   #------------------------------------------------
   # Which fish was caught?
