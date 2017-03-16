@@ -26,24 +26,26 @@ fish_pop_loop <- function(fish_area, loc_row, nhooks, nangs, prob1, prob2, comp_
       fish2 = rep(999, nsamps))
       
       for(nn in 1:nsamps){                    
+
         temp_samp <- sample_exp(nfish1 = fish1, nfish2 = fish2, 
           prob1 = prob1, prob2 = prob2, comp_coeff = comp_coeff)
-
-        temp_fish12[nn, 2:3] <- temp_samp
 
         #Make sure that catch of fish can't exceed number of fish      
         if(fish1 - temp_samp$fish1 < 0) {
           print('sp1')
-          browser()
+          # browser()
           temp_samp$fish1 <- 0
+
         }
 
         if(fish2 - temp_samp$fish2 < 0){
           print('sp2')
-          browser()
+          # browser()
           temp_samp$fish2 <- 0
         }
 
+        temp_fish12[nn, 2:3] <- temp_samp
+        
         #update counts of fish1 and fish2
         fish1 <- fish1 - temp_samp$fish1
         fish2 <- fish2 - temp_samp$fish2
