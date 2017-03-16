@@ -3,7 +3,7 @@
 #' Function to run scenarios in parallel. Returns three things, a list of all the output from
 #' conduct_survey, cpue summarized by each value in loop_over, and summarized data for each year. 
 
-#' @param ctl_in Output from make_ctl function
+#' @param ctl_start Output from make_ctl function
 #' @param loop_over Vector of values to loop over
 #' @param ncores  Number of cores to run in parallel, default is 1
 #' @param to_change Specify which value to modify in lapply statement. Should be the values in
@@ -19,7 +19,7 @@
 #'   ncores = 6)
 #' @export
 
-run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = FALSE, par_func){
+run_scenario <- function(ctl_start, loop_over, ncores = 1, to_change, add_index = FALSE, par_func){
   start_time <- Sys.time()
 
   #--------------------------------------------------------------------------------
@@ -30,7 +30,7 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
   #notation
   if(class(loop_over) != 'list'){
     ctl_list <- lapply(loop_over, function(xx){
-      ctl_temp <- ctl_in
+      ctl_temp <- ctl_start
       ctl_temp[to_change] <- xx
       return(ctl_temp)
     })
@@ -38,7 +38,7 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
 
   if(class(loop_over) == 'list'){
     ctl_list <- lapply(loop_over, function(xx){
-      ctl_temp <- ctl_in
+      ctl_temp <- ctl_start
       ctl_temp[[to_change]] <- xx
       return(ctl_temp)
     })
@@ -51,10 +51,10 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
 
   #-----------------------------------------
   #Run function as straight lapply if par_func == "change_two"
+
   if(par_func == "change_two"){
     out_list <- lapply(ctl_list, FUN = function(xx){
-      ctl <- xx
-      out <- conduct_survey(ctl = ctl)
+      out <- run_replicates(ctl_in = xx)
       return(out)
     })
   }
@@ -68,31 +68,29 @@ run_scenario <- function(ctl_in, loop_over, ncores = 1, to_change, add_index = F
     #Run the mclapply call
     if(sys != "Windows"){
       out_list <- mclapply(ctl_list, mc.cores = ncores, FUN = function(xx){
-        # print(xx$nname)
-        ctl <- xx
-        out <- conduct_survey(ctl = ctl)
+        out <- run_replicates(ctl_in = xx)
         return(out)    
       })  
     }
-      
+
     if(sys == 'Windows'){
       cl <- makeCluster(getOption("cl.cores", ncores))
       aa <- clusterEvalQ(cl, library(hlsimulator))
       aa <- clusterEvalQ(cl, library(plyr))
       aa <- clusterEvalQ(cl, library(dplyr))
       aa <- clusterEvalQ(cl, library(reshape2))
-      dd <- clusterExport(cl, "ctl", envir = environment())
+      # dd <- clusterExport(cl, "ctl", envir = environment())
         
       out_list <- parLapply(cl, ctl_list, function(xx) {
-        ctl <- xx
-        out <- conduct_survey(ctl = xx)
+        out <- run_replicates(ctl_in = xx)
         return(out)
       })
   
       stopCluster(cl)
     }
   }
-  
+browser()
+#see if this works on a pc  
 
   #--------------------------------------------------------------------------------
   #Dataframe to track changes in fish population
