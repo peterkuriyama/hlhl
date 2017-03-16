@@ -8,7 +8,7 @@
 #' @export
 
 pick_sites <- function(nbest = 0, nmed = 0, nbad = 0, fish_mat){
-browser()  
+
   fishes <- fish_mat
   fishes <- melt(fishes)
   names(fishes) <- c('x', 'y', 'value')
