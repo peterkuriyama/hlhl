@@ -19,6 +19,19 @@ fish_population <- function(fish_area, ...){
   #Catch Fish
   #Fish Die
   #Move Fish again
+  
+  #define things early
+  location <- list(...)$location
+  ndrops <- list(...)$ndrops
+  scope <- list(...)$scope
+  numrow <- list(...)$numrow
+  numcol <- list(...)$numcol
+  nhooks <- list(...)$nhooks
+  nangs <- list(...)$nangs
+  prob1 <- list(...)$prob1
+  prob2 <- list(...)$prob2
+  comp_coeff <- list(...)$comp_coeff
+  mortality <- list(...)$mortality
 
   if(class(location) != "data.frame") stop("location must be a data frame")
   
@@ -58,7 +71,7 @@ fish_population <- function(fish_area, ...){
     to_fish <- lapply(fish_temp, FUN = function(x){
       matrix(x$fish_area$value, nrow = numrow, ncol = numcol, byrow = FALSE)
     })
-  
+
     nfish_moved <- lapply(fish_temp, FUN = function(x){
       yy <- x$nfish_moved
       yy$moved <- yy$check
@@ -68,7 +81,6 @@ fish_population <- function(fish_area, ...){
     ##---------------------------------------------------------------------------------------
     #Fish with sample_exp function
     #Do this in a for loop first, then maybe switch to an apply statement
-  
     #Declare objects to track stuff
     samps_out <- as.data.frame(matrix(nrow = nrow(location), ncol = 5))
     names(samps_out) <- c('vessel', 'x', 'y', 'fish1samp', 'fish2samp')
@@ -78,6 +90,8 @@ fish_population <- function(fish_area, ...){
   
     samps_out_drop <- vector('list', length = ndrops)
     fish_area_drop <- samps_out_drop
+
+
 
     #Loop through drops and store catch  
     for(dd in 1:ndrops){
@@ -90,7 +104,7 @@ fish_population <- function(fish_area, ...){
       samps_out_drop[[dd]] <- samps_out
       fish_area_drop[[dd]] <- temp_fish_area
     }
-  
+
     names(samps_out_drop) <- paste0('drop', 1:ndrops)
     samps_out_drop <- ldply(samps_out_drop)
     names(samps_out_drop)[1] <- 'drop'
@@ -98,7 +112,7 @@ fish_population <- function(fish_area, ...){
     #Compress samps_out for nfish_back function
     samps_out <- samps_out_drop %>% group_by(x, y) %>% summarize(fish1samp = sum(fish1samp), 
       fish2samp = sum(fish2samp)) %>% as.data.frame  
-  
+
    ##---------------------------------------------------------------------------------------
    # Move Fish Back
     nfish_back <- move_back(nfish_moved = nfish_moved, samps_out = samps_out, scope = scope,
