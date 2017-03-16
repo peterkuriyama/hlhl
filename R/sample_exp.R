@@ -27,6 +27,8 @@ sample_exp <- function(nfish1, nfish2, prob1, prob2, comp_coeff){
   hook_prob <- 1 - ((1 - p1) * (1 - p2))
   
   fish <- rbinom(n = 1, size = 1,  prob = hook_prob)  
+
+  if(fish == 1 & )
   #------------------------------------------------
   # Which fish was caught?
   #initially declare both as 0
@@ -41,7 +43,7 @@ sample_exp <- function(nfish1, nfish2, prob1, prob2, comp_coeff){
     fish1 <- rbinom(n = 1, size = 1, prob = p1a)
   }
   
-  if(fish == 1 & is.na(comp_coeff) == FALSE){
+  if(fish == 1 & is.na(comp_coeff) == FALSE & nfish2 != 0){
     #Use the proportion of fish 1 to adjust the competition coefficient
     #Default value of 5 for rate of increase
     propfish1 <- nfish1 / (nfish1 + nfish2)
@@ -49,10 +51,10 @@ sample_exp <- function(nfish1, nfish2, prob1, prob2, comp_coeff){
     fish1 <- rbinom(n = 1, size = 1, prob = adj_comp_coeff)
   }
   
-  if(fish1 == 0 & fish == 1){    
+  if(fish1 == 0 & fish == 1 & nfish2 != 0){    
     fish2 <- 1
   } 
-  
+
   #Return values as data frame
   return(data.frame(fish1 = fish1, fish2 = fish2))
   
