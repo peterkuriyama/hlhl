@@ -12,7 +12,7 @@
 #' @export
 
 change_two <- function(thing1, thing2, name1, name2, ctl, ncores = 6,
-  add_index = FALSE, par_func = "run_scenario"){
+  index1 = FALSE, index2 = FALSE, par_func = "run_scenario"){
 
   thing1_outs <- vector('list', length = length(thing1))
 
@@ -22,8 +22,8 @@ change_two <- function(thing1, thing2, name1, name2, ctl, ncores = 6,
   if(par_func == 'run_scenario'){
     for(tt in 1:length(thing1)){
       ctl[name1] <- thing1[tt]
-      thing1_outs[[tt]] <- run_scenario(ctl_in = ctl, loop_over = thing2,
-        ncores = ncores, to_change = name2, add_index = add_index, par_func = par_func)
+      thing1_outs[[tt]] <- run_scenario(ctl_start = ctl, loop_over = thing2,
+        ncores = ncores, to_change = name2, add_index = index2, par_func = par_func)
     }
   }
 
@@ -54,8 +54,8 @@ change_two <- function(thing1, thing2, name1, name2, ctl, ncores = 6,
     # #Run simulations in parallel
     if(sys != "Windows"){
       thing1_outs <- mclapply(ctl_list1, mc.cores = ncores, FUN = function(xx){
-        run_scenario(ctl_in = xx, loop_over = thing2, ncores = ncores, to_change = name2,
-          par_func = par_func, add_index = add_index)
+        run_scenario(ctl_start = xx, loop_over = thing2, ncores = ncores, to_change = name2,
+          par_func = par_func, add_index = index2)
       })
     }
 
@@ -64,13 +64,14 @@ change_two <- function(thing1, thing2, name1, name2, ctl, ncores = 6,
 
       thing1_outs <- foreach(index = 1:length(ctl_list1), 
         .packages = c('plyr', 'dplyr', 'reshape2')) %dopar%
-        run_scenario(ctl_in = ctl_list1[[index]], loop_over = thing2, to_change = name2,
-          par_func = par_func, add_index = add_index)
+        run_scenario(ctl_start = ctl_list1[[index]], loop_over = thing2, to_change = name2,
+          par_func = par_func, add_index = index2)
 
       stopImplicitCluster()
     } 
   }
-
+  
+  #------------------------------------
   #Format the output, should have thing1, thing2 as columns and the different results
   #Combine all the data frames so   
 
@@ -79,7 +80,7 @@ change_two <- function(thing1, thing2, name1, name2, ctl, ncores = 6,
     xx[[1]]
   })
   
-  samps <- lapply(thing1_outs, FUN = function(xx){
+  loc_out <- lapply(thing1_outs, FUN = function(xx){
     xx[[2]]
   })
   
@@ -87,28 +88,28 @@ change_two <- function(thing1, thing2, name1, name2, ctl, ncores = 6,
     xx[[3]]
   })
 
-  if(add_index == FALSE){
+  if(index1 == FALSE){
     names(fish_melt) <- as.character(thing1)
-    names(samps) <- as.character(thing1)
+    names(loc_out) <- as.character(thing1)
     names(for_plot) <- as.character(thing1)
   }
 
-  if(add_index == TRUE){
+  if(index1 == TRUE){
     names(fish_melt) <- as.character(1:length(thing1))
     names(samps) <- as.character(1:length(thing1))
     names(for_plot) <- as.character(1:length(thing1))
   }
 
   fish_melt <- ldply(fish_melt)
-  samps <- ldply(samps)
+  loc_out <- ldply(loc_out)
   for_plot <- ldply(for_plot)
 
   names(fish_melt)[1] <- name1
-  names(samps)[1] <- name1
+  names(loc_out)[1] <- name1
   names(for_plot)[1] <- name1
   
   #Return outputs
-  return(list(fish_melt = fish_melt, samps = samps, for_plot = for_plot))
+  return(list(fish_melt = fish_melt, loc_out = loc_out, for_plot = for_plot))
 }
 
 
