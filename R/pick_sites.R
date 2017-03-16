@@ -8,12 +8,18 @@
 #' @export
 
 pick_sites <- function(nbest = 0, nmed = 0, nbad = 0, fish_mat){
-  
+browser()  
   fishes <- fish_mat
   fishes <- melt(fishes)
   names(fishes) <- c('x', 'y', 'value')
 
   fishes$int <- findInterval(fishes$value, quantile(fishes$value))
+
+  #Modify the values if things are the same
+  if(quantile(fishes$value)[1] == quantile(fishes$value)[2]){
+    fishes[which(fishes$value == quantile(fishes$value)[2]), 'int'] <- 1
+  }
+  
 
   #Sample sites based on quantiles
   best <- sample(which(fishes$int >= 3), size = nbest, replace = FALSE)
