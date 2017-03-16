@@ -1,5 +1,27 @@
 #'Fish the Population
 
+setwd("/Users/peterkuriyama/School/Research/hlsimulator")
+
+library(devtools)
+library(plyr)
+library(dplyr)
+library(reshape2)
+library(ggplot2)
+library(doParallel)
+library(parallel)
+library(foreach)
+library(stringr)
+#--------------------------------------------------------------------------------------------
+#May need to track depletion by drop at some points, this is in conduct_survey
+#--------------------------------------------------------------------------------------------
+#Options to load the package
+
+#From github straight
+install_github('peterkuriyama/hlsimulator')
+library(hlsimulator)
+
+
+
 
 #Simple run, no movement or anything
 
