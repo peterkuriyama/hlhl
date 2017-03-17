@@ -74,6 +74,7 @@ for_plot <- for_plot %>% group_by(spp) %>% mutate(dep = nfish_total / max(nfish_
 for_plot %>% ggplot(aes(x = dep, y = cpue)) + geom_point(aes(colour = spp), alpha = 3/10) + 
  facet_wrap(~ location) + xlim(c(0, 1)) + ylim(c(0, 1))
 
+ 
 
 # send_email
 send_email(body = "whitefish run 1 done")
