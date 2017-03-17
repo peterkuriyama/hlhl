@@ -36,7 +36,7 @@ library(hlsimulator)
 ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05,
         nfish1 = 10000, nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 2, scope = 0, seed = 7, 
         location = data.frame(vessel = 1, x = 1, y = 1), numrow = 10, numcol = 10, 
-        shapes = c(.1, .1), max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)  
+        shapes = c(.1, .1), max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 10)  
 
 #Initialize populations
 init_area1 <- initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
@@ -52,31 +52,28 @@ nlocs <- lapply(1:nrow(nsites_var), FUN = function(xx){
     nbad = nsites_var[xx, 3], fish_mat = init_area1)
 })
 
-send_email(body = "whitefish run 1 start")
-patch_inc_nlocs <- change_two(thing1 = seq(0, 50000, by = 10000), name1 = 'nfish1',
-  thing2 = nlocs, name2 = 'location', ctl = ctl1, ncores = 6, index1 = FALSE, 
-  index2 = TRUE, par_func = 'change_two')
+# send_email(body = "whitefish run 1 start")
+patch_inc_nlocs <- change_two(thing1 = seq(1000, 50000, by = 2000), name1 = 'nfish1',
+  thing2 = nlocs, name2 = 'location', ctl = ctl1, ncores = 10, index1 = FALSE, 
+  index2 = TRUE, par_func = 'change_two')[[3]]
 
-run1 <- patch_inc_nlocs[[3]]
+run1 <- patch_inc_nlocs
 run1$location <- factor(run1$location, levels = unique(run1$location))
 
 #Save the data
-save(run1, file = "output//run1.Rdata")
+save(run1, file = "..//hlsimulator_runs//run1.Rdata")
 
 # send_email
-send_email(body = "whitefish run 1 done")
+# send_email(body = "whitefish run 1 done")
 
 #Arrange run1 by loc_case
-for_plot <- run1 %>% filter(year == 1)
+for_plot <- run1 %>% filter(year == 1 & spp == 'spp1')
 for_plot <- for_plot %>% group_by(spp) %>% mutate(dep = nfish_total / max(nfish_orig)) %>%
   as.data.frame
 
 for_plot %>% ggplot(aes(x = dep, y = cpue)) + geom_point(aes(colour = spp), alpha = 3/10) + 
  facet_wrap(~ location) + xlim(c(0, 1)) + ylim(c(0, 1))
 
-
-#Save the data
-save(patch_inc_nlocs, file = "output//run1.Rdata")
 
 # send_email
 send_email(body = "whitefish run 1 done")
