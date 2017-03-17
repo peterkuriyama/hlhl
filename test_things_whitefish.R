@@ -32,37 +32,46 @@ library(hlsimulator)
 
 #------------------------------
 #Run 1
+#Make sure to start this with
 ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05,
-        nfish1 = 1000, nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 2, scope = 0, seed = 7, 
+        nfish1 = 10000, nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 2, scope = 0, seed = 7, 
         location = data.frame(vessel = 1, x = 1, y = 1), numrow = 10, numcol = 10, 
-        shapes = c(.1, .1), max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 50)  
+        shapes = c(.1, .1), max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)  
 
 #Initialize populations
 init_area1 <- initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
 
-inc_nlocs <- lapply(1:20, FUN = function(ff){
-  pick_sites(nbest = ff, fish_mat = init_area1)
+nsites_var <- expand.grid(1:5, 1:5, 1:5)
+nsites_var$tot <- rowSums(nsites_var)
+names(nsites_var)[1:3] <- c('good', 'med', 'bad')
+nsites_var <- subset(nsites_var, tot == 10)
+
+#Scenario with good, medium, and bad sites
+nlocs <- lapply(1:nrow(nsites_var), FUN = function(xx){
+  pick_sites(nbest = nsites_var[xx, 1], nmed = nsites_var[xx, 2],
+    nbad = nsites_var[xx, 3], fish_mat = init_area1)
 })
 
 send_email(body = "whitefish run 1 start")
-patch_inc_nlocs <- change_two(thing1 = seq(0, 50000, by = 1000), name1 = 'nfish1',
-  thing2 = inc_nlocs, name2 = 'location', ctl = ctl1, ncores = 6, index1 = FALSE, 
+patch_inc_nlocs <- change_two(thing1 = seq(0, 50000, by = 10000), name1 = 'nfish1',
+  thing2 = nlocs, name2 = 'location', ctl = ctl1, ncores = 6, index1 = FALSE, 
   index2 = TRUE, par_func = 'change_two')
 
+run1 <- patch_inc_nlocs[[3]]
+run1$location <- factor(run1$location, levels = unique(run1$location))
+
 #Save the data
-save(patch_inc_nlocs, file = "output//run1.Rdata")
+save(run1, file = "output//run1.Rdata")
 
 # send_email
 send_email(body = "whitefish run 1 done")
 
-
-for_plot <- patch_inc_nlocs[[3]] %>% filter(year == 1)
+#Arrange run1 by loc_case
+for_plot <- run1 %>% filter(year == 1)
 for_plot <- for_plot %>% group_by(spp) %>% mutate(dep = nfish_total / max(nfish_orig)) %>%
   as.data.frame
 
-
-
-for_plot %>% ggplot(aes(x = dep, y = cpue)) + geom_point(aes(colour = spp), alpha = 5/10) + 
+for_plot %>% ggplot(aes(x = dep, y = cpue)) + geom_point(aes(colour = spp), alpha = 3/10) + 
  facet_wrap(~ location) + xlim(c(0, 1)) + ylim(c(0, 1))
 
 
