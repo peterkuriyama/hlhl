@@ -44,19 +44,24 @@ library(hlsimulator)
 #picks good, medium, and bad sites
 #to see the effect of configurations on 
 
+#Run 1 - mostly good sites, 15 sites total
 ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1 = 10000,
       nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 1, scope = 0, seed = 1,
       location = data.frame(vessel = 1, x = 1, y = 1), numrow = 10, numcol = 10,
       shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)    
 
-send_email(body = "whitefish run 1 start")
-
-dd <- run_locs(nbests = 5, nmeds = 5, nbads = 5, seeds = 10, ncores = 10, nsites = 15, 
+send_email(subject = "run start")
+dd <- run_locs(nbests = 10, nmeds = 5, nbads = 5, seeds = 10, ncores = 10, nsites = 15, 
   thing1 = seq(1000, 50000, by = 1000), name1 = 'nfish1', ctl_o = ctl1)
 
 send_email(body = "whitefish run 1 end")
 
+#Save the results
+run1 <- dd
+save(run1, file = "..//hlsimulator_runs//run1.Rdata")
 
+
+#Plots
 for_plot <- dd[[2]]
 for_plot$location <- factor(for_plot$location, levels = unique(for_plot$location))
 for_plot <- for_plot %>% filter(year == 1 & spp == 'spp1')
@@ -68,7 +73,25 @@ for_plot %>% ggplot(aes(x = dep, y = cpue)) + geom_point(aes(colour = spp), alph
  facet_wrap(~ location) + xlim(c(0, 1)) + ylim(c(0, 1))
 
 
+#------------------------------
+#Run 2 - Same as above but with different shape parameters
 
+#Run 1 - mostly good sites, 15 sites total
+ctl2 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1 = 10000,
+                 nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 1, scope = 0, seed = 1,
+                 location = data.frame(vessel = 1, x = 1, y = 1), numrow = 10, numcol = 10,
+                 shapes = c(1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)    
+initialize_population(ctl = ctl2, nfish = ctl2$nfish1)
+
+send_email(subject = "run start")
+dd <- run_locs(nbests = 10, nmeds = 5, nbads = 5, seeds = 10, ncores = 10, nsites = 15, 
+               thing1 = seq(1000, 50000, by = 1000), name1 = 'nfish1', ctl_o = ctl2)
+
+send_email(body = "whitefish run 1 end")
+
+#Save the results
+run2 <- dd
+save(run2, file = "..//hlsimulator_runs//run2.Rdata")
 
 
 
@@ -79,8 +102,7 @@ for_plot %>% ggplot(aes(x = dep, y = cpue)) + geom_point(aes(colour = spp), alph
 #Increasing number of "good" sites
 #Do 10 iterations then increase to 100?
 
-#------------------------------
-#Run 1
+
 #Make sure to start this with
 ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05,
         nfish1 = 10000, nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 2, scope = 0, seed = 2, 
