@@ -65,8 +65,11 @@ ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1
 
 send_email(body = "whitefish run 1 start")
 
-dd <- run_locs(nbests = 5, nmeds = 5, nbads = 5, seeds = 10, ncores = 6, nsites = 15, 
+dd <- run_locs(nbests = 5, nmeds = 5, nbads = 5, seeds = 10, ncores = 10, nsites = 15, 
   thing1 = seq(1000, 50000, by = 1000), name1 = 'nfish1', ctl_o = ctl1)
+
+send_email(body = "whitefish run 1 end")
+
 
 for_plot <- dd[[2]]
 for_plot$location <- factor(for_plot$location, levels = unique(for_plot$location))
@@ -78,7 +81,12 @@ for_plot <- for_plot %>% group_by(spp) %>% mutate(dep = nfish_total / max(nfish_
 for_plot %>% ggplot(aes(x = dep, y = cpue)) + geom_point(aes(colour = spp), alpha = 3/10) + 
  facet_wrap(~ location) + xlim(c(0, 1)) + ylim(c(0, 1))
 
-send_email(body = "whitefish run 1 end")
+
+
+
+
+
+
 
 #Patchy distribution
 #Single Species
