@@ -33,17 +33,6 @@ library(hlsimulator)
 #Default locations, 15% of available sites
 
 #--------------------------------------------------------------------------------------------
-#Define default locations that will be used for other scenarios
-# set.seed(3)
-# locs <- expand.grid(1:10, 1:10)
-# locs$vessel <- 1
-# names(locs)[1:2] <- c('x', 'y')
-# locs <- locs[, c('vessel', 'x', 'y')]
-
-# samps <- base::sample(1:100, 15)
-# def_locs <- locs[samps, ]
-
-#--------------------------------------------------------------------------------------------
 #Add option to distribute fish with beta distribution
 #normal distribution, 10, 10
 #Equal high and low, 1, 1
@@ -51,9 +40,6 @@ library(hlsimulator)
 #Many sites with many fish c(3, 1) - approaches uniform numbers of fish
 
 #--------------------------------------------------------------------------------------------
-#Run with increasing number of locations
-#--------------------------------------------------------------------------------------------
-
 #Write function that takes beta distributions of fish, 
 #picks good, medium, and bad sites
 #to see the effect of configurations on 
