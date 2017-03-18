@@ -33,6 +33,7 @@ run_locs <- function(nbests = 5, nmeds = 5, nbads = 0, seeds, ncores, nsites = 1
     nsites_var[, as.numeric(which(any_zero == 1))] <- 0
 
     nsites_var$total <- rowSums(nsites_var)
+
     nsites_var <- subset(nsites_var, total == nsites)
 
     #Build up the call based on the columns available
