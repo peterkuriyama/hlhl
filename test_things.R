@@ -63,7 +63,9 @@ ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1
       location = data.frame(vessel = 1, x = 1, y = 1), numrow = 10, numcol = 10,
       shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)    
 
-dd <- run_locs(nbests = 5, nmeds = 5, nbads = 3, seeds = 6, ncores = 6, nsites = 6, 
+send_email(body = "whitefish run 1 start")
+
+dd <- run_locs(nbests = 5, nmeds = 5, nbads = 5, seeds = 10, ncores = 6, nsites = 15, 
   thing1 = seq(1000, 50000, by = 1000), name1 = 'nfish1', ctl_o = ctl1)
 
 for_plot <- dd[[2]]
@@ -75,6 +77,8 @@ for_plot <- for_plot %>% group_by(spp) %>% mutate(dep = nfish_total / max(nfish_
 
 for_plot %>% ggplot(aes(x = dep, y = cpue)) + geom_point(aes(colour = spp), alpha = 3/10) + 
  facet_wrap(~ location) + xlim(c(0, 1)) + ylim(c(0, 1))
+
+send_email(body = "whitefish run 1 end")
 
 #Patchy distribution
 #Single Species
@@ -103,7 +107,7 @@ nlocs <- lapply(1:nrow(nsites_var), FUN = function(xx){
     nbad = nsites_var[xx, 3], fish_mat = init_area1)
 })
 
-# send_email(body = "whitefish run 1 start")
+send_email(body = "whitefish run 1 start")
 patch_inc_nlocs <- change_two(thing1 = seq(1000, 50000, by = 2000), name1 = 'nfish1',
   thing2 = nlocs, name2 = 'location', ctl = ctl1, ncores = 6, index1 = FALSE, 
   index2 = TRUE, par_func = 'change_two')[[3]]
