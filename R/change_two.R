@@ -112,27 +112,3 @@ change_two <- function(thing1, thing2, name1, name2, ctl, ncores = 6,
   return(list(fish_melt = fish_melt, loc_out = loc_out, for_plot = for_plot))
 }
 
-
-#In case I want to try using parLapply which sucks
-
-      # cl <- makeCluster(getOption("cl.cores", ncores))
-      # aa <- clusterEvalQ(cl, library(hlsimulator))
-      # aa <- clusterEvalQ(cl, library(plyr))
-      # aa <- clusterEvalQ(cl, library(dplyr))
-      # aa <- clusterEvalQ(cl, library(reshape2))
-      # dd <- clusterExport(cl, c("ctl_list1", "par_func", "name2",  "thing2"), envir = environment())
-
-      
-      # run_scenario(ctl_in = ctl_list1[[1]], loop_over = thing2, 
-      #   to_change = name2, par_func = par_func)
-
-
-      # thing1_outs <- parLapply(cl, ctl_list1, function(pp){
-      #   ctlctl <- pp
-      #   pp
-      # #   run_scenario(ctl_in = ctlctl, loop_over = thing2,
-      # #     to_change = name2, par_func = par_func)
-      # })
-
-      # stopCluster(cl)
-    # }
