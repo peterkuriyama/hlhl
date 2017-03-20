@@ -1,6 +1,19 @@
+#Update directory
 
-setwd("/Users/peterkuriyama/School/Research/hlsimulator")
+#Automatically detect # of cores
+nncores <- detectCores() - 2
+#Mac
+if(Sys.info()['sysname'] == 'Darwin'){
+  setwd("/Users/peterkuriyama/School/Research/hlsimulator")  
+  type <- 'mac'
+}
 
+if(Sys.info()['sysname'] == 'Windows'){
+  setwd(setwd("C://Users//Peter//Desktop//hlsimulator"))
+}
+
+#--------------------------------------------------------------------------------------------
+#Load Packages
 library(devtools)
 library(plyr)
 library(dplyr)
@@ -10,6 +23,8 @@ library(doParallel)
 library(parallel)
 library(foreach)
 library(stringr)
+library(sendmailR)
+
 #--------------------------------------------------------------------------------------------
 #May need to track depletion by drop at some points, this is in conduct_survey
 #--------------------------------------------------------------------------------------------
@@ -18,6 +33,9 @@ library(stringr)
 #From github straight
 install_github('peterkuriyama/hlsimulator')
 library(hlsimulator)
+
+#--------------------------------------------------------------------------------------------
+
 
 #----------------------------------------------------------------------------------------
 # What range of catch per hooks provides a relative index of abundance?
@@ -39,6 +57,33 @@ library(hlsimulator)
 #Few sites with many fish, .1, 10, very patchy
 #Many sites with many fish c(3, 1) - approaches uniform numbers of fish
 
+ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1 = 10000,
+      nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 1, scope = 0, seed = 1,
+      location = data.frame(vessel = 1, x = 1, y = 1), numrow = 10, numcol = 10,
+      shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)    
+
+ctl1$shapes <- c(10, .10)
+initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
+hist(initialize_population(ctl = ctl1, nfish = ctl1$nfish1), breaks = 30)
+#Distribution Scenarios
+#1. rpatchy shapes = c(0.1, 10); like 0 and 
+ctl1$shapes <- c(.1, 10)
+initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
+
+#2. rightskew Right skewed distribution of fish
+ctl1$shapes <- c(1, 10)
+initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
+
+#3. normdist Normal dist c(10, 10)
+ctl1$shapes <- c(10, 10)
+initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
+
+#4. uniform c(10, .1)
+ctl1$shapes <- c(10, .10)
+initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
+
+#Hypothesize that scenario 3 and 4 will be the same
+
 #--------------------------------------------------------------------------------------------
 #Write function that takes beta distributions of fish, 
 #picks good, medium, and bad sites
@@ -48,8 +93,6 @@ ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1
       nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 1, scope = 0, seed = 1,
       location = data.frame(vessel = 1, x = 1, y = 1), numrow = 10, numcol = 10,
       shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)    
-
-send_email(body = "whitefish run 1 start")
 
 dd <- run_locs(nbests = 5, nmeds = 5, nbads = 5, seeds = 10, ncores = 10, nsites = 15, 
   thing1 = seq(1000, 50000, by = 1000), name1 = 'nfish1', ctl_o = ctl1)
