@@ -1,18 +1,4 @@
-#Update directory
 
-#Automatically detect # of cores
-nncores <- detectCores() - 2
-#Mac
-if(Sys.info()['sysname'] == 'Darwin'){
-  setwd("/Users/peterkuriyama/School/Research/hlsimulator")  
-  type <- 'mac'
-}
-
-if(Sys.info()['sysname'] == 'Windows'){
-  setwd(setwd("C://Users//Peter//Desktop//hlsimulator"))
-}
-
-#--------------------------------------------------------------------------------------------
 #Load Packages
 library(devtools)
 library(plyr)
@@ -24,6 +10,23 @@ library(parallel)
 library(foreach)
 library(stringr)
 library(sendmailR)
+
+#--------------------------------------------------------------------------------------------
+#Update directory
+
+#Automatically detect # of cores
+nncores <- detectCores() - 2
+
+#Mac
+if(Sys.info()['sysname'] == 'Darwin'){
+  setwd("/Users/peterkuriyama/School/Research/hlsimulator")  
+  type <- 'mac'
+}
+
+if(Sys.info()['sysname'] == 'Windows'){
+  setwd("C://Users//Peter//Desktop//hlsimulator")
+}
+
 
 #--------------------------------------------------------------------------------------------
 #May need to track depletion by drop at some points, this is in conduct_survey
@@ -51,38 +54,108 @@ library(hlsimulator)
 #Default locations, 15% of available sites
 
 #--------------------------------------------------------------------------------------------
-#Add option to distribute fish with beta distribution
-#normal distribution, 10, 10
-#Equal high and low, 1, 1
-#Few sites with many fish, .1, 10, very patchy
-#Many sites with many fish c(3, 1) - approaches uniform numbers of fish
+#RUN 1
+#--------------------------------------------------------------------------------------------
+#Increasing number of sites from 2-20
+fishes <- seq(1000, 50000, by = 2000)
 
 ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1 = 10000,
       nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 1, scope = 0, seed = 1,
       location = data.frame(vessel = 1, x = 1, y = 1), numrow = 10, numcol = 10,
       shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)    
 
-ctl1$shapes <- c(10, .10)
-initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
-hist(initialize_population(ctl = ctl1, nfish = ctl1$nfish1), breaks = 30)
 #Distribution Scenarios
-#1. rpatchy shapes = c(0.1, 10); like 0 and 
+#---------------------------------------------
+#Patchy
 ctl1$shapes <- c(.1, 10)
-initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
+init1 <- initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
 
+locs <- lapply(seq(2, 20, by = 2), FUN = function(ff){
+  pick_sites(nbest = ff, fish_mat = init1)
+})
+
+patchy <- change_two(thing1 = fishes, thing2 = locs, name1 = 'nfish1', 
+  name2 = 'location', ctl = ctl1, index1 = FALSE, index2 = TRUE, par_func = 'change_two',
+  ncores = nncores)
+
+#Save the results
+save(patchy, file = 'output/1_patchy.Rdata')
+
+#---------------------------------------------
 #2. rightskew Right skewed distribution of fish
 ctl1$shapes <- c(1, 10)
-initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
+init1 <- initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
+locs <- lapply(seq(2, 20, by = 2), FUN = function(ff){
+  pick_sites(nbest = ff, fish_mat = init1)
+})
 
+rightskew <- change_two(thing1 = fishes, thing2 = locs, name1 = 'nfish1', 
+  name2 = 'location', ctl = ctl1, index1 = FALSE, index2 = TRUE, par_func = 'change_two',
+  ncores = nncores)
+
+#Save the results
+save(rightskew, file = 'output/1_rightskew.Rdata')
+
+#---------------------------------------------
 #3. normdist Normal dist c(10, 10)
 ctl1$shapes <- c(10, 10)
-initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
+init1 <- initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
 
+locs <- lapply(seq(2, 20, by = 2), FUN = function(ff){
+  pick_sites(nbest = ff, fish_mat = init1)
+})
+
+normdist <- change_two(thing1 = fishes, thing2 = locs, name1 = 'nfish1', 
+  name2 = 'location', ctl = ctl1, index1 = FALSE, index2 = TRUE, par_func = 'change_two',
+  ncores = nncores)
+
+#Save the results
+save(normdist, file = 'output/1_normdist.Rdata')
+
+#---------------------------------------------
 #4. uniform c(10, .1)
 ctl1$shapes <- c(10, .10)
-initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
+init1 <- initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
 
+locs <- lapply(seq(2, 20, by = 2), FUN = function(ff){
+  pick_sites(nbest = ff, fish_mat = init1)
+})
+
+unif <- change_two(thing1 = fishes, thing2 = locs, name1 = 'nfish1', 
+  name2 = 'location', ctl = ctl1, index1 = FALSE, index2 = TRUE, par_func = 'change_two',
+  ncores = nncores)
+
+#Save the results
+save(unif, file = 'output/1_unif.Rdata')
 #Hypothesize that scenario 3 and 4 will be the same
+
+#---------------------------------------------
+#results and compare
+res <- list(patchy = patchy, rightskew = rightskew, normdist = normdist,
+  unif = unif)
+res <- lapply(res, FUN = function(ff) ff[[3]])
+res <- ldply(res)
+names(res)[1] <- 'dist'
+res <- res %>% filter(spp == 'spp1' & year == 1)
+res <- res %>% group_by(dist) %>% mutate(dep = nfish_total / max(nfish_total)) %>%
+  as.data.frame
+res$location <- factor(res$location, levels = unique(res$location))
+
+ggplot(res, aes(x = dep, y = cpue)) + geom_point(aes(colour = dist)) + facet_wrap(~ location)
+
+
+
+#--------------------------------------------------------------------------------------------
+#RUN 2
+#--------------------------------------------------------------------------------------------
+#Picking some number of good, med, bad sites
+
+
+
+
+
+
+
 
 #--------------------------------------------------------------------------------------------
 #Write function that takes beta distributions of fish, 
