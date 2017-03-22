@@ -1,4 +1,4 @@
-
+#--------------------------------------------------------------------------------------------
 #Load Packages
 library(devtools)
 library(plyr)
@@ -131,24 +131,262 @@ save(unif, file = 'output/1_unif.Rdata')
 
 #---------------------------------------------
 #results and compare
-res <- list(patchy = patchy, rightskew = rightskew, normdist = normdist,
-  unif = unif)
-res <- lapply(res, FUN = function(ff) ff[[3]])
-res <- ldply(res)
-names(res)[1] <- 'dist'
-res <- res %>% filter(spp == 'spp1' & year == 1)
-res <- res %>% group_by(dist) %>% mutate(dep = nfish_total / max(nfish_total)) %>%
-  as.data.frame
-res$location <- factor(res$location, levels = unique(res$location))
 
-ggplot(res, aes(x = dep, y = cpue)) + geom_point(aes(colour = dist)) + facet_wrap(~ location)
+#Load the data from things already run
+#load run 1
+run1 <- list.files("output")[grep("1", list.files("output")) ]
+
+files1 <- paste0('output/', run1)
+for(ff in 1:length(files1)){
+  load(files1[ff])
+}
+
+res1 <- list(patchy = patchy, rightskew = rightskew, normdist = normdist,
+  unif = unif)
+res1 <- lapply(res1, FUN = function(ff) ff[[3]])
+res1 <- ldply(res1)
+names(res1)[1] <- 'dist'
+res1 <- res1 %>% filter(spp == 'spp1' & year == 1)
+res1 <- res1 %>% group_by(dist) %>% mutate(dep = nfish_total / max(nfish_total)) %>%
+  as.data.frame
+res1$location <- factor(res1$location, levels = unique(res1$location))
+
+ggplot(res1, aes(x = dep, y = cpue)) + geom_point(aes(colour = dist)) + facet_wrap(~ location)
+
+
+
 
 
 
 #--------------------------------------------------------------------------------------------
 #RUN 2
 #--------------------------------------------------------------------------------------------
+
+#20 sites total:
+  #70% good, 20% med, 10% bad
+  #70% good, 30% med
+  #70% good, 30% bad
+  #60% good, 30% med, 10% bad
+  #60% good, 40% bad
+  #80% good, 20% bad
+  #80% good, 10% med, 10% bad
+
+
+pick_locs2 <- data.frame(nbests = c(.7, .7, .7, .6, .6, .7, .8),
+                nmeds = c(.2, .3, 0, .3, 0, 0, .1),
+                nbads = c(.1, 0, .3, .1, .4, .2, .1))
+(pick_locs2 <- pick_locs2 * 20)
+
 #Picking some number of good, med, bad sites
+#Increasing number of sites from 2-20
+fishes <- seq(1000, 50000, by = 2000)
+
+ctl2 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1 = 10000,
+      nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 1, scope = 0, seed = 1,
+      location = data.frame(vessel = 1, x = 1, y = 1), numrow = 10, numcol = 10,
+      shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)    
+
+#Distribution Scenarios
+#---------------------------------------------
+#Patchy
+ctl2$shapes <- c(.1, 10)
+init2 <- initialize_population(ctl = ctl2, nfish = ctl2$nfish1)
+hist(init2, breaks = 30)
+
+##Med/bad locations both have 0 fish
+locs2 <- lapply(1:nrow(pick_locs2), FUN = function(xx){
+  pick_sites(nbest = pick_locs2[xx, 1], nmed = pick_locs2[xx, 2], 
+    nbad = pick_locs2[xx, 3], fish_mat = init2)
+})
+
+patchy2 <- change_two(thing1 = fishes, thing2 = locs2, name1 = 'nfish1', 
+  name2 = 'location', ctl = ctl1, index1 = FALSE, index2 = TRUE, par_func = 'change_two',
+  ncores = nncores)
+
+#Save the results
+save(patchy2, file = 'output/2_patchy.Rdata')
+
+#---------------------------------------------
+#2. rightskew Right skewed distribution of fish
+ctl2$shapes <- c(1, 10)
+init2 <- initialize_population(ctl = ctl2, nfish = ctl2$nfish1)
+locs2 <- lapply(1:nrow(pick_locs2), FUN = function(xx){
+  pick_sites(nbest = pick_locs2[xx, 1], nmed = pick_locs2[xx, 2], 
+    nbad = pick_locs2[xx, 3], fish_mat = init2)
+})
+
+rightskew2 <- change_two(thing1 = fishes, thing2 = locs2, name1 = 'nfish1', 
+  name2 = 'location', ctl = ctl1, index1 = FALSE, index2 = TRUE, par_func = 'change_two',
+  ncores = nncores)
+
+#Save the results
+save(rightskew2, file = 'output/2_rightskew.Rdata')
+
+#---------------------------------------------
+#3. normdist Normal dist c(10, 10)
+ctl2$shapes <- c(10, 10)
+init2 <- initialize_population(ctl = ctl2, nfish = ctl2$nfish1)
+
+locs2 <- lapply(1:nrow(pick_locs2), FUN = function(xx){
+  pick_sites(nbest = pick_locs2[xx, 1], nmed = pick_locs2[xx, 2], 
+    nbad = pick_locs2[xx, 3], fish_mat = init2)
+})
+
+normdist2 <- change_two(thing1 = fishes, thing2 = locs2, name1 = 'nfish1', 
+  name2 = 'location', ctl = ctl1, index1 = FALSE, index2 = TRUE, par_func = 'change_two',
+  ncores = nncores)
+
+#Save the results
+save(normdist2, file = 'output/2_normdist.Rdata')
+
+#---------------------------------------------
+#4. uniform c(10, .1)
+ctl2$shapes <- c(10, .10)
+init2 <- initialize_population(ctl = ctl2, nfish = ctl2$nfish1)
+
+locs2 <- lapply(1:nrow(pick_locs2), FUN = function(xx){
+  pick_sites(nbest = pick_locs2[xx, 1], nmed = pick_locs2[xx, 2], 
+    nbad = pick_locs2[xx, 3], fish_mat = init2)
+})
+
+unif2 <- change_two(thing1 = fishes, thing2 = locs2, name1 = 'nfish1', 
+  name2 = 'location', ctl = ctl1, index1 = FALSE, index2 = TRUE, par_func = 'change_two',
+  ncores = nncores)
+
+#Save the results
+save(unif2, file = 'output/2_unif.Rdata')
+#Hypothesize that scenario 3 and 4 will be the same
+
+#---------------------------------------------
+#results and compare
+run2 <- list.files("output")[grep("2", list.files("output")) ]
+
+files2 <- paste0('output/', run2)
+for(ff in 1:length(files2)){
+  load(files2[ff])
+}
+
+res2 <- list(patchy = patchy2, rightskew = rightskew2, normdist = normdist2,
+  unif = unif2)
+res2 <- lapply(res2, FUN = function(ff) ff[[3]])
+res2 <- ldply(res2)
+names(res2)[1] <- 'dist'
+res2 <- res2 %>% filter(spp == 'spp1' & year == 1)
+res2 <- res2 %>% group_by(dist) %>% mutate(dep = nfish_total / max(nfish_total)) %>%
+  as.data.frame
+res2$location <- factor(res2$location, levels = unique(res2$location))
+
+#Add more descriptive names
+descs <- data.frame(location = as.character(unique(res2$location)), 
+                    desc = c("70% good, 20% med, 10% bad",
+                             "70% good, 30% med",
+                             "70% good, 30% bad",
+                             "60% good, 30% med, 10% bad",
+                             "60% good, 40% bad",
+                             "80% good, 20% bad",
+                             "80% good, 10% med, 10% bad"))
+descs$location <- factor(descs$location, levels = descs$location)
+
+res2 <- inner_join(res2, descs, by = "location")
+
+ggplot(res2, aes(x = dep, y = cpue)) + geom_point(aes(colour = dist)) + facet_wrap(~ location)
+
+#Can get lots of spread in the data based on the sampling locations
+ggplot(res2, aes(x = dep, y = cpue)) + geom_point(aes(colour = dist)) + 
+  facet_wrap(~ desc) + ylim(c(0, 1))
+
+# pull 60s only
+res2[grep('60', res2$desc), ] %>% ggplot(aes(x = dep, y = cpue)) + geom_point(aes(colour = desc)) +
+  facet_wrap(~ dist) + ylim(c(0, 1))
+
+names(locs2) <- descs$desc
+
+visualize_fishing(loc = locs2[[1]], init2)
+
+
+#Visualize Fishing manually
+pdf(width = 8.8, height = 5.5, file = 'figs/locs2.pdf')
+for(ll in 1:length(locs2)){
+  print(visualize_fishing(loc = locs2[[ll]], init2))
+}
+dev.off()
+
+
+#--------------------------------------------------------------------------------------------
+#RUN 3 - Two Species
+#--------------------------------------------------------------------------------------------
+
+fishes <- seq(1000, 50000, by = 2000)
+
+ctl3 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1 = 10000,
+      nfish2 = 10000, prob1 = .01, prob2 = .05, nyear = 1, scope = 0, seed = 1,
+      location = data.frame(vessel = 1, x = 1, y = 1), numrow = 10, numcol = 10,
+      shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)    
+
+#Distribution Scenarios
+#---------------------------------------------
+#Patchy
+ctl3$shapes <- c(.1, 10)
+
+#Fish in 20 locations
+init3 <- initialize_population(ctl = ctl3, nfish = ctl3$nfish1)
+ctl3$location <- pick_sites(nbest = 20, fish_mat = init3)
+
+patchy3 <- change_two(thing1 = fishes, thing2 = rev(fishes), name1 = 'nfish1', 
+  name2 = 'nfish2', ctl = ctl3, index1 = FALSE, index2 = FALSE, par_func = 'change_two',
+  ncores = nncores)
+
+#Save the results
+save(patchy3, file = 'output/3_patchy.Rdata')
+plot3 <- patchy3[[3]] %>% group_by(spp) %>% mutate(dep = nfish_total / max(nfish_total)) %>%
+  as.data.frame
+plot3 <- plot3 %>% filter(year == 1)
+
+#reformat data to plot pairs of cpue
+cpue3 <- left_join(plot3 %>% filter(spp == 'spp1') %>% select(nfish1, nfish2, cpue), 
+          plot3 %>% filter(spp == 'spp2') %>% select(nfish1, nfish2, cpue), 
+          by = c('nfish1', 'nfish2'))
+ggplot(cpue3, aes(x = cpue.x, y = cpue.y)) + geom_point()
+
+
+ggplot(plot3, aes(x = dep, y = cpue)) + geom_line(aes(colour = spp, group = paste(nfish1, nfish2))) 
+
+
+
+#Now add in more attraction with competition_coeff
+ctl3$comp_coeff <- .8
+
+patchy3.1 <- change_two(thing1 = fishes, thing2 = rev(fishes), name1 = 'nfish1', 
+  name2 = 'nfish2', ctl = ctl3, index1 = FALSE, index2 = FALSE, par_func = 'change_two',
+  ncores = nncores)
+
+#Save the results
+save(patchy3.1, file = 'output/3.1_patchy.Rdata')
+
+plot3.1 <- patchy3.1[[3]] %>% group_by(spp, year) %>% mutate(dep = nfish_total / max(nfish_total)) %>%
+  as.data.frame
+
+plot3.1 <- plot3.1 %>% filter(year == 1)
+plot3.1$cpue_spp <- gsub('spp', 'cpue', plot3.1$spp)
+plot3.1$dep_spp <- gsub('spp', 'dep', plot3.1$spp)
+
+#Cpues
+# r1 <- plot3.1 %>% select(nfish1, nfish2, cpue_spp, cpue) %>% 
+#   dcast(nfish1 + nfish2 ~ cpue_spp, value.var = "cpue")
+#deps
+r1 <- plot3.1 %>% select(nfish1, nfish2, dep_spp, dep) %>% 
+  dcast(nfish1 + nfish2 ~ dep_spp, value.var = "dep")
+
+r2 <- plot3.1 %>% select(nfish1, nfish2, spp, cpue)
+
+cpue31 <- inner_join(r1, r2, by = c('nfish1', 'nfish2'))
+
+#Plot comparison of two species with competiton and different depletion levels
+ggplot(cpue31) + geom_point(aes(x = dep1, y = dep2, colour = cpue), size = 4) + 
+  facet_wrap(~ spp)
+
+
+#look at the differences in cpues as depletion goes up or down...
 
 
 
@@ -156,6 +394,11 @@ ggplot(res, aes(x = dep, y = cpue)) + geom_point(aes(colour = dist)) + facet_wra
 
 
 
+#--------------------------------------------------------------------------------------------
+#look more into the right skew results
+ctl2$shapes <- c(1, 9)
+init2 <- initialize_population(ctl = ctl2, nfish = ctl2$nfish1)
+hist(init2, breaks = 30)
 
 #--------------------------------------------------------------------------------------------
 #Write function that takes beta distributions of fish, 
