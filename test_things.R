@@ -31,14 +31,9 @@ if(Sys.info()['sysname'] == 'Windows'){
 #--------------------------------------------------------------------------------------------
 #May need to track depletion by drop at some points, this is in conduct_survey
 #--------------------------------------------------------------------------------------------
-#Options to load the package
-
 #From github straight
 install_github('peterkuriyama/hlsimulator')
 library(hlsimulator)
-
-#--------------------------------------------------------------------------------------------
-
 
 #----------------------------------------------------------------------------------------
 # What range of catch per hooks provides a relative index of abundance?
@@ -63,6 +58,23 @@ ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1
       nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 1, scope = 0, seed = 1,
       location = data.frame(vessel = 1, x = 1, y = 1), numrow = 10, numcol = 10,
       shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)    
+
+#---------------------------------------------
+#Compare this to the original results
+
+inc1 <- run_locs(shape_list = shape_list1,
+  loc_scenario = 'increasing', loc_vector = seq(2, 20, by = 2),
+  ncores = 6, ctl_o = ctl1, thing1 = fishes,
+  name1 = 'nfish1')
+inc1 %>% filter(spp == 'spp1') %>% ggplot(aes(x = dep, y = cpue)) + 
+  geom_point(aes(colour = location)) + facet_wrap(~ init_dist)
+
+run_locs(shape_list = shape_list1,
+  loc_scenario = 'pick', loc_list = pick_locs1,
+  ncores = 6, ctl_o = ctl1, thing1 = fishes,
+  name1 = 'nfish1')
+
+
 
 #Distribution Scenarios
 #---------------------------------------------
@@ -382,7 +394,7 @@ r2 <- plot3.1 %>% select(nfish1, nfish2, spp, cpue)
 cpue31 <- inner_join(r1, r2, by = c('nfish1', 'nfish2'))
 
 #Plot comparison of two species with competiton and different depletion levels
-ggplot(cpue31) + geom_point(aes(x = dep1, y = dep2, colour = cpue), size = 4) + 
+ggplot(cpue31) + geom_tile(aes(x = dep1, y = dep2, colour = cpue), size = 4) + 
   facet_wrap(~ spp)
 
 
