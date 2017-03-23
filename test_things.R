@@ -51,6 +51,7 @@ library(hlsimulator)
 #RUN 1 - Increasing number of sites from 2-20
 #--------------------------------------------------------------------------------------------
 #Set Up Values for this run
+#Try to get range of 10-500 fish per cell
 
 fishes <- seq(1000, 50000, by = 2000)
 
@@ -89,22 +90,77 @@ inc1 %>% filter(spp == 'spp1') %>% ggplot(aes(x = dep, y = cpue)) +
 # Increasing number of sites gets closer to true curve
 #Least variability as fish distribution gets more even
 
+#---------------------------------------------
+#Scale up this run to larger area
+
+fishes <- seq(2000, 100000, by = 5000)
+ctl1$nfish1 <- 20000
+ctl1$numrow <- 15
+ctl1$numcol <- 15
+
+init1 <- initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
+
+pick_locs1 <- data.frame(nbests = c(.7, .7, .7, .6, .6, .7, .8),
+                nmeds = c(.2, .3, 0, .3, 0, 0, .1),
+                nbads = c(.1, 0, .3, .1, .4, .2, .1))
+(pick_locs1 <- pick_locs1 * 50)
+
+#Run the simulation
+inc11 <- run_locs(shape_list = shape_list1,
+  loc_scenario = 'increasing', loc_vector = seq(2, 20, by = 2),
+  ncores = 6, ctl_o = ctl1, thing1 = fishes,
+  name1 = 'nfish1')
+
+#Save the data
+save(inc11, file = 'output/inc11.Rdata')
+
+#Plot the results
+inc11$location <- factor(inc11$location, levels = unique(inc11$location))
+
+inc11 %>% filter(spp == 'spp1') %>% ggplot(aes(x = dep, y = cpue)) + 
+  geom_point(aes(colour = init_dist)) + facet_wrap(~ location)
+  
+inc11 %>% filter(spp == 'spp1') %>% ggplot(aes(x = dep, y = cpue)) + 
+  geom_point(aes(colour = location)) + facet_wrap(~ init_dist)
+
+#Relationship seems to be invariant across matrix dimensions
+
+#--------------------------------------------------------------------------------------------
+#Two Species
+
+fishes1 <- seq(10000, 50000, by = 10000)
+fishes2 <- seq(1000, 50000, by = 10000)
+
+ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1 = 10000,
+      nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 1, scope = 0, seed = 1,
+      location = data.frame(vessel = 1, x = 1, y = 1), numrow = 10, numcol = 10,
+      shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)    
+
+shape_list1 <- data.frame(scen = c('patchy','rightskew', 'normdist', 'unif'), 
+                          shapes1 = c(.1, 1, 10, 10), 
+                          shapes2 = c(10, 10, 10, .10))
+
+pick_locs1 <- data.frame(nbests = c(.7, .7, .7, .6, .6, .7, .8),
+                nmeds = c(.2, .3, 0, .3, 0, 0, .1),
+                nbads = c(.1, 0, .3, .1, .4, .2, .1))
+pick_locs1 <- pick_locs1 * 10
 
 
 
 
+
+
+run_locs_2spp(shape_list = shape_list1, loc_scenario = 'pick',
+  loc_list = pick_locs1, ncores = 6, ctl_o = ctl1, thing1 = fishes1,
+  thing2 = fishes2, name1 = 'nfish1', name2 = 'nfish2')
+
+#---------------------------------------------
+#Patchy
 fishes <- seq(10000, 50000, by = 10000)
 run_locs(shape_list = shape_list1,
   loc_scenario = 'pick', loc_list = pick_locs1,
   ncores = 6, ctl_o = ctl1, thing1 = fishes,
   name1 = 'nfish1')
-
-
-
-#Distribution Scenarios
-#---------------------------------------------
-#Patchy
-
 
 
 
