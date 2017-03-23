@@ -45,7 +45,9 @@ visualize_fishing <- function(loc, fish_mat){
   fishes[which(fishes$fished == 1), 'fished'] <- 'yes'
   
   fishes$status <- factor(fishes$status, levels = c('bad', 'med', 'best'))
-  
+
+browser()  
+
   ggplot() + geom_histogram(data = fishes, aes(x = value), alpha = .3, colour = 'black') +  
     geom_histogram(data = subset(fishes, fished == 'yes'), aes(x = value),
       alpha = .3, fill = 'red') + facet_wrap(~ status) + theme_bw()
