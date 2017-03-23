@@ -27,7 +27,6 @@ if(Sys.info()['sysname'] == 'Windows'){
   setwd("C://Users//Peter//Desktop//hlsimulator")
 }
 
-
 #--------------------------------------------------------------------------------------------
 #May need to track depletion by drop at some points, this is in conduct_survey
 #--------------------------------------------------------------------------------------------
@@ -49,9 +48,10 @@ library(hlsimulator)
 #Default locations, 15% of available sites
 
 #--------------------------------------------------------------------------------------------
-#RUN 1
+#RUN 1 - Increasing number of sites from 2-20
 #--------------------------------------------------------------------------------------------
-#Increasing number of sites from 2-20
+#Set Up Values for this run
+
 fishes <- seq(1000, 50000, by = 2000)
 
 ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1 = 10000,
@@ -59,16 +59,41 @@ ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1
       location = data.frame(vessel = 1, x = 1, y = 1), numrow = 10, numcol = 10,
       shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)    
 
-#---------------------------------------------
-#Compare this to the original results
+shape_list1 <- data.frame(scen = c('patchy','rightskew', 'normdist', 'unif'), 
+                          shapes1 = c(.1, 1, 10, 10), 
+                          shapes2 = c(10, 10, 10, .10))
 
+pick_locs1 <- data.frame(nbests = c(.7, .7, .7, .6, .6, .7, .8),
+                nmeds = c(.2, .3, 0, .3, 0, 0, .1),
+                nbads = c(.1, 0, .3, .1, .4, .2, .1))
+(pick_locs1 <- pick_locs1 * 20)
+
+#Run the simulation
 inc1 <- run_locs(shape_list = shape_list1,
   loc_scenario = 'increasing', loc_vector = seq(2, 20, by = 2),
   ncores = 6, ctl_o = ctl1, thing1 = fishes,
   name1 = 'nfish1')
+
+#Save the data
+save(inc1, file = 'output/inc1.Rdata')
+
+#Plot the results
+inc1$location <- factor(inc1$location, levels = unique(inc1$location))
+
+inc1 %>% filter(spp == 'spp1') %>% ggplot(aes(x = dep, y = cpue)) + 
+  geom_point(aes(colour = init_dist)) + facet_wrap(~ location)
+  
 inc1 %>% filter(spp == 'spp1') %>% ggplot(aes(x = dep, y = cpue)) + 
   geom_point(aes(colour = location)) + facet_wrap(~ init_dist)
 
+# Increasing number of sites gets closer to true curve
+#Least variability as fish distribution gets more even
+
+
+
+
+
+fishes <- seq(10000, 50000, by = 10000)
 run_locs(shape_list = shape_list1,
   loc_scenario = 'pick', loc_list = pick_locs1,
   ncores = 6, ctl_o = ctl1, thing1 = fishes,
@@ -79,93 +104,6 @@ run_locs(shape_list = shape_list1,
 #Distribution Scenarios
 #---------------------------------------------
 #Patchy
-ctl1$shapes <- c(.1, 10)
-init1 <- initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
-
-locs <- lapply(seq(2, 20, by = 2), FUN = function(ff){
-  pick_sites(nbest = ff, fish_mat = init1)
-})
-
-patchy <- change_two(thing1 = fishes, thing2 = locs, name1 = 'nfish1', 
-  name2 = 'location', ctl = ctl1, index1 = FALSE, index2 = TRUE, par_func = 'change_two',
-  ncores = nncores)
-
-#Save the results
-save(patchy, file = 'output/1_patchy.Rdata')
-
-#---------------------------------------------
-#2. rightskew Right skewed distribution of fish
-ctl1$shapes <- c(1, 10)
-init1 <- initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
-locs <- lapply(seq(2, 20, by = 2), FUN = function(ff){
-  pick_sites(nbest = ff, fish_mat = init1)
-})
-
-rightskew <- change_two(thing1 = fishes, thing2 = locs, name1 = 'nfish1', 
-  name2 = 'location', ctl = ctl1, index1 = FALSE, index2 = TRUE, par_func = 'change_two',
-  ncores = nncores)
-
-#Save the results
-save(rightskew, file = 'output/1_rightskew.Rdata')
-
-#---------------------------------------------
-#3. normdist Normal dist c(10, 10)
-ctl1$shapes <- c(10, 10)
-init1 <- initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
-
-locs <- lapply(seq(2, 20, by = 2), FUN = function(ff){
-  pick_sites(nbest = ff, fish_mat = init1)
-})
-
-normdist <- change_two(thing1 = fishes, thing2 = locs, name1 = 'nfish1', 
-  name2 = 'location', ctl = ctl1, index1 = FALSE, index2 = TRUE, par_func = 'change_two',
-  ncores = nncores)
-
-#Save the results
-save(normdist, file = 'output/1_normdist.Rdata')
-
-#---------------------------------------------
-#4. uniform c(10, .1)
-ctl1$shapes <- c(10, .10)
-init1 <- initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
-
-locs <- lapply(seq(2, 20, by = 2), FUN = function(ff){
-  pick_sites(nbest = ff, fish_mat = init1)
-})
-
-unif <- change_two(thing1 = fishes, thing2 = locs, name1 = 'nfish1', 
-  name2 = 'location', ctl = ctl1, index1 = FALSE, index2 = TRUE, par_func = 'change_two',
-  ncores = nncores)
-
-#Save the results
-save(unif, file = 'output/1_unif.Rdata')
-#Hypothesize that scenario 3 and 4 will be the same
-
-#---------------------------------------------
-#results and compare
-
-#Load the data from things already run
-#load run 1
-run1 <- list.files("output")[grep("1", list.files("output")) ]
-
-files1 <- paste0('output/', run1)
-for(ff in 1:length(files1)){
-  load(files1[ff])
-}
-
-res1 <- list(patchy = patchy, rightskew = rightskew, normdist = normdist,
-  unif = unif)
-res1 <- lapply(res1, FUN = function(ff) ff[[3]])
-res1 <- ldply(res1)
-names(res1)[1] <- 'dist'
-res1 <- res1 %>% filter(spp == 'spp1' & year == 1)
-res1 <- res1 %>% group_by(dist) %>% mutate(dep = nfish_total / max(nfish_total)) %>%
-  as.data.frame
-res1$location <- factor(res1$location, levels = unique(res1$location))
-
-ggplot(res1, aes(x = dep, y = cpue)) + geom_point(aes(colour = dist)) + facet_wrap(~ location)
-
-
 
 
 
