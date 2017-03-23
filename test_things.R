@@ -38,14 +38,6 @@ library(hlsimulator)
 # What range of catch per hooks provides a relative index of abundance?
 # What range of hooks without an aggressive species provides a relative index of abundance.
 
-#To-Do:
-#1. Explore patchiness configurations
-#3. Scenarios:
-  #Increasing/decreasing Trend
-  #Gear saturation
-  #Aggressive behavior
-
-#Default locations, 15% of available sites
 
 #--------------------------------------------------------------------------------------------
 #RUN 1 - Increasing number of sites from 2-20
@@ -91,6 +83,7 @@ inc1 %>% filter(spp == 'spp1') %>% ggplot(aes(x = dep, y = cpue)) +
 #Least variability as fish distribution gets more even
 
 #---------------------------------------------
+#---------------------------------------------
 #Scale up this run to larger area
 
 fishes <- seq(2000, 100000, by = 5000)
@@ -125,34 +118,77 @@ inc11 %>% filter(spp == 'spp1') %>% ggplot(aes(x = dep, y = cpue)) +
 
 #Relationship seems to be invariant across matrix dimensions
 
-#--------------------------------------------------------------------------------------------
-#Two Species
+#---------------------------------------------
+#---------------------------------------------
+#Increasing number of location with two species, even comp_coeff
+#Both species increasing together
 
-fishes1 <- seq(10000, 50000, by = 10000)
-fishes2 <- seq(1000, 50000, by = 10000)
+fishes1 <- seq(10000, 60000, by = 10000)
+fishes2 <- rev(seq(10000, 60000, by = 10000))
 
 ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1 = 10000,
       nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 1, scope = 0, seed = 1,
       location = data.frame(vessel = 1, x = 1, y = 1), numrow = 10, numcol = 10,
-      shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)    
+      shapes = c(.1, .1) , max_prob = 0, min_prob = 0, niters = 1, 
+      comp_coeff = .7)    
 
 shape_list1 <- data.frame(scen = c('patchy','rightskew', 'normdist', 'unif'), 
                           shapes1 = c(.1, 1, 10, 10), 
                           shapes2 = c(10, 10, 10, .10))
 
-pick_locs1 <- data.frame(nbests = c(.7, .7, .7, .6, .6, .7, .8),
-                nmeds = c(.2, .3, 0, .3, 0, 0, .1),
-                nbads = c(.1, 0, .3, .1, .4, .2, .1))
-pick_locs1 <- pick_locs1 * 10
-
-
-
-
-
-
-run_locs_2spp(shape_list = shape_list1, loc_scenario = 'pick',
-  loc_list = pick_locs1, ncores = 6, ctl_o = ctl1, thing1 = fishes1,
+inc12 <- run_locs_2spp(shape_list = shape_list1, loc_scenario = 'increasing',
+  loc_vector = seq(2, 20, by = 2), ncores = 6, ctl_o = ctl1, thing1 = fishes1,
   thing2 = fishes2, name1 = 'nfish1', name2 = 'nfish2')
+save(inc12, file = 'output/inc12.Rdata')
+
+ggplot(inc12, aes(x = dep, y = cpue)) + geom_line(aes(colour = spp, group = loc)) + 
+  facet_wrap(~ init_dist)
+
+#Cast the depletions
+dep2 <- inc12 %>% dcast(nfish1 + nfish2 + init_dist + loc ~ spp, value.var = 'dep')
+
+dd <- inner_join(dep2, inc12, by = c('nfish1', 'nfish2', 'init_dist', 'loc'))
+names(dd)[which(names(dd) %in% c('spp1', 'spp2'))] <- c('dep1', 'dep2')
+
+#Plot these to compare between species
+ggplot(dd, aes(x = dep1, y = dep2)) + geom_point(aes(colour = cpue), size = 3) + 
+  facet_wrap(~ init_dist + spp, ncol = 2) + scale_colour_gradient(low = 'white', 
+    high = 'red')
+  
+#Effect of hook attraction,
+#If gear is totally saturated, nfish
+
+#Look at total number of fish
+dd$nfish1 <- as.numeric(dd$nfish1)
+dd$nfish2 <- as.numeric(dd$nfish2)
+
+dd$tot_fish <- dd$nfish1 + dd$nfish2
+dd$prop1 <- dd$nfish1 / (dd$nfish1 + dd$nfish2)
+
+ggplot(dd) + geom_line(aes(x = prop1, y = cpue, colour = init_dist, group = spp), alpha = .2) + 
+  facet_wrap(~ loc)
+
+#
+
+
+ggplot(dd) + geom_point(aes(x = prop1, y = cpue, size = tot_fish, colour = spp)) + facet_wrap(~ loc)
+
+
+
+
+
+
+
+inc12 %>% filter(loc == 'loc_list1' & init_dist == 'patchy') %>% ggplot(aes(x = dep, y = cpue)) +
+  geom_point(aes(colour = spp)) + facet_wrap(~ spp)
+
+
+
+ggplot(inc12, aes(x = dep, y = cpue)) + 
+  geom_point(aes(colour = init_dist)) + facet_wrap(~ loc)
+
+# 2:09 start
+
 
 #---------------------------------------------
 #Patchy
@@ -161,6 +197,11 @@ run_locs(shape_list = shape_list1,
   loc_scenario = 'pick', loc_list = pick_locs1,
   ncores = 6, ctl_o = ctl1, thing1 = fishes,
   name1 = 'nfish1')
+
+pick_locs1 <- data.frame(nbests = c(.7, .7, .7, .6, .6, .7, .8),
+                nmeds = c(.2, .3, 0, .3, 0, 0, .1),
+                nbads = c(.1, 0, .3, .1, .4, .2, .1))
+pick_locs1 <- pick_locs1 * 10
 
 
 
