@@ -12,7 +12,7 @@ conduct_survey(init_area, ...)
 \arguments{
 \item{init_area}{list of intialized areas}
 
-\item{ctl}{control list defined in make_ctl function}
+\item{...}{arguments from other thing}
 }
 \description{
 Conduct Survey

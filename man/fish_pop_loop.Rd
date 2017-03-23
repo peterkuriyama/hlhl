@@ -11,8 +11,6 @@ fish_pop_loop(fish_area, loc_row, nhooks, nangs, prob1, prob2, comp_coeff)
 \item{fish_area}{List that has the matrices of fish, needs to be list}
 
 \item{loc_row}{Locations of fishing}
-
-\item{ctl}{ctl file, from make_ctl function}
 }
 \description{
 Fish population in a loop function

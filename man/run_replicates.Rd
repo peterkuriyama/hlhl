@@ -6,25 +6,24 @@
 Function to run replicates of change_two. Only save things for plot. This is because other issues
 should have been addressed before running multiple iterations}
 \usage{
-run_replicates(niters, thing1, name1, thing2, name2, ncores,
-  add_index = FALSE, ctl)
+run_replicates(ctl_in)
 }
 \arguments{
 \item{niters}{Number of iterations}
 
 \item{thing1}{Vector of things to loop over}
 
-\item{name1}{Name of thing1 in the ctl file}
-
 \item{thing2}{Vector of things to loop over}
 
+\item{name1}{Name of thing1 in the ctl file}
+
 \item{name2}{Name of thing1 in the ctl file}
+
+\item{ctl}{Control file to modify}
 
 \item{ncores}{Number of cores to use in computation}
 
 \item{add_index}{Option to add Index of things to loop over, applicaple when looping over numbers of locations}
-
-\item{ctl}{Control file to modify}
 }
 \description{
 Run replicates of things

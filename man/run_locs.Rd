@@ -6,21 +6,21 @@
 Function takes number of sites of differing quality and repeats replicate runs for different
 seeds}
 \usage{
-run_locs(nbests = 5, nmeds = 5, nbads = 0, seeds, ncores, nsites = 10,
-  ctl_o, thing1, name1, par_func = "change_two")
+run_locs(shape_list, loc_scenario, loc_list, loc_vector, ncores, ctl_o, thing1,
+  name1, par_func = "change_two", index1 = FALSE, index2 = TRUE)
 }
 \arguments{
-\item{nbests}{Number of best sites, pick_sites function}
+\item{shape_list}{Shape Scenarios to run, must specify}
 
-\item{nmeds}{Number of medium sites, pick_sites function}
+\item{loc_scenario}{Specify "pick" or "increasing"}
 
-\item{nbads}{Number of bad sites, pick_sites function}
+\item{loc_list}{List of locations to loop 
+through, if loc_scenario == 'pick'}
 
-\item{seeds}{Number of seeds}
+\item{loc_vector}{Vector of number of locations to sample, 
+if loc_scenario == 'increasing'}
 
 \item{ncores}{Number of cores}
-
-\item{nsites}{Number of total sites}
 
 \item{ctl_o}{Original ctl list}
 

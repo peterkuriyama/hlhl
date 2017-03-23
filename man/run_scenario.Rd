@@ -6,11 +6,11 @@
 Function to run scenarios in parallel. Returns three things, a list of all the output from
 conduct_survey, cpue summarized by each value in loop_over, and summarized data for each year.}
 \usage{
-run_scenario(ctl_in, loop_over, ncores = 1, to_change, add_index = FALSE,
+run_scenario(ctl_start, loop_over, ncores = 1, to_change, add_index = FALSE,
   par_func)
 }
 \arguments{
-\item{ctl_in}{Output from make_ctl function}
+\item{ctl_start}{Output from make_ctl function}
 
 \item{loop_over}{Vector of values to loop over}
 

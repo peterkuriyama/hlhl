@@ -5,8 +5,8 @@
 \title{Function to modify two factors
 Function to modify two factors}
 \usage{
-change_two(thing1, thing2, name1, name2, ctl, ncores = 6, add_index = FALSE,
-  par_func = "run_scenario")
+change_two(thing1, thing2, name1, name2, ctl, ncores = 6, index1 = FALSE,
+  index2 = FALSE, par_func = "run_scenario")
 }
 \arguments{
 \item{thing1}{Vector of things to loop over}
