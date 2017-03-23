@@ -51,7 +51,7 @@ run_locs <- function(shape_list, loc_scenario, loc_list,
     #Run simulation modifying these two things
     #Only save the info for plot
     shape_outs[[ss]] <- change_two(thing1 = fishes, thing2 = locs, 
-      name1 = name1, name = 'location', ctl = ctl_temp,
+      name1 = name1, name2 = 'location', ctl = ctl_temp,
       index1 = index1, index2 = index2, par_func = par_func, 
       ncores = ncores)[[3]]
 
