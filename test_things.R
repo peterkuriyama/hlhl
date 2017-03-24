@@ -183,52 +183,30 @@ ggplot(inc12, aes(x = dep1, y = dep2)) + geom_point(aes(colour = cpue)) +
 
 #Picking some number of good, med, bad sites
 #Increasing number of sites from 2-20
-fishes <- seq(10000, 60000, by = 10000)
+fishes <- seq(1000, 40000, by = 2000)
 
 ctl2 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1 = 10000,
       nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 1, scope = 0, seed = 1,
-      location = data.frame(vessel = 1, x = 1, y = 1), numrow = 10, numcol = 10,
+      location = data.frame(vessel = 1, x = 1, y = 1), numrow = 15, numcol = 15,
       shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)    
 
-pick_locs1 <- data.frame(nbests = c(.7, .7, .7, .6, .6, .7, .8),
-                nmeds = c(.2, .3, 0, .3, 0, 0, .1),
-                nbads = c(.1, 0, .3, .1, .4, .2, .1))
-pick_locs1 <- pick_locs1 * 10
-
-fishes <- seq(10000, 50000, by = 10000)
+fishes <- seq(1000, 50000, by = 2000)
 
 shape_list1 <- data.frame(scen = c('patchy','rightskew', 'normdist', 'unif'), 
                           shapes1 = c(.1, 1, 10, 10), 
                           shapes2 = c(10, 10, 10, .10))
 
-test1 <- run_locs(shape_list = shape_list1,
-  loc_scenario = 'pick', loc_list = pick_locs1,
-  ncores = 6, ctl_o = ctl2, thing1 = fishes,
+pick_locs1 <- data.frame(nbests = c(.7, .7, .7, .6, .6, .7, .8),
+                nmeds = c(.2, .3, 0, .3, 0, 0, .1),
+                nbads = c(.1, 0, .3, .1, .4, .2, .1))
+pick_locs1 <- pick_locs1 * 30
+
+
+run2 <- run_locs(shape_list = shape_list1, loc_scenario = 'pick', 
+  loc_list = pick_locs1, ncores = 6, ctl_o = ctl2, thing1 = fishes,
   name1 = 'nfish1')
+save(run2, file = 'output/run2.Rdata')
 
-
-# 
-
-#---------------------------------------------
-#results and compare
-run2 <- list.files("output")[grep("2", list.files("output")) ]
-
-files2 <- paste0('output/', run2)
-for(ff in 1:length(files2)){
-  load(files2[ff])
-}
-
-res2 <- list(patchy = patchy2, rightskew = rightskew2, normdist = normdist2,
-  unif = unif2)
-res2 <- lapply(res2, FUN = function(ff) ff[[3]])
-res2 <- ldply(res2)
-names(res2)[1] <- 'dist'
-res2 <- res2 %>% filter(spp == 'spp1' & year == 1)
-res2 <- res2 %>% group_by(dist) %>% mutate(dep = nfish_total / max(nfish_total)) %>%
-  as.data.frame
-res2$location <- factor(res2$location, levels = unique(res2$location))
-
-#Add more descriptive names
 descs <- data.frame(location = as.character(unique(res2$location)), 
                     desc = c("70% good, 20% med, 10% bad",
                              "70% good, 30% med",
@@ -239,13 +217,67 @@ descs <- data.frame(location = as.character(unique(res2$location)),
                              "80% good, 10% med, 10% bad"))
 descs$location <- factor(descs$location, levels = descs$location)
 
-res2 <- inner_join(res2, descs, by = "location")
+run2 <- inner_join(run2, descs, by = "location")
+run2$desc <- as.character(run2$desc)
+
+ggplot(run2, aes(x = dep, y = cpue)) + geom_point(aes(colour = init_dist)) + 
+  facet_wrap(~ desc) + ylim(c(0, 1))
+
+##Run 2.1
+#Seem to not cover enough locations 
+#Use run 3 to sample larger proportion of the area for one species
 
 
-ggplot(res2, aes(x = dep, y = cpue)) + geom_point(aes(colour = dist)) + facet_wrap(~ location)
+pick_locs1 <- data.frame(nbests = c(.7, .7, .7, .6, .6, .7, .8),
+                nmeds = c(.2, .3, 0, .3, 0, 0, .1),
+                nbads = c(.1, 0, .3, .1, .4, .2, .1))
+pick_locs1 <- pick_locs1 * 60
 
-#compare
-ggplot(test1, aes(x = dep, y = cpue)) + geom_line(aes(colour = init_dist)) + facet_wrap(~ location)
+#Check that the sampling will work
+
+run2 <- run_locs(shape_list = shape_list1, loc_scenario = 'pick', 
+  loc_list = pick_locs1, ncores = 6, ctl_o = ctl2, thing1 = fishes,
+  name1 = 'nfish1')
+save(run2, file = 'output/run2.Rdata')
+
+
+#---------------------------------------------
+#results and compare
+# run2 <- list.files("output")[grep("2", list.files("output")) ]
+
+# files2 <- paste0('output/', run2)
+# for(ff in 1:length(files2)){
+#   load(files2[ff])
+# }
+
+# res2 <- list(patchy = patchy2, rightskew = rightskew2, normdist = normdist2,
+#   unif = unif2)
+# res2 <- lapply(res2, FUN = function(ff) ff[[3]])
+# res2 <- ldply(res2)
+# names(res2)[1] <- 'dist'
+# res2 <- res2 %>% filter(spp == 'spp1' & year == 1)
+# res2 <- res2 %>% group_by(dist) %>% mutate(dep = nfish_total / max(nfish_total)) %>%
+#   as.data.frame
+# res2$location <- factor(res2$location, levels = unique(res2$location))
+
+# #Add more descriptive names
+# descs <- data.frame(location = as.character(unique(res2$location)), 
+#                     desc = c("70% good, 20% med, 10% bad",
+#                              "70% good, 30% med",
+#                              "70% good, 30% bad",
+#                              "60% good, 30% med, 10% bad",
+#                              "60% good, 40% bad",
+#                              "80% good, 20% bad",
+#                              "80% good, 10% med, 10% bad"))
+# descs$location <- factor(descs$location, levels = descs$location)
+
+# res2 <- inner_join(res2, descs, by = "location")
+
+
+# ggplot(res2, aes(x = dep, y = cpue)) + geom_point(aes(colour = dist)) + facet_wrap(~ location)
+
+# #compare
+# ggplot(test1, aes(x = dep, y = cpue)) + geom_line(aes(colour = init_dist)) + facet_wrap(~ location)
 
 #Can get lots of spread in the data based on the sampling locations
 ggplot(res2, aes(x = dep, y = cpue)) + geom_point(aes(colour = dist)) + 
