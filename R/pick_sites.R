@@ -8,7 +8,6 @@
 #' @export
 
 pick_sites <- function(nbest = 0, nmed = 0, nbad = 0, fish_mat){
-
   fishes <- fish_mat
   fishes <- melt(fishes)
   names(fishes) <- c('x', 'y', 'value')
@@ -19,8 +18,6 @@ pick_sites <- function(nbest = 0, nmed = 0, nbad = 0, fish_mat){
   if(quantile(fishes$value)[1] == quantile(fishes$value)[2]){
     fishes[which(fishes$value == quantile(fishes$value)[2]), 'int'] <- 1
   }
-  
-  #What to do if there is no middle quantile?
   
   #if three of these things
   if(sum(which(quantile(fishes$value) == 0) %in% 1:3) == 3){
