@@ -124,8 +124,8 @@ inc11 %>% filter(spp == 'spp1') %>% ggplot(aes(x = dep, y = cpue)) +
 #Increasing number of location with two species, even comp_coeff
 #Both species increasing together
 
-fishes1 <- seq(10000, 60000, by = 10000)
-fishes2 <- rev(seq(10000, 60000, by = 10000))
+fishes1 <- seq(1000, 50000, by = 1000)
+fishes2 <- rev(seq(1000, 50000, by = 1000))
 
 ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1 = 10000,
       nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 1, scope = 0, seed = 1,
@@ -143,6 +143,8 @@ inc12 <- run_locs_2spp(shape_list = shape_list1, loc_scenario = 'increasing',
   thing2 = fishes2, name1 = 'nfish1', name2 = 'nfish2')
 
 run_time <- Sys.time() - start_time
+send_email()
+
 #Save results
 # paste0(results_dir, '//inc12.Rdata')
 save(inc12, file = paste0(results_dir, '//inc12.Rdata'))
