@@ -138,11 +138,13 @@ shape_list1 <- data.frame(scen = c('patchy','rightskew', 'normdist', 'unif'),
                           shapes2 = c(10, 10, 10, .10))
 
 start_time <- Sys.time()
+
 inc12 <- run_locs_2spp(shape_list = shape_list1, loc_scenario = 'increasing',
   loc_vector = seq(2, 20, by = 2), ncores = nncores, ctl_o = ctl1, thing1 = fishes1,
   thing2 = fishes2, name1 = 'nfish1', name2 = 'nfish2')
 
 run_time <- Sys.time() - start_time
+
 #Save results
 # paste0(results_dir, '//inc12.Rdata')
 save(inc12, file = paste0(results_dir, '//inc12.Rdata'))
