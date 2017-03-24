@@ -35,6 +35,27 @@ if(Sys.info()['sysname'] == 'Windows'){
 install_github('peterkuriyama/hlsimulator')
 library(hlsimulator)
 
+#--------------------------------------------------------------------------------------------
+#Check the sampling of sites
+#Check that the sampling will work?
+#Manually update seed index
+
+for(ss in 1:nrow(shape_list1)){
+  print(ss)
+  ctl2$shapes <- c(shape_list1[ss, 'shapes1'], shape_list1[ss, 'shapes2'])
+  
+  init1 <- initialize_population(ctl = ctl2, ctl2$nfish1)
+  loc_list <- pick_locs1
+  
+  #define fishing locations
+  locs <- lapply(1:nrow(loc_list), FUN = function(ll){
+    print(ll)
+  
+    pick_sites(nbest = loc_list[ll, 1], nmed = loc_list[ll, 2],
+      nbad = loc_list[ll, 3], fish_mat = init1)
+  
+  })  
+}
 #----------------------------------------------------------------------------------------
 # What range of catch per hooks provides a relative index of abundance?
 # What range of hooks without an aggressive species provides a relative index of abundance.
@@ -226,19 +247,15 @@ ggplot(run2, aes(x = dep, y = cpue)) + geom_point(aes(colour = init_dist)) +
 ##Run 2.1
 #Seem to not cover enough locations 
 #Use run 3 to sample larger proportion of the area for one species
-
-
 pick_locs1 <- data.frame(nbests = c(.7, .7, .7, .6, .6, .7, .8),
                 nmeds = c(.2, .3, 0, .3, 0, 0, .1),
                 nbads = c(.1, 0, .3, .1, .4, .2, .1))
-pick_locs1 <- pick_locs1 * 60
+pick_locs1 <- pick_locs1 * 50
 
-#Check that the sampling will work
-
-run2 <- run_locs(shape_list = shape_list1, loc_scenario = 'pick', 
+run21 <- run_locs(shape_list = shape_list1, loc_scenario = 'pick', 
   loc_list = pick_locs1, ncores = 6, ctl_o = ctl2, thing1 = fishes,
   name1 = 'nfish1')
-save(run2, file = 'output/run2.Rdata')
+save(run21, file = 'output/run21.Rdata')
 
 
 #---------------------------------------------
