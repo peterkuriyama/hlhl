@@ -21,6 +21,7 @@ nncores <- detectCores() - 2
 if(Sys.info()['sysname'] == 'Darwin'){
   setwd("/Users/peterkuriyama/School/Research/hlsimulator")  
   type <- 'mac'
+  results_dir <- "/Volumes/udrive/hlsimulator_runs"
 }
 
 if(Sys.info()['sysname'] == 'Windows'){
@@ -136,58 +137,31 @@ shape_list1 <- data.frame(scen = c('patchy','rightskew', 'normdist', 'unif'),
                           shapes1 = c(.1, 1, 10, 10), 
                           shapes2 = c(10, 10, 10, .10))
 
+start_time <- Sys.time()
 inc12 <- run_locs_2spp(shape_list = shape_list1, loc_scenario = 'increasing',
-  loc_vector = seq(2, 20, by = 2), ncores = 6, ctl_o = ctl1, thing1 = fishes1,
+  loc_vector = seq(2, 20, by = 2), ncores = nncores, ctl_o = ctl1, thing1 = fishes1,
   thing2 = fishes2, name1 = 'nfish1', name2 = 'nfish2')
-save(inc12, file = 'output/inc12.Rdata')
 
-ggplot(inc12, aes(x = dep, y = cpue)) + geom_line(aes(colour = spp, group = loc)) + 
-  facet_wrap(~ init_dist)
+run_time <- Sys.time() - start_time
+#Save results
+# paste0(results_dir, '//inc12.Rdata')
+save(inc12, file = paste0(results_dir, '//inc12.Rdata'))
+load('output/inc12.Rdata')
 
-#Cast the depletions
+#change formats
+inc12$nfish1 <- as.numeric(inc12$nfish1)
+inc12$nfish2 <- as.numeric(inc12$nfish2)
+
+#Swing dep by species for plots
 dep2 <- inc12 %>% dcast(nfish1 + nfish2 + init_dist + loc ~ spp, value.var = 'dep')
+names(dep2)[5:6] <- c('dep1', 'dep2')
 
-dd <- inner_join(dep2, inc12, by = c('nfish1', 'nfish2', 'init_dist', 'loc'))
-names(dd)[which(names(dd) %in% c('spp1', 'spp2'))] <- c('dep1', 'dep2')
-
-#Plot these to compare between species
-ggplot(dd, aes(x = dep1, y = dep2)) + geom_point(aes(colour = cpue), size = 3) + 
-  facet_wrap(~ init_dist + spp, ncol = 2) + scale_colour_gradient(low = 'white', 
-    high = 'red')
-  
-#Effect of hook attraction,
-#If gear is totally saturated, nfish
-
-#Look at total number of fish
-dd$nfish1 <- as.numeric(dd$nfish1)
-dd$nfish2 <- as.numeric(dd$nfish2)
-
-dd$tot_fish <- dd$nfish1 + dd$nfish2
-dd$prop1 <- dd$nfish1 / (dd$nfish1 + dd$nfish2)
-
-ggplot(dd) + geom_line(aes(x = prop1, y = cpue, colour = init_dist, group = spp), alpha = .2) + 
-  facet_wrap(~ loc)
-
-#
+inc12 <- inner_join(inc12, dep2, by = c('nfish1', 'nfish2', 'init_dist', 'loc'))
 
 
-ggplot(dd) + geom_point(aes(x = prop1, y = cpue, size = tot_fish, colour = spp)) + facet_wrap(~ loc)
+ggplot(inc12, aes(x = dep1, y = dep2)) + geom_point(aes(colour = cpue)) + 
+  facet_wrap(~ init_dist + spp, ncol = 2)
 
-
-
-
-
-
-
-inc12 %>% filter(loc == 'loc_list1' & init_dist == 'patchy') %>% ggplot(aes(x = dep, y = cpue)) +
-  geom_point(aes(colour = spp)) + facet_wrap(~ spp)
-
-
-
-ggplot(inc12, aes(x = dep, y = cpue)) + 
-  geom_point(aes(colour = init_dist)) + facet_wrap(~ loc)
-
-# 2:09 start
 
 
 #---------------------------------------------
