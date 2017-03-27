@@ -18,12 +18,16 @@ pick_sites_prob <- function(nsites, fish_mat, samp_option){
   }
   
   if(samp_option == 'best'){
+    
     #option to sample only sites with fish
     fish_sites <- subset(fishes, value != 0)
-  
-    #expand vector of rownames
-    xx <- rep(rownames(fish_sites), fish_sites$value)
-    samp_ind <- sample(xx, size = nsites, replace = FALSE)
+    
+    #define probabilities based on number of locations
+    fish_sites$prob <- fish_sites$value / sum(fish_sites$value)
+    
+    samp_ind <- sample(rownames(fish_sites), size = nsites, 
+      prob = fish_sites$prob, replace = FALSE)
+    samp_ind <- as.integer(samp_ind)  
   }
   
   locs_out <- fishes[samp_ind, ]
