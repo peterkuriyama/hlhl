@@ -83,24 +83,32 @@ pick_locs1 <- data.frame(nbests = c(.7, .7, .7, .6, .6, .7, .8),
                 nbads = c(.1, 0, .3, .1, .4, .2, .1))
 (pick_locs1 <- pick_locs1 * 20)
 
-#Run the simulation
-inc1 <- run_locs(shape_list = shape_list1,
-  loc_scenario = 'increasing', loc_vector = seq(2, 20, by = 2),
-  ncores = 6, ctl_o = ctl1, thing1 = fishes,
-  name1 = 'nfish1')
+#Run the simulation, if it hasn't been run yet
+if(!('inc1.Rdata' %in% list.files('output'))){
+  inc1 <- run_locs(shape_list = shape_list1,
+    loc_scenario = 'increasing', loc_vector = seq(2, 20, by = 2),
+    ncores = 6, ctl_o = ctl1, thing1 = fishes,
+    name1 = 'nfish1')
+  
+  #Save the data
+  save(inc1, file = 'output/inc1.Rdata')  
+}
 
-#Save the data
-save(inc1, file = 'output/inc1.Rdata')
+load('output/inc1.Rdata')
 
 #Plot the results
 inc1$location <- factor(inc1$location, levels = unique(inc1$location))
 
+#Figure 1
+png(width = 9, height = 9, units = 'in', res = 150, file = 'figs/fig1.png')
 inc1 %>% filter(spp == 'spp1') %>% ggplot(aes(x = dep, y = cpue)) + 
   geom_point(aes(colour = init_dist)) + facet_wrap(~ location)
+dev.off()
   
+png(width = 9, height = 9, units = 'in', res = 150, file = 'figs/fig1.1.png')  
 inc1 %>% filter(spp == 'spp1') %>% ggplot(aes(x = dep, y = cpue)) + 
   geom_point(aes(colour = location)) + facet_wrap(~ init_dist)
-
+dev.off()
 # Increasing number of sites gets closer to true curve
 #Least variability as fish distribution gets more even
 
@@ -115,28 +123,30 @@ ctl1$numcol <- 15
 
 init1 <- initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
 
-pick_locs1 <- data.frame(nbests = c(.7, .7, .7, .6, .6, .7, .8),
-                nmeds = c(.2, .3, 0, .3, 0, 0, .1),
-                nbads = c(.1, 0, .3, .1, .4, .2, .1))
-(pick_locs1 <- pick_locs1 * 50)
+if(!('inc11.Rdata' %in% list.files('output'))){
+  #Run the simulation
+  inc11 <- run_locs(shape_list = shape_list1,
+    loc_scenario = 'increasing', loc_vector = seq(2, 20, by = 2),
+    ncores = 6, ctl_o = ctl1, thing1 = fishes,
+    name1 = 'nfish1')
+  
+  #Save the data
+  save(inc11, file = 'output/inc11.Rdata')
+}
 
-#Run the simulation
-inc11 <- run_locs(shape_list = shape_list1,
-  loc_scenario = 'increasing', loc_vector = seq(2, 20, by = 2),
-  ncores = 6, ctl_o = ctl1, thing1 = fishes,
-  name1 = 'nfish1')
-
-#Save the data
-save(inc11, file = 'output/inc11.Rdata')
+load(file = 'output/inc11.Rdata')
 
 #Plot the results
 inc11$location <- factor(inc11$location, levels = unique(inc11$location))
 
 inc11 %>% filter(spp == 'spp1') %>% ggplot(aes(x = dep, y = cpue)) + 
   geom_point(aes(colour = init_dist)) + facet_wrap(~ location)
-  
+
+#Spread 
+png(width = 7, height = 7, units = 'in', res = 150, file = 'figs/fig1_15.png')  
 inc11 %>% filter(spp == 'spp1') %>% ggplot(aes(x = dep, y = cpue)) + 
   geom_point(aes(colour = location)) + facet_wrap(~ init_dist)
+dev.off()
 
 #Relationship seems to be invariant across matrix dimensions
 
@@ -160,18 +170,22 @@ shape_list1 <- data.frame(scen = c('patchy','rightskew', 'normdist', 'unif'),
 
 start_time <- Sys.time()
 
-inc12 <- run_locs_2spp(shape_list = shape_list1, loc_scenario = 'increasing',
-  loc_vector = seq(2, 20, by = 2), ncores = nncores, ctl_o = ctl1, thing1 = fishes1,
-  thing2 = fishes2, name1 = 'nfish1', name2 = 'nfish2')
+if(!('inc12.Rdata' %in% list.files('output'))){
+  inc12 <- run_locs_2spp(shape_list = shape_list1, loc_scenario = 'increasing',
+    loc_vector = seq(2, 20, by = 2), ncores = nncores, ctl_o = ctl1, thing1 = fishes1,
+    thing2 = fishes2, name1 = 'nfish1', name2 = 'nfish2')
+  
+  run_time <- Sys.time() - start_time
+  
+  send_email()
+  
+  #Save results
+  # paste0(results_dir, '//inc12.Rdata')
+  save(inc12, file = paste0(results_dir, '//inc12.Rdata'))
+}
 
-run_time <- Sys.time() - start_time
-
-send_email()
-
-#Save results
-# paste0(results_dir, '//inc12.Rdata')
-save(inc12, file = paste0(results_dir, '//inc12.Rdata'))
 load('output/inc12.Rdata')
+# load('output/inc12.Rdata')
 
 #change formats
 inc12$nfish1 <- as.numeric(inc12$nfish1)
@@ -183,10 +197,20 @@ names(dep2)[5:6] <- c('dep1', 'dep2')
 
 inc12 <- inner_join(inc12, dep2, by = c('nfish1', 'nfish2', 'init_dist', 'loc'))
 
+#Look at one fishing location only
+inc12 %>% filter(loc == 'loc_list1') %>% ggplot(aes(x = dep1, y = dep2)) + geom_point(aes(colour = cpue)) + 
+  facet_wrap(~ init_dist + spp, ncol = 2) + scale_colour_gradient(low = 'white', high = 'red')
 
+png(width = 9, height = 9, units = 'in', res = 150, file = 'figs/fig2_2spp.png')
+inc12 %>% filter(loc == 'loc_list10') %>% ggplot(aes(x = dep1, y = dep2)) + geom_point(aes(colour = cpue)) + 
+  facet_wrap(~ init_dist + spp, ncol = 2) + scale_colour_gradient(low = 'white', high = 'red')
+dev.off()
+
+
+png(width = 8.58, height = 9, units = 'in', res = 150, file = 'figs/run1_2spp.png')
 ggplot(inc12, aes(x = dep1, y = dep2)) + geom_point(aes(colour = cpue)) + 
-  facet_wrap(~ init_dist + spp, ncol = 2)
-
+  facet_wrap(~ init_dist + spp, ncol = 2) + scale_colour_gradient(low = 'white', high = 'red')
+dev.off()
 
 #--------------------------------------------------------------------------------------------
 #RUN 2
@@ -204,14 +228,12 @@ ggplot(inc12, aes(x = dep1, y = dep2)) + geom_point(aes(colour = cpue)) +
 
 #Picking some number of good, med, bad sites
 #Increasing number of sites from 2-20
-fishes <- seq(1000, 40000, by = 2000)
+fishes <- seq(1000, 70000, by = 4000)
 
 ctl2 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1 = 10000,
       nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 1, scope = 0, seed = 1,
       location = data.frame(vessel = 1, x = 1, y = 1), numrow = 15, numcol = 15,
       shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)    
-
-fishes <- seq(1000, 50000, by = 2000)
 
 shape_list1 <- data.frame(scen = c('patchy','rightskew', 'normdist', 'unif'), 
                           shapes1 = c(.1, 1, 10, 10), 
@@ -220,15 +242,22 @@ shape_list1 <- data.frame(scen = c('patchy','rightskew', 'normdist', 'unif'),
 pick_locs1 <- data.frame(nbests = c(.7, .7, .7, .6, .6, .7, .8),
                 nmeds = c(.2, .3, 0, .3, 0, 0, .1),
                 nbads = c(.1, 0, .3, .1, .4, .2, .1))
-pick_locs1 <- pick_locs1 * 30
+pick_locs1 <- pick_locs1 * 50
 
+#Run the simulation
+start_time <- Sys.time()
 
 run2 <- run_locs(shape_list = shape_list1, loc_scenario = 'pick', 
   loc_list = pick_locs1, ncores = 6, ctl_o = ctl2, thing1 = fishes,
   name1 = 'nfish1')
-save(run2, file = 'output/run2.Rdata')
 
-descs <- data.frame(location = as.character(unique(res2$location)), 
+run_time <- Sys.time() - start_time
+
+save(run2, file = 'output/run2.Rdata')
+load('output/run2.Rdata')
+
+
+descs <- data.frame(location = as.character(unique(run2$location)), 
                     desc = c("70% good, 20% med, 10% bad",
                              "70% good, 30% med",
                              "70% good, 30% bad",
@@ -241,9 +270,11 @@ descs$location <- factor(descs$location, levels = descs$location)
 run2 <- inner_join(run2, descs, by = "location")
 run2$desc <- as.character(run2$desc)
 
+png(width = 9, height = 9, units = 'in', res = 150, file = 'fig3_patchyfishing.png')
 ggplot(run2, aes(x = dep, y = cpue)) + geom_point(aes(colour = init_dist)) + 
   facet_wrap(~ desc) + ylim(c(0, 1))
-
+dev.off()
+##----------------------------------------
 ##Run 2.1
 #Seem to not cover enough locations 
 #Use run 3 to sample larger proportion of the area for one species
@@ -256,4 +287,16 @@ run21 <- run_locs(shape_list = shape_list1, loc_scenario = 'pick',
   loc_list = pick_locs1, ncores = 6, ctl_o = ctl2, thing1 = fishes,
   name1 = 'nfish1')
 save(run21, file = 'output/run21.Rdata')
+
+load('output/run21.Rdata')
+
+run21 <- inner_join(run21, descs, by = 'location')
+run21$desc <- as.character(run21$desc)
+
+ggplot(run21, aes(x = dep, y = cpue)) + geom_point(aes(colour = init_dist)) + 
+  facet_wrap(~ desc) + ylim(c(0, 1))
+
+
+
+
 
