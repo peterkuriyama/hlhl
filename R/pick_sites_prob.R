@@ -3,7 +3,7 @@
 #' Function to pick number of good, medium, and bad sites
 #' @param nsites Number of sites to select
 #' @param fish_mat Matrix of fish
-#' @param samp_option Sample option, either random or for best locations
+#' @param samp_option Sample option, either "random" or for "preferential" locations
 #' @export
 
 pick_sites_prob <- function(nsites, fish_mat, samp_option){
@@ -17,8 +17,7 @@ pick_sites_prob <- function(nsites, fish_mat, samp_option){
     samp_ind <- sample(1:nrow(fishes), size = nsites, replace = FALSE)  
   }
   
-  if(samp_option == 'best'){
-    
+  if(samp_option == 'preferential'){  
     #option to sample only sites with fish
     fish_sites <- subset(fishes, value != 0)
     
