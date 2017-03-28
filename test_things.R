@@ -35,40 +35,9 @@ if(Sys.info()['sysname'] == 'Windows'){
 install_github('peterkuriyama/hlsimulator')
 library(hlsimulator)
 
-#--------------------------------------------------------------------------------------------
-#Check the sampling of sites
-#Check that the sampling will work?
-#Manually update seed index
 
-for(ss in 1:nrow(shape_list1)){
-  print(ss)
-  ctl2$shapes <- c(shape_list1[ss, 'shapes1'], shape_list1[ss, 'shapes2'])
-  
-  init1 <- initialize_population(ctl = ctl2, ctl2$nfish1)
-  loc_list <- pick_locs1
-  
-  #define fishing locations
-  locs <- lapply(1:nrow(loc_list), FUN = function(ll){
-    print(ll)
-  
-    pick_sites(nbest = loc_list[ll, 1], nmed = loc_list[ll, 2],
-      nbad = loc_list[ll, 3], fish_mat = init1)
-  
-  })  
-}
 #----------------------------------------------------------------------------------------
-# What range of catch per hooks provides a relative index of abundance?
-# What range of hooks without an aggressive species provides a relative index of abundance.
-
-
-#--------------------------------------------------------------------------------------------
-#RUN 1 - Increasing number of sites from 2-20
-#--------------------------------------------------------------------------------------------
-#Set Up Values for this run
-#Try to get range of 10-500 fish per cell
-
-fishes <- seq(1000, 50000, by = 2000)
-
+#rewrite pick_sites
 ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1 = 10000,
       nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 1, scope = 0, seed = 1,
       location = data.frame(vessel = 1, x = 1, y = 1), numrow = 10, numcol = 10,
@@ -77,24 +46,81 @@ ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1
 shape_list1 <- data.frame(scen = c('patchy','rightskew', 'normdist', 'unif'), 
                           shapes1 = c(.1, 1, 10, 10), 
                           shapes2 = c(10, 10, 10, .10))
+ss <- 1
+ctl_temp <- ctl1
 
-pick_locs1 <- data.frame(nbests = c(.7, .7, .7, .6, .6, .7, .8),
-                nmeds = c(.2, .3, 0, .3, 0, 0, .1),
-                nbads = c(.1, 0, .3, .1, .4, .2, .1))
-(pick_locs1 <- pick_locs1 * 20)
+ctl_temp$shapes <- c(shape_list1[ss, 'shapes1'], shape_list1[ss, 'shapes2'])
 
-#Run the simulation, if it hasn't been run yet
-if(!('inc1.Rdata' %in% list.files('output'))){
-  inc1 <- run_locs(shape_list = shape_list1,
-    loc_scenario = 'increasing', loc_vector = seq(2, 20, by = 2),
-    ncores = 6, ctl_o = ctl1, thing1 = fishes,
-    name1 = 'nfish1')
-  
-  #Save the data
-  save(inc1, file = 'output/inc1.Rdata')  
-}
 
-load('output/inc1.Rdata')
+initialize_population(ctl = ctl1, 100000)
+initialize_population(ctl = ctl_temp, 20000)
+
+
+#"preferential sampling"
+xx <- pick_sites_prob(nsites = 20, fish_mat = init1, samp_option = 'pref')
+yy <- pick_sites_prob(nsites = 20, fish_mat = init1, samp_option = 'pref')
+pick_sites_prob(nsites = 20, fish_mat = init1, samp_option = 'pref')
+
+#Pick locations, sample probabilistically
+xx <- pick_sites_prob(nsites = 50, fish_mat = init1, samp_option = 'random')
+
+
+
+
+run_locs(shape_list = shape_list1, loc_scenario = 'rand', ncores = 6, 
+  ctl_o = ctl1, thing1 = fishes, name1 = 'nfish1', nreps = 5, nsites = 10)
+
+
+
+#Run a change two
+
+
+
+#----------------------------------------------------------------------------------------
+# What range of catch per hooks provides a relative index of abundance?
+# What range of hooks without an aggressive species provides a relative index of abundance.
+
+#update probabilistic sampling
+#--------------------------------------------------------------------------------------------
+#RUN 1 - Increasing number of sites from 2-20
+#--------------------------------------------------------------------------------------------
+#Set Up Values for this run
+#Try to get range of 10-500 fish per cell
+
+fishes <- seq(25000, 200000, by = 25000)
+
+ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1 = 100000,
+      nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 2, scope = 0, seed = 1,
+      location = data.frame(vessel = 1, x = 1, y = 1), numrow = 30, numcol = 30,
+      shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)    
+
+shape_list1 <- data.frame(scen = c('patchy','rightskew', 'normdist', 'unif'), 
+                          shapes1 = c(.1, 1, 10, 10), 
+                          shapes2 = c(10, 10, 10, .10))
+
+onespp <- run_sampled_locs(shape_list = shape_list1, ncores = nncores,
+  ctl_o = ctl1, thing1 = fishes, name1 = 'nfish1', nreps = 5, 
+  nsites_vec = c(5, 10, 50, 100))
+onespp <- onespp %>% filter(spp == 'spp1')
+
+onespp$dep <- factor(onespp$dep, levels = unique(onespp$dep))
+onespp$nsites <- factor(onespp$nsites, levels = unique(onespp$nsites))
+
+save(onespp, file = 'output/onespp.Rdata')
+
+#Calculate mean, variance, and cv of each value
+onespp <- onespp %>% group_by(nsites, init_dist, nfish1, spp, type) %>% 
+  mutate(mean_cpue = mean(cpue), sd_cpue = sd(cpue), cv_cpue = sd_cpue / mean_cpue) %>%
+  as.data.frame
+
+ggplot(onespp) + geom_point(aes(x = nsites, y = cv_cpue, colour = init_dist))
+
+onespp %>% ggplot() + 
+  geom_point(aes(dep, cpue, colour = nsites)) + 
+  facet_wrap(~ init_dist + type, ncol = 2)
+
+onespp %>% filter(init_dist == 'unif') %>% ggplot() + 
+  geom_boxplot(aes(dep, cpue, colour = nsites)) + facet_wrap(~ type)
 
 #Plot the results
 inc1$location <- factor(inc1$location, levels = unique(inc1$location))
@@ -112,41 +138,6 @@ dev.off()
 # Increasing number of sites gets closer to true curve
 #Least variability as fish distribution gets more even
 
-#---------------------------------------------
-#---------------------------------------------
-#Scale up this run to larger area
-
-fishes <- seq(2000, 100000, by = 5000)
-ctl1$nfish1 <- 20000
-ctl1$numrow <- 15
-ctl1$numcol <- 15
-
-init1 <- initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
-
-if(!('inc11.Rdata' %in% list.files('output'))){
-  #Run the simulation
-  inc11 <- run_locs(shape_list = shape_list1,
-    loc_scenario = 'increasing', loc_vector = seq(2, 20, by = 2),
-    ncores = 6, ctl_o = ctl1, thing1 = fishes,
-    name1 = 'nfish1')
-  
-  #Save the data
-  save(inc11, file = 'output/inc11.Rdata')
-}
-
-load(file = 'output/inc11.Rdata')
-
-#Plot the results
-inc11$location <- factor(inc11$location, levels = unique(inc11$location))
-
-inc11 %>% filter(spp == 'spp1') %>% ggplot(aes(x = dep, y = cpue)) + 
-  geom_point(aes(colour = init_dist)) + facet_wrap(~ location)
-
-#Spread 
-png(width = 7, height = 7, units = 'in', res = 150, file = 'figs/fig1_15.png')  
-inc11 %>% filter(spp == 'spp1') %>% ggplot(aes(x = dep, y = cpue)) + 
-  geom_point(aes(colour = location)) + facet_wrap(~ init_dist)
-dev.off()
 
 #Relationship seems to be invariant across matrix dimensions
 
