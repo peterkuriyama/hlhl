@@ -34,23 +34,26 @@ conduct_survey <- function(init_area, ...){
 
   #Specify movement function if there is one
   # movement_function <- ctl$movement_function
+
+  #Get into this loop if nnyear is > 1  
+  if(nnyear > 1){
+    #Loop over years of survey, specified in ctl
+    for(kk in 2:nnyear){
+    
+      #Leave this in case I want to add movement in 
+      # temp_area[[1]] <- movement_function(temp_area[[1]], max_prob = ctl$max_prob, min_prob = ctl$min_prob)$final
+      # temp_area[[2]] <- movement_function(temp_area[[2]], max_prob = ctl$max_prob, min_prob = ctl$min_prob)$final    
+      temp <- fish_population(fish_area = temp_area, ...)
   
-  #Loop over years of survey, specified in ctl
-  for(kk in 2:nnyear){
+      # survey_samples[[kk]] <- temp$samples
+      drop_samples[[kk]] <- temp$angler_samples
+      fished_areas[[kk]] <- temp$updated_area
   
-    #Leave this in case I want to add movement in 
-    # temp_area[[1]] <- movement_function(temp_area[[1]], max_prob = ctl$max_prob, min_prob = ctl$min_prob)$final
-    # temp_area[[2]] <- movement_function(temp_area[[2]], max_prob = ctl$max_prob, min_prob = ctl$min_prob)$final    
-    temp <- fish_population(fish_area = temp_area, ...)
-
-    # survey_samples[[kk]] <- temp$samples
-    drop_samples[[kk]] <- temp$angler_samples
-    fished_areas[[kk]] <- temp$updated_area
-
-    #Redefine the fishing area
-    temp_area <- temp$updated_area    
-
+      #Redefine the fishing area
+      temp_area <- temp$updated_area    
+    }    
   }
+
 
   #manipulate samples  
   samples <- ldply(drop_samples)
