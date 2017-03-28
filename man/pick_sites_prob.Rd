@@ -12,7 +12,7 @@ pick_sites_prob(nsites, fish_mat, samp_option)
 
 \item{fish_mat}{Matrix of fish}
 
-\item{samp_option}{Sample option, either random or for best locations}
+\item{samp_option}{Sample option, either "rand" or for "pref" for preferential sampling}
 }
 \description{
 Pick Sites based on probability

@@ -6,19 +6,18 @@
 Function takes number of sites of differing quality and repeats replicate runs for different
 seeds}
 \usage{
-run_locs(shape_list, loc_scenario, loc_list, loc_vector, ncores, ctl_o, thing1,
-  name1, par_func = "change_two", index1 = FALSE, index2 = TRUE)
+run_locs(shape_list, loc_scenario, fixed_locs, ncores, ctl_o, thing1, name1,
+  par_func = "change_two", index1 = FALSE, index2 = TRUE, nreps = 0,
+  nsites = 0)
 }
 \arguments{
 \item{shape_list}{Shape Scenarios to run, must specify}
 
-\item{loc_scenario}{Specify "pick" or "increasing"}
+\item{loc_scenario}{Specify "fixed", "rand", "pref". "Rand" indicates random sampling
+"pref" indicates preferential sampling and is passed to fixed sites.}
 
-\item{loc_list}{List of locations to loop 
+\item{fixed_locs}{List of locations to loop 
 through, if loc_scenario == 'pick'}
-
-\item{loc_vector}{Vector of number of locations to sample, 
-if loc_scenario == 'increasing'}
 
 \item{ncores}{Number of cores}
 
@@ -27,6 +26,10 @@ if loc_scenario == 'increasing'}
 \item{thing1}{Thing1 to loop over, see change_two function}
 
 \item{name1}{Thing1 to loop over, see change_two function}
+
+\item{nreps}{Number of location samples}
+
+\item{nsites}{Number of sites to sample}
 }
 \description{
 Run Different Seeds with location scenarios
