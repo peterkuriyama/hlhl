@@ -46,7 +46,7 @@ library(hlsimulator)
 #Set Up Values for this run
 #Try to get range of 10-500 fish per cell
 
-fishes <- seq(25000, 200000, by = 25000)
+fishes <- seq(20000, 200000, by = 20000)
 
 ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1 = 100000,
       nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 2, scope = 0, seed = 1,
@@ -68,7 +68,7 @@ send_email()
 onespp$dep <- factor(onespp$dep, levels = unique(onespp$dep))
 onespp$nsites <- factor(onespp$nsites, levels = unique(onespp$nsites))
 
-save(onespp, file = 'output/onespp.Rdata')
+save(onespp, file = 'onespp.Rdata')
 
 #Calculate mean, variance, and cv of each value
 onespp <- onespp %>% group_by(nsites, init_dist, nfish1, spp, type) %>% 
