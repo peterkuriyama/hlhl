@@ -5,20 +5,12 @@
 \title{Loop over locations with two species
 Function to loop over locations with two species}
 \usage{
-run_locs_2spp(shape_list, loc_scenario, loc_list, loc_vector, ncores, ctl_o,
-  thing1, name1, thing2, name2, par_func = "change_two", index1 = FALSE,
-  index2 = FALSE)
+run_locs_2spp(shape_list, nsites_vec, ncores, ctl_o, thing1, name1, thing2,
+  name2, nreps, par_func = "change_two", index1 = FALSE, index2 = FALSE,
+  loc_scenario = "rand", fixed_locs = NA, nsites)
 }
 \arguments{
 \item{shape_list}{Shape Scenarios to run, must specify}
-
-\item{loc_scenario}{Specify "pick" or "increasing"}
-
-\item{loc_list}{List of locations to loop 
-through, if loc_scenario == 'pick'}
-
-\item{loc_vector}{Vector of number of locations to sample, 
-if loc_scenario == 'increasing'}
 
 \item{ncores}{Number of cores}
 
@@ -31,6 +23,16 @@ if loc_scenario == 'increasing'}
 \item{thing2}{Thing2 to loop over, see change_two function}
 
 \item{name2}{Name of thing2 to loop over, see change_two function}
+
+\item{nreps}{Number of replicates}
+
+\item{loc_scenario}{Fixed, 'rand' or 'pref'}
+
+\item{fixed_locs}{Fixed sampling locations}
+
+\item{nsites}{Number of sites to sample}
+
+\item{fixed_locs}{Fixed sampling locations}
 }
 \description{
 Loop over locations with two species

@@ -3,27 +3,24 @@
 #' Function to loop over locations with two species
 
 #' @param shape_list Shape Scenarios to run, must specify
-#' @param loc_scenario Specify "pick" or "increasing"
-#' @param loc_list List of locations to loop 
-#' through, if loc_scenario == 'pick'
-#' @param loc_vector Vector of number of locations to sample, 
-#' if loc_scenario == 'increasing'
 #' @param ncores Number of cores
 #' @param ctl_o Original ctl list
 #' @param thing1 Thing1 to loop over, see change_two function
 #' @param name1 Name of thing1 to loop over, see change_two function
 #' @param thing2 Thing2 to loop over, see change_two function
 #' @param name2 Name of thing2 to loop over, see change_two function
-
+#' @param nreps Number of replicates
+#' @param loc_scenario Fixed, 'rand' or 'pref'
+#' @param nsites Number of sites to sample
+#' @param fixed_locs Fixed sampling locations
+#' @param fixed_locs Fixed sampling locations
 #' @export
 
-run_locs_2spp <- function(shape_list, loc_scenario, loc_list,
-  loc_vector, ncores, ctl_o, 
-  thing1, name1, thing2, name2, par_func = 'change_two',
-  index1 = FALSE, index2 = FALSE){
-  
-  ctl_temp <- ctl_o
-  
+run_locs_2spp <- function(shape_list, nsites_vec, ncores,
+  ctl_o, thing1, name1, thing2, name2, nreps, par_func = 'change_two',
+  index1 = FALSE, index2 = FALSE, loc_scenario = 'rand', fixed_locs = NA, nsites){
+
+  ctl_temp <- ctl_o  
   shape_outs <- vector('list', length = nrow(shape_list))
   
   #loop over shape list
@@ -31,23 +28,14 @@ run_locs_2spp <- function(shape_list, loc_scenario, loc_list,
 
     #change ctl file
     ctl_temp$shapes <- c(shape_list[ss, 'shapes1'], shape_list[ss, 'shapes2'])
-
     init1 <- initialize_population(ctl = ctl_temp, ctl_temp$nfish1)
-
-    #define fishing locations
-    if(loc_scenario == 'pick'){
-      locs <- lapply(1:nrow(loc_list), FUN = function(ll){
-        pick_sites(nbest = loc_list[ll, 1], nmed = loc_list[ll, 2],
-          nbad = loc_list[ll, 3], fish_mat = init1)
-      })
+    
+    ##define fishing locations
+    if(loc_scenario != 'fixed'){
+      locs <- lapply(1:nreps, FUN = function(ll){
+        pick_sites_prob(nsites = nsites, fish_mat = init1, samp_option = loc_scenario)
+      })      
     }
-
-    if(loc_scenario == 'increasing'){
-      locs <- lapply(1:length(loc_vector), FUN = function(ll){
-        pick_sites(nbest = loc_vector[ll], fish_mat = init1)
-      })
-    }
-
 
     #Loop over locations
     temp <- lapply(locs, FUN = function(ll){
@@ -60,9 +48,9 @@ run_locs_2spp <- function(shape_list, loc_scenario, loc_list,
 
     #Process temp data with ldply, then put it in shape_outs list
     #add index to these
-    names(temp) <- paste0('loc_list', 1:length(temp))
+    names(temp) <-  as.character(1:length(temp))
     temp <- ldply(temp)
-    names(temp)[1] <- 'loc'
+    names(temp)[1] <- 'rep'
 
     shape_outs[[ss]] <- temp
 
@@ -78,7 +66,7 @@ run_locs_2spp <- function(shape_list, loc_scenario, loc_list,
   
   #add depletion
   shape_outs %>% group_by(init_dist, spp) %>% 
-    mutate(dep = nfish_total / max(nfish_total)) %>% as.data.frame -> shape_outs
+    mutate(dep = nfish_orig / max(nfish_orig)) %>% as.data.frame -> shape_outs
   return(shape_outs)
 }
 
