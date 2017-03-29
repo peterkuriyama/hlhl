@@ -16,7 +16,7 @@
 #' @param fixed_locs Fixed sampling locations
 #' @export
 
-run_locs_2spp <- function(shape_list, nsites_vec, ncores,
+run_locs_2spp <- function(shape_list, ncores,
   ctl_o, thing1, name1, thing2, name2, nreps, par_func = 'change_two',
   index1 = FALSE, index2 = FALSE, loc_scenario = 'rand', fixed_locs = NA, nsites){
 
