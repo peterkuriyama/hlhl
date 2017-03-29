@@ -35,47 +35,6 @@ if(Sys.info()['sysname'] == 'Windows'){
 install_github('peterkuriyama/hlsimulator')
 library(hlsimulator)
 
-
-#----------------------------------------------------------------------------------------
-#rewrite pick_sites
-ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1 = 10000,
-      nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 1, scope = 0, seed = 1,
-      location = data.frame(vessel = 1, x = 1, y = 1), numrow = 10, numcol = 10,
-      shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)    
-
-shape_list1 <- data.frame(scen = c('patchy','rightskew', 'normdist', 'unif'), 
-                          shapes1 = c(.1, 1, 10, 10), 
-                          shapes2 = c(10, 10, 10, .10))
-ss <- 1
-ctl_temp <- ctl1
-
-ctl_temp$shapes <- c(shape_list1[ss, 'shapes1'], shape_list1[ss, 'shapes2'])
-
-
-initialize_population(ctl = ctl1, 100000)
-initialize_population(ctl = ctl_temp, 20000)
-
-
-#"preferential sampling"
-xx <- pick_sites_prob(nsites = 20, fish_mat = init1, samp_option = 'pref')
-yy <- pick_sites_prob(nsites = 20, fish_mat = init1, samp_option = 'pref')
-pick_sites_prob(nsites = 20, fish_mat = init1, samp_option = 'pref')
-
-#Pick locations, sample probabilistically
-xx <- pick_sites_prob(nsites = 50, fish_mat = init1, samp_option = 'random')
-
-
-
-
-run_locs(shape_list = shape_list1, loc_scenario = 'rand', ncores = 6, 
-  ctl_o = ctl1, thing1 = fishes, name1 = 'nfish1', nreps = 5, nsites = 10)
-
-
-
-#Run a change two
-
-
-
 #----------------------------------------------------------------------------------------
 # What range of catch per hooks provides a relative index of abundance?
 # What range of hooks without an aggressive species provides a relative index of abundance.
@@ -99,8 +58,8 @@ shape_list1 <- data.frame(scen = c('patchy','rightskew', 'normdist', 'unif'),
                           shapes2 = c(10, 10, 10, .10))
 
 onespp <- run_sampled_locs(shape_list = shape_list1, ncores = nncores,
-  ctl_o = ctl1, thing1 = fishes, name1 = 'nfish1', nreps = 5, 
-  nsites_vec = c(5, 10, 50, 100))
+  ctl_o = ctl1, thing1 = fishes, name1 = 'nfish1', nreps = 100, 
+  nsites_vec = c(5, 10, 30, 50, 70, 90, 100))
 onespp <- onespp %>% filter(spp == 'spp1')
 
 onespp$dep <- factor(onespp$dep, levels = unique(onespp$dep))
@@ -135,6 +94,8 @@ png(width = 9, height = 9, units = 'in', res = 150, file = 'figs/fig1.1.png')
 inc1 %>% filter(spp == 'spp1') %>% ggplot(aes(x = dep, y = cpue)) + 
   geom_point(aes(colour = location)) + facet_wrap(~ init_dist)
 dev.off()
+
+
 # Increasing number of sites gets closer to true curve
 #Least variability as fish distribution gets more even
 
