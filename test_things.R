@@ -46,6 +46,8 @@ library(hlsimulator)
 #Set Up Values for this run
 #Try to get range of 10-500 fish per cell
 
+#----------------------------------------
+#Format simulation
 fishes <- seq(20000, 200000, by = 20000)
 
 ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1 = 100000,
@@ -56,6 +58,9 @@ ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1
 shape_list1 <- data.frame(scen = c('patchy','rightskew', 'normdist', 'unif'), 
                           shapes1 = c(.1, 1, 10, 10), 
                           shapes2 = c(10, 10, 10, .10))
+
+#----------------------------------------
+#Run Simulation
 start_time <- Sys.time()
 onespp <- run_sampled_locs(shape_list = shape_list1, ncores = nncores,
   ctl_o = ctl1, thing1 = fishes, name1 = 'nfish1', nreps = 100, 
@@ -70,6 +75,10 @@ onespp$nsites <- factor(onespp$nsites, levels = unique(onespp$nsites))
 
 save(onespp, file = 'onespp.Rdata')
 
+#----------------------------------------
+#Load the data if run already
+load("output/onespp.Rdata")
+
 #Calculate mean, variance, and cv of each value
 onespp <- onespp %>% group_by(nsites, init_dist, nfish1, spp, type) %>% 
   mutate(mean_cpue = mean(cpue), sd_cpue = sd(cpue), cv_cpue = sd_cpue / mean_cpue) %>%
@@ -81,29 +90,27 @@ onespp %>% ggplot() +
   geom_point(aes(dep, cpue, colour = nsites)) + 
   facet_wrap(~ init_dist + type, ncol = 2)
 
-onespp %>% filter(init_dist == 'unif') %>% ggplot() + 
+onespp %>% filter(init_dist == 'rightskew') %>% ggplot() + 
   geom_boxplot(aes(dep, cpue, colour = nsites)) + facet_wrap(~ type)
 
-#Plot the results
-inc1$location <- factor(inc1$location, levels = unique(inc1$location))
-
-#Figure 1
-png(width = 9, height = 9, units = 'in', res = 150, file = 'figs/fig1.png')
-inc1 %>% filter(spp == 'spp1') %>% ggplot(aes(x = dep, y = cpue)) + 
-  geom_point(aes(colour = init_dist)) + facet_wrap(~ location)
-dev.off()
-  
-png(width = 9, height = 9, units = 'in', res = 150, file = 'figs/fig1.1.png')  
-inc1 %>% filter(spp == 'spp1') %>% ggplot(aes(x = dep, y = cpue)) + 
-  geom_point(aes(colour = location)) + facet_wrap(~ init_dist)
+png(width = 11.5, height = 9, units = 'in', res = 150, file = 'figs/onespp_uniform.png')
+onespp %>% filter(init_dist == 'unif') %>% ggplot() + 
+  geom_boxplot(aes(dep, cpue, colour = type)) + facet_wrap(~ nsites)
 dev.off()
 
+
+png(width = 11.5, height = 9, units = 'in', res = 150, file = 'figs/onespp_rightskew.png')
+onespp %>% filter(init_dist == 'patchy') %>% ggplot() + 
+  geom_boxplot(aes(dep, cpue, colour = type)) + facet_wrap(~ nsites)
+dev.off()
+
+png(width = 11.5, height = 9, units = 'in', res = 150, file = 'figs/onespp_patchy.png')
+onespp %>% filter(init_dist == 'patchy') %>% ggplot() + 
+  geom_boxplot(aes(dep, cpue, colour = type)) + facet_wrap(~ nsites)
+dev.off()
 
 # Increasing number of sites gets closer to true curve
 #Least variability as fish distribution gets more even
-
-
-#Relationship seems to be invariant across matrix dimensions
 
 #---------------------------------------------
 #---------------------------------------------
