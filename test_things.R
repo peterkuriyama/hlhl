@@ -56,11 +56,14 @@ ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1
 shape_list1 <- data.frame(scen = c('patchy','rightskew', 'normdist', 'unif'), 
                           shapes1 = c(.1, 1, 10, 10), 
                           shapes2 = c(10, 10, 10, .10))
-
+start_time <- Sys.time()
 onespp <- run_sampled_locs(shape_list = shape_list1, ncores = nncores,
   ctl_o = ctl1, thing1 = fishes, name1 = 'nfish1', nreps = 100, 
   nsites_vec = c(5, 10, 30, 50, 70, 90, 100))
 onespp <- onespp %>% filter(spp == 'spp1')
+
+run_time <- Sys.time() - start_time
+send_email()
 
 onespp$dep <- factor(onespp$dep, levels = unique(onespp$dep))
 onespp$nsites <- factor(onespp$nsites, levels = unique(onespp$nsites))
