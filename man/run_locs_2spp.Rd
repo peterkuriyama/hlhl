@@ -5,8 +5,8 @@
 \title{Loop over locations with two species
 Function to loop over locations with two species}
 \usage{
-run_locs_2spp(shape_list, nsites_vec, ncores, ctl_o, thing1, name1, thing2,
-  name2, nreps, par_func = "change_two", index1 = FALSE, index2 = FALSE,
+run_locs_2spp(shape_list, ncores, ctl_o, thing1, name1, thing2, name2, nreps,
+  par_func = "change_two", index1 = FALSE, index2 = FALSE,
   loc_scenario = "rand", fixed_locs = NA, nsites)
 }
 \arguments{
