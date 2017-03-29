@@ -116,35 +116,32 @@ dev.off()
 #---------------------------------------------
 #Increasing number of location with two species, even comp_coeff
 #Both species increasing together
+fishes1 <- seq(20000, 200000, by = 20000)
+fishes2 <- rev(fishes1)
 
-fishes1 <- seq(1000, 50000, by = 1000)
-fishes2 <- rev(seq(1000, 50000, by = 1000))
-
-ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1 = 10000,
+#Change comp_coeff sometime
+ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1 = 100000,
       nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 1, scope = 0, seed = 1,
-      location = data.frame(vessel = 1, x = 1, y = 1), numrow = 10, numcol = 10,
+      location = data.frame(vessel = 1, x = 1, y = 1), numrow = 30, numcol = 30,
       shapes = c(.1, .1) , max_prob = 0, min_prob = 0, niters = 1, 
-      comp_coeff = .7)    
+      comp_coeff = .5)    
 
 shape_list1 <- data.frame(scen = c('patchy','rightskew', 'normdist', 'unif'), 
                           shapes1 = c(.1, 1, 10, 10), 
                           shapes2 = c(10, 10, 10, .10))
 
 start_time <- Sys.time()
+twospp <- run_sampled_locs_2spp(shape_list = shape_list1, nsites_vec = c(5, 10, 30, 50, 100),
+  ncores = nncores, ctl_o = ctl1, thing1 = fishes1, thing2 = fishes2, name1 = 'nfish1', 
+  name2 = 'nfish2', nreps = 5)
+run_time <- Sys.time() - start_time
+  
+send_email()
+  
+#Save results
+# paste0(results_dir, '//inc12.Rdata')
+save(twospp, file = paste0(results_dir, '//inc12.Rdata'))
 
-if(!('inc12.Rdata' %in% list.files('output'))){
-  inc12 <- run_locs_2spp(shape_list = shape_list1, loc_scenario = 'increasing',
-    loc_vector = seq(2, 20, by = 2), ncores = nncores, ctl_o = ctl1, thing1 = fishes1,
-    thing2 = fishes2, name1 = 'nfish1', name2 = 'nfish2')
-  
-  run_time <- Sys.time() - start_time
-  
-  send_email()
-  
-  #Save results
-  # paste0(results_dir, '//inc12.Rdata')
-  save(inc12, file = paste0(results_dir, '//inc12.Rdata'))
-}
 
 load('output/inc12.Rdata')
 # load('output/inc12.Rdata')
@@ -174,89 +171,6 @@ ggplot(inc12, aes(x = dep1, y = dep2)) + geom_point(aes(colour = cpue)) +
   facet_wrap(~ init_dist + spp, ncol = 2) + scale_colour_gradient(low = 'white', high = 'red')
 dev.off()
 
-#--------------------------------------------------------------------------------------------
-#RUN 2
-#--------------------------------------------------------------------------------------------
-#Patchy Stuff
-#20 sites total:
-  #70% good, 20% med, 10% bad
-  #70% good, 30% med
-  #70% good, 30% bad
-  #60% good, 30% med, 10% bad
-  #60% good, 40% bad
-  #80% good, 20% bad
-  #80% good, 10% med, 10% bad
-
-
-#Picking some number of good, med, bad sites
-#Increasing number of sites from 2-20
-fishes <- seq(1000, 70000, by = 4000)
-
-ctl2 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1 = 10000,
-      nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 1, scope = 0, seed = 1,
-      location = data.frame(vessel = 1, x = 1, y = 1), numrow = 15, numcol = 15,
-      shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)    
-
-shape_list1 <- data.frame(scen = c('patchy','rightskew', 'normdist', 'unif'), 
-                          shapes1 = c(.1, 1, 10, 10), 
-                          shapes2 = c(10, 10, 10, .10))
-
-pick_locs1 <- data.frame(nbests = c(.7, .7, .7, .6, .6, .7, .8),
-                nmeds = c(.2, .3, 0, .3, 0, 0, .1),
-                nbads = c(.1, 0, .3, .1, .4, .2, .1))
-pick_locs1 <- pick_locs1 * 50
-
-#Run the simulation
-start_time <- Sys.time()
-
-run2 <- run_locs(shape_list = shape_list1, loc_scenario = 'pick', 
-  loc_list = pick_locs1, ncores = 6, ctl_o = ctl2, thing1 = fishes,
-  name1 = 'nfish1')
-
-run_time <- Sys.time() - start_time
-
-save(run2, file = 'output/run2.Rdata')
-load('output/run2.Rdata')
-
-
-descs <- data.frame(location = as.character(unique(run2$location)), 
-                    desc = c("70% good, 20% med, 10% bad",
-                             "70% good, 30% med",
-                             "70% good, 30% bad",
-                             "60% good, 30% med, 10% bad",
-                             "60% good, 40% bad",
-                             "80% good, 20% bad",
-                             "80% good, 10% med, 10% bad"))
-descs$location <- factor(descs$location, levels = descs$location)
-
-run2 <- inner_join(run2, descs, by = "location")
-run2$desc <- as.character(run2$desc)
-
-png(width = 9, height = 9, units = 'in', res = 150, file = 'fig3_patchyfishing.png')
-ggplot(run2, aes(x = dep, y = cpue)) + geom_point(aes(colour = init_dist)) + 
-  facet_wrap(~ desc) + ylim(c(0, 1))
-dev.off()
-##----------------------------------------
-##Run 2.1
-#Seem to not cover enough locations 
-#Use run 3 to sample larger proportion of the area for one species
-pick_locs1 <- data.frame(nbests = c(.7, .7, .7, .6, .6, .7, .8),
-                nmeds = c(.2, .3, 0, .3, 0, 0, .1),
-                nbads = c(.1, 0, .3, .1, .4, .2, .1))
-pick_locs1 <- pick_locs1 * 50
-
-run21 <- run_locs(shape_list = shape_list1, loc_scenario = 'pick', 
-  loc_list = pick_locs1, ncores = 6, ctl_o = ctl2, thing1 = fishes,
-  name1 = 'nfish1')
-save(run21, file = 'output/run21.Rdata')
-
-load('output/run21.Rdata')
-
-run21 <- inner_join(run21, descs, by = 'location')
-run21$desc <- as.character(run21$desc)
-
-ggplot(run21, aes(x = dep, y = cpue)) + geom_point(aes(colour = init_dist)) + 
-  facet_wrap(~ desc) + ylim(c(0, 1))
 
 
 
