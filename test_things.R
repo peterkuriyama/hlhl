@@ -51,22 +51,30 @@ ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05,
 
 
 shape_list1 <- data.frame(scen = c('patchy','rightskew', 'normdist', 'unif'), 
-                          shapes1 = c(.1, 1, 10, 10), 
-                          shapes2 = c(10, 10, 10, .10))
+                          shapes1 = c(.1, 1, 5, 10), 
+                          shapes2 = c(10, 10, 5, .10))
+
+hist(rbeta(shape1 = .11, shape2 = 10, n = 10000))
+hist(rbeta(shape1 = 1, shape2 = 10, n = 10000))
+hist(rbeta(shape1 = 10, shape2 = 1, n = 10000))
+
+
+dbeta(x = 1, shape1 = 1, shape2 = 10)
+hist(rbeta(shape1 = 1, shape2 = 10, n = 10000))
 
 inits <- lapply(1:nrow(shape_list1), FUN = function(ss){
   print(ss)
   ctl1$shapes <- c(shape_list1[ss, 2], shape_list1[ss, 3])
   temp <- initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
-  temp <- temp / 100000
+  # temp <- temp / 100000
   return(temp)
 })
 
 
 hist(inits[[1]], breaks = 30)
 hist(inits[[2]], breaks = 30)
-hist(inits[[3]], breaks = 30)
-hist(inits[[4]], breaks = 30)
+hist(inits[[3]], breaks = 30, xlim = c(0, 200))
+hist(inits[[4]], breaks = 30, xlim = c(0, 200))
 
 #--------------------------------------------------------------------------------------------
 #RUN 1 - Increasing number of sites from 2-20
@@ -146,8 +154,10 @@ dev.off()
 #Increasing number of location with two species, even comp_coeff
 #Both species increasing together
 
-fishes1 <- seq(20000, 200000, by = 20000)
-fishes2 <- rev(fishes1)
+fishes1 <- seq(0, 20000, 200000, by = 20000)
+# fishes2 <- rev(fishes1)
+expand.grid(fishes1, fishes1)
+
 
 #Change comp_coeff sometime
 ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1 = 100000,
@@ -190,22 +200,51 @@ twospp <- inner_join(twospp, dep2, by = c('nfish1', 'nfish2', 'init_dist', 'nsit
 
 #Look only at simulations that sampled 50 sites
 focus <- twospp %>% filter(nsites == 50) 
-focus %>% group_by(dep1, dep2, init_dist, spp, type) %>% mutate(mean_cpue = mean(cpue),
-  sd_cpue = sd(cpue), cv_cpue = sd_cpue / mean_cpue) %>% as.data.frame -> focus
+focus %>% group_by(init_dist, rep, nfish1, nfish2, type) %>% mutate(tot_cpue = sum(cpue)) %>% 
+  as.data.frame -> focus
+
+focus %>% group_by(dep1, dep2, init_dist, spp, type) %>% 
+
+summarize(mean_cpue = mean(cpue),
+  sd_cpue = sd(cpue), cv_cpue = sd_cpue / mean_cpue) %>% as.data.frame -> for_contour
+
 
 #Remove duplicated values
-focus %>% group_by(init_dist, dep1, dep2, spp, type) %>% filter(row_number(cv_cpue) == 1) %>% 
-  as.data.frame -> focus
+# focus %>% group_by(init_dist, dep1, dep2, spp, type) %>% filter(row_number(cv_cpue) == 1) %>% 
+#   as.data.frame -> focus
+
+ %>% filter(init_dist == 'unif' & dep1 == 0.1 & dep2 == 1.0) %>% head
+
 
 #What colors to use?
 #Patchy contour plot
-focus %>% filter(init_dist == 'unif') %>% ggplot(aes(x = dep1, y = dep2, z = mean_cpue)) + 
-  geom_contour(aes(colour = ..level..), binwidth = .1) + facet_wrap(~ spp + type) + 
-  scale_colour_gradient(low = 'red', high = 'blue')
+for_contour %>% filter(init_dist == 'unif') %>% ggplot(aes(x = dep1, y = dep2, z = mean_cpue)) + 
+  stat_contour(aes(colour = ..level..), binwidth = .1, size = 2) + facet_wrap(~ spp + type) + 
+  scale_colour_gradient(low = 'white', high = 'red')
+
+
+
+funi %>% group_by(nfish1, nfish2, type) %>% mutate(tot_cpue = sum(cpue)) %>% as.data.frame %>% head
+
 
 #Patchy contour plot
 focus %>% filter(init_dist == 'patchy') %>% ggplot(aes(x = dep1, y = dep2, z = mean_cpue)) + 
   geom_contour(aes(colour = ..level..), bins = 5) + facet_wrap(~ spp + type)
+
+
+# with ggplot > 2.0.0 you'll need to add method="bottom.pieces" (or top.pieces) to the direct.label call
+funi <- focus %>% filter(init_dist == 'unif')
+
+
+
+focus %>% filter(init_dist == 'unif') %>% ggplot() + geom_point(aes(x = dep1, y = dep2, colour = mean_cpue)) + 
+  facet_wrap(~ spp + type)
+
+
+
+unique(paste(focus$dep1, focus$dep2))
+
+
 
 
 #---------------------------------------------
