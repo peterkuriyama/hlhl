@@ -40,6 +40,34 @@ library(hlsimulator)
 # What range of hooks without an aggressive species provides a relative index of abundance.
 
 #update probabilistic sampling
+
+#--------------------------------------------------------------------------------------------
+#Figure 1. Show distributions of each sceanrio
+ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, 
+      nfish1 = 100000,
+      nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 2, scope = 0, seed = 1,
+      location = data.frame(vessel = 1, x = 1, y = 1), numrow = 30, numcol = 30,
+      shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)    
+
+
+shape_list1 <- data.frame(scen = c('patchy','rightskew', 'normdist', 'unif'), 
+                          shapes1 = c(.1, 1, 10, 10), 
+                          shapes2 = c(10, 10, 10, .10))
+
+inits <- lapply(1:nrow(shape_list1), FUN = function(ss){
+  print(ss)
+  ctl1$shapes <- c(shape_list1[ss, 2], shape_list1[ss, 3])
+  temp <- initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
+  temp <- temp / 100000
+  return(temp)
+})
+
+
+hist(inits[[1]], breaks = 30)
+hist(inits[[2]], breaks = 30)
+hist(inits[[3]], breaks = 30)
+hist(inits[[4]], breaks = 30)
+
 #--------------------------------------------------------------------------------------------
 #RUN 1 - Increasing number of sites from 2-20
 #--------------------------------------------------------------------------------------------
