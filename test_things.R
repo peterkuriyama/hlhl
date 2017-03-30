@@ -75,6 +75,7 @@ onespp$nsites <- factor(onespp$nsites, levels = unique(onespp$nsites))
 
 save(onespp, file = 'onespp.Rdata')
 
+#first run took 8 hours I think
 #----------------------------------------
 #Load the data if run already
 load("output/onespp.Rdata")
@@ -116,6 +117,7 @@ dev.off()
 #---------------------------------------------
 #Increasing number of location with two species, even comp_coeff
 #Both species increasing together
+
 fishes1 <- seq(20000, 200000, by = 20000)
 fishes2 <- rev(fishes1)
 
@@ -133,18 +135,16 @@ shape_list1 <- data.frame(scen = c('patchy','rightskew', 'normdist', 'unif'),
 start_time <- Sys.time()
 twospp <- run_sampled_locs_2spp(shape_list = shape_list1, nsites_vec = c(5, 10, 30, 50, 100),
   ncores = nncores, ctl_o = ctl1, thing1 = fishes1, thing2 = fishes2, name1 = 'nfish1', 
-  name2 = 'nfish2', nreps = 5)
+  name2 = 'nfish2', nreps = 50)
 run_time <- Sys.time() - start_time
   
 send_email()
   
 #Save results
 # paste0(results_dir, '//inc12.Rdata')
-save(twospp, file = paste0(results_dir, '//inc12.Rdata'))
+# save(twospp, file = paste0(results_dir, '//inc12.Rdata'))
+save(twospp, file = 'twospp.Rdata')
 
-
-load('output/inc12.Rdata')
-# load('output/inc12.Rdata')
 
 #change formats
 inc12$nfish1 <- as.numeric(inc12$nfish1)
