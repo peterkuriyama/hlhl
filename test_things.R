@@ -172,32 +172,68 @@ send_email()
 # paste0(results_dir, '//inc12.Rdata')
 # save(twospp, file = paste0(results_dir, '//inc12.Rdata'))
 save(twospp, file = 'twospp.Rdata')
-
+load('output/twospp.Rdata')
 
 #change formats
-inc12$nfish1 <- as.numeric(inc12$nfish1)
-inc12$nfish2 <- as.numeric(inc12$nfish2)
+twospp$nfish1 <- as.numeric(twospp$nfish1)
+twospp$nfish2 <- as.numeric(twospp$nfish2)
+
 
 #Swing dep by species for plots
-dep2 <- inc12 %>% dcast(nfish1 + nfish2 + init_dist + loc ~ spp, value.var = 'dep')
-names(dep2)[5:6] <- c('dep1', 'dep2')
+dep2 <- twospp %>% dcast(nfish1 + nfish2 + init_dist + nsites + 
+  rep + iter + type ~ spp, value.var = 'dep')
+names(dep2)[grep('spp', names(dep2))] <- c('dep1', 'dep2')
 
-inc12 <- inner_join(inc12, dep2, by = c('nfish1', 'nfish2', 'init_dist', 'loc'))
-
-#Look at one fishing location only
-inc12 %>% filter(loc == 'loc_list1') %>% ggplot(aes(x = dep1, y = dep2)) + geom_point(aes(colour = cpue)) + 
-  facet_wrap(~ init_dist + spp, ncol = 2) + scale_colour_gradient(low = 'white', high = 'red')
-
-png(width = 9, height = 9, units = 'in', res = 150, file = 'figs/fig2_2spp.png')
-inc12 %>% filter(loc == 'loc_list10') %>% ggplot(aes(x = dep1, y = dep2)) + geom_point(aes(colour = cpue)) + 
-  facet_wrap(~ init_dist + spp, ncol = 2) + scale_colour_gradient(low = 'white', high = 'red')
-dev.off()
+twospp <- inner_join(twospp, dep2, by = c('nfish1', 'nfish2', 'init_dist', 'nsites',
+  'rep', 'iter', 'type'))
 
 
-png(width = 8.58, height = 9, units = 'in', res = 150, file = 'figs/run1_2spp.png')
-ggplot(inc12, aes(x = dep1, y = dep2)) + geom_point(aes(colour = cpue)) + 
-  facet_wrap(~ init_dist + spp, ncol = 2) + scale_colour_gradient(low = 'white', high = 'red')
-dev.off()
+#Look only at simulations that sampled 50 sites
+focus <- twospp %>% filter(nsites == 50) 
+focus %>% group_by(dep1, dep2, init_dist, spp, type) %>% mutate(mean_cpue = mean(cpue),
+  sd_cpue = sd(cpue), cv_cpue = sd_cpue / mean_cpue) %>% as.data.frame -> focus
+
+#Remove duplicated values
+focus %>% group_by(init_dist, dep1, dep2, spp, type) %>% filter(row_number(cv_cpue) == 1) %>% 
+  as.data.frame -> focus
+
+#What colors to use?
+#Patchy contour plot
+focus %>% filter(init_dist == 'unif') %>% ggplot(aes(x = dep1, y = dep2, z = mean_cpue)) + 
+  geom_contour(aes(colour = ..level..), binwidth = .1) + facet_wrap(~ spp + type) + 
+  scale_colour_gradient(low = 'red', high = 'blue')
+
+#Patchy contour plot
+focus %>% filter(init_dist == 'patchy') %>% ggplot(aes(x = dep1, y = dep2, z = mean_cpue)) + 
+  geom_contour(aes(colour = ..level..), bins = 5) + facet_wrap(~ spp + type)
+
+
+#---------------------------------------------
+#Run two species simulation with comp_coeff of .1, weak competition
+
+fishes1 <- seq(20000, 200000, by = 20000)
+fishes2 <- rev(fishes1)
+
+#Change comp_coeff sometime
+ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1 = 100000,
+      nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 1, scope = 0, seed = 1,
+      location = data.frame(vessel = 1, x = 1, y = 1), numrow = 30, numcol = 30,
+      shapes = c(.1, .1) , max_prob = 0, min_prob = 0, niters = 1, 
+      comp_coeff = .1)    
+
+shape_list1 <- data.frame(scen = c('patchy','rightskew', 'normdist', 'unif'), 
+                          shapes1 = c(.1, 1, 10, 10), 
+                          shapes2 = c(10, 10, 10, .10))
+
+start_time <- Sys.time()
+twospp_lowcomp <- run_sampled_locs_2spp(shape_list = shape_list1, nsites_vec = c(50),
+  ncores = nncores, ctl_o = ctl1, thing1 = fishes1, thing2 = fishes2, name1 = 'nfish1', 
+  name2 = 'nfish2', nreps = 10)
+run_time <- Sys.time() - start_time
+  
+send_email()
+
+
 
 
 
