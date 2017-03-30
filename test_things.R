@@ -235,7 +235,7 @@ run_time <- Sys.time() - start_time
   
 send_email()
 
-
+save(twospp_lowcomp, file = 'twospp_lowcomp.Rdata')
 
 
 
