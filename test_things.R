@@ -184,10 +184,11 @@ send_email()
 save(twospp, file = 'twospp.Rdata')
 load('output/twospp.Rdata')
 
+#Took 14 hours!
+
 #change formats
 twospp$nfish1 <- as.numeric(twospp$nfish1)
 twospp$nfish2 <- as.numeric(twospp$nfish2)
-
 
 #Swing dep by species for plots
 dep2 <- twospp %>% dcast(nfish1 + nfish2 + init_dist + nsites + 
@@ -249,6 +250,7 @@ unique(paste(focus$dep1, focus$dep2))
 
 #---------------------------------------------
 #Run two species simulation with comp_coeff of .1, weak competition
+#only 10 replicates to see how it goes
 
 fishes1 <- seq(20000, 200000, by = 20000)
 fishes2 <- rev(fishes1)
@@ -272,7 +274,7 @@ run_time <- Sys.time() - start_time
   
 send_email()
 
-
+save(twospp_lowcomp, file = 'twospp_lowcomp.Rdata')
 
 
 
