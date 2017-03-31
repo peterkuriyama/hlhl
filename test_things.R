@@ -17,12 +17,19 @@ library(sendmailR)
 #Automatically detect # of cores
 nncores <- detectCores() - 2
 
+if(Sys.info()['sysname'] == 'Darwin' & nncores == 22){
+  setwd("/Users/fish/Desktop/peter")
+}
+
 #Mac
-if(Sys.info()['sysname'] == 'Darwin'){
+if(Sys.info()['sysname'] == 'Darwin' & nncores != 22){
   setwd("/Users/peterkuriyama/School/Research/hlsimulator")  
   type <- 'mac'
   results_dir <- "/Volumes/udrive/hlsimulator_runs"
 }
+
+setwd("/udrive.uw.edu/udrive/")
+list.files("Volumes/udrive/hlsimulator_runs")
 
 if(Sys.info()['sysname'] == 'Windows'){
   setwd("C://Users//Peter//Desktop//hlsimulator")
@@ -75,20 +82,20 @@ hist(inits[[4]], breaks = 30)
 #Format simulation
 fishes <- seq(0, 200000, by = 20000)
 
-#Run Simulation
+#Run Simulation with 1000 replicates
 start_time <- Sys.time()
 onespp <- run_sampled_locs(shape_list = shape_list1, ncores = nncores,
-  ctl_o = ctl1, thing1 = fishes, name1 = 'nfish1', nreps = 100, 
+  ctl_o = ctl1, thing1 = fishes, name1 = 'nfish1', nreps = 1000, 
   nsites_vec = c(5, 10, 30, 50, 100))
 onespp <- onespp %>% filter(spp == 'spp1')
 
 run_time <- Sys.time() - start_time
-send_email()
+send_email(body = 'lab mac run done')
 
 onespp$dep <- factor(onespp$dep, levels = unique(onespp$dep))
 onespp$nsites <- factor(onespp$nsites, levels = unique(onespp$nsites))
-
-save(onespp, file = 'onespp.Rdata')
+save(onespp, file = "onespp_1000.Rdata")
+# save(onespp, file = 'onespp.Rdata')
 
 #first run took 8 hours I think
 #----------------------------------------
