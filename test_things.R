@@ -39,68 +39,47 @@ library(hlsimulator)
 # What range of catch per hooks provides a relative index of abundance?
 # What range of hooks without an aggressive species provides a relative index of abundance.
 
-#update probabilistic sampling
-
 #--------------------------------------------------------------------------------------------
-#Figure 1. Show distributions of each sceanrio
+#Define scenarios for all simulations
+shape_list1 <- data.frame(scen = c('leftskew', 'rightskew', 'normdist', 'uniform', 'patchy'),
+  shapes1 = c(10, 1, 5, 1, .1),
+  shapes2 = c(1 , 10 ,5, 1, 10))
+
 ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, 
       nfish1 = 100000,
       nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 2, scope = 0, seed = 1,
       location = data.frame(vessel = 1, x = 1, y = 1), numrow = 30, numcol = 30,
       shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)    
 
-
-shape_list1 <- data.frame(scen = c('patchy','rightskew', 'normdist', 'unif'), 
-                          shapes1 = c(.1, 1, 5, 10), 
-                          shapes2 = c(10, 10, 5, .10))
-
-hist(rbeta(shape1 = .11, shape2 = 10, n = 10000))
-hist(rbeta(shape1 = 1, shape2 = 10, n = 10000))
-hist(rbeta(shape1 = 10, shape2 = 1, n = 10000))
-
-
-dbeta(x = 1, shape1 = 1, shape2 = 10)
-hist(rbeta(shape1 = 1, shape2 = 10, n = 10000))
-
+#--------------------------------------------------------------------------------------------
+#Figure 1. Show distributions of each sceanrio
+#Format this figure
 inits <- lapply(1:nrow(shape_list1), FUN = function(ss){
-  print(ss)
   ctl1$shapes <- c(shape_list1[ss, 2], shape_list1[ss, 3])
   temp <- initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
-  # temp <- temp / 100000
   return(temp)
 })
 
-
+#Work on this plot
 hist(inits[[1]], breaks = 30)
 hist(inits[[2]], breaks = 30)
-hist(inits[[3]], breaks = 30, xlim = c(0, 200))
-hist(inits[[4]], breaks = 30, xlim = c(0, 200))
+hist(inits[[3]], breaks = 30)
+hist(inits[[4]], breaks = 30)
 
 #--------------------------------------------------------------------------------------------
-#RUN 1 - Increasing number of sites from 2-20
+#Figure 2
 #--------------------------------------------------------------------------------------------
-#Set Up Values for this run
-#Try to get range of 10-500 fish per cell
+#RUN 1
 
 #----------------------------------------
 #Format simulation
-fishes <- seq(20000, 200000, by = 20000)
+fishes <- seq(0, 200000, by = 20000)
 
-ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1 = 100000,
-      nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 2, scope = 0, seed = 1,
-      location = data.frame(vessel = 1, x = 1, y = 1), numrow = 30, numcol = 30,
-      shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)    
-
-shape_list1 <- data.frame(scen = c('patchy','rightskew', 'normdist', 'unif'), 
-                          shapes1 = c(.1, 1, 10, 10), 
-                          shapes2 = c(10, 10, 10, .10))
-
-#----------------------------------------
 #Run Simulation
 start_time <- Sys.time()
 onespp <- run_sampled_locs(shape_list = shape_list1, ncores = nncores,
   ctl_o = ctl1, thing1 = fishes, name1 = 'nfish1', nreps = 100, 
-  nsites_vec = c(5, 10, 30, 50, 70, 90, 100))
+  nsites_vec = c(5, 10, 30, 50, 100))
 onespp <- onespp %>% filter(spp == 'spp1')
 
 run_time <- Sys.time() - start_time
@@ -117,64 +96,56 @@ save(onespp, file = 'onespp.Rdata')
 load("output/onespp.Rdata")
 
 #Calculate mean, variance, and cv of each value
-onespp <- onespp %>% group_by(nsites, init_dist, nfish1, spp, type) %>% 
-  mutate(mean_cpue = mean(cpue), sd_cpue = sd(cpue), cv_cpue = sd_cpue / mean_cpue) %>%
-  as.data.frame
+# onespp <- onespp %>% group_by(nsites, init_dist, nfish1, spp, type) %>% 
+#   mutate(mean_cpue = mean(cpue), sd_cpue = sd(cpue), cv_cpue = sd_cpue / mean_cpue) %>%
+#   as.data.frame
 
-ggplot(onespp) + geom_point(aes(x = nsites, y = cv_cpue, colour = init_dist))
+# ggplot(onespp) + geom_point(aes(x = nsites, y = cv_cpue, colour = init_dist))
 
-onespp %>% ggplot() + 
-  geom_point(aes(dep, cpue, colour = nsites)) + 
-  facet_wrap(~ init_dist + type, ncol = 2)
+# onespp %>% ggplot() + 
+#   geom_point(aes(dep, cpue, colour = nsites)) + 
+#   facet_wrap(~ init_dist + type, ncol = 2)
 
-onespp %>% filter(init_dist == 'rightskew') %>% ggplot() + 
-  geom_boxplot(aes(dep, cpue, colour = nsites)) + facet_wrap(~ type)
+# onespp %>% filter(init_dist == 'rightskew') %>% ggplot() + 
+#   geom_boxplot(aes(dep, cpue, colour = nsites)) + facet_wrap(~ type)
 
-png(width = 11.5, height = 9, units = 'in', res = 150, file = 'figs/onespp_uniform.png')
-onespp %>% filter(init_dist == 'unif') %>% ggplot() + 
-  geom_boxplot(aes(dep, cpue, colour = type)) + facet_wrap(~ nsites)
-dev.off()
+# png(width = 11.5, height = 9, units = 'in', res = 150, file = 'figs/onespp_uniform.png')
+# onespp %>% filter(init_dist == 'unif') %>% ggplot() + 
+#   geom_boxplot(aes(dep, cpue, colour = type)) + facet_wrap(~ nsites)
+# dev.off()
 
 
-png(width = 11.5, height = 9, units = 'in', res = 150, file = 'figs/onespp_rightskew.png')
-onespp %>% filter(init_dist == 'patchy') %>% ggplot() + 
-  geom_boxplot(aes(dep, cpue, colour = type)) + facet_wrap(~ nsites)
-dev.off()
+# png(width = 11.5, height = 9, units = 'in', res = 150, file = 'figs/onespp_rightskew.png')
+# onespp %>% filter(init_dist == 'patchy') %>% ggplot() + 
+#   geom_boxplot(aes(dep, cpue, colour = type)) + facet_wrap(~ nsites)
+# dev.off()
 
-png(width = 11.5, height = 9, units = 'in', res = 150, file = 'figs/onespp_patchy.png')
-onespp %>% filter(init_dist == 'patchy') %>% ggplot() + 
-  geom_boxplot(aes(dep, cpue, colour = type)) + facet_wrap(~ nsites)
-dev.off()
+# png(width = 11.5, height = 9, units = 'in', res = 150, file = 'figs/onespp_patchy.png')
+# onespp %>% filter(init_dist == 'patchy') %>% ggplot() + 
+#   geom_boxplot(aes(dep, cpue, colour = type)) + facet_wrap(~ nsites)
+# dev.off()
 
 # Increasing number of sites gets closer to true curve
 #Least variability as fish distribution gets more even
 
 #---------------------------------------------
 #---------------------------------------------
+#Two species with comp_coeff equal to 0.5
+
 #Increasing number of location with two species, even comp_coeff
 #Both species increasing together
 
-fishes1 <- seq(0, 20000, 200000, by = 20000)
-# fishes2 <- rev(fishes1)
-expand.grid(fishes1, fishes1)
-
+fishes1 <- seq(0, 200000, by = 20000)
+fishes2 <- rev(fishes1)
 
 #Change comp_coeff sometime
-ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, nfish1 = 100000,
-      nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 1, scope = 0, seed = 1,
-      location = data.frame(vessel = 1, x = 1, y = 1), numrow = 30, numcol = 30,
-      shapes = c(.1, .1) , max_prob = 0, min_prob = 0, niters = 1, 
-      comp_coeff = .5)    
+ctl1$comp_coeff <- 0.5
 
-shape_list1 <- data.frame(scen = c('patchy','rightskew', 'normdist', 'unif'), 
-                          shapes1 = c(.1, 1, 10, 10), 
-                          shapes2 = c(10, 10, 10, .10))
-
-start_time <- Sys.time()
+start_time2 <- Sys.time()
 twospp <- run_sampled_locs_2spp(shape_list = shape_list1, nsites_vec = c(5, 10, 30, 50, 100),
   ncores = nncores, ctl_o = ctl1, thing1 = fishes1, thing2 = fishes2, name1 = 'nfish1', 
-  name2 = 'nfish2', nreps = 50)
-run_time <- Sys.time() - start_time
+  name2 = 'nfish2', nreps = 100)
+run_time2 <- Sys.time() - start_time2
   
 send_email()
   
@@ -182,6 +153,8 @@ send_email()
 # paste0(results_dir, '//inc12.Rdata')
 # save(twospp, file = paste0(results_dir, '//inc12.Rdata'))
 save(twospp, file = 'twospp.Rdata')
+
+
 load('output/twospp.Rdata')
 
 #Took 14 hours!
@@ -220,9 +193,25 @@ summarize(mean_cpue = mean(cpue),
 #What colors to use?
 #Patchy contour plot
 for_contour %>% filter(init_dist == 'unif') %>% ggplot(aes(x = dep1, y = dep2, z = mean_cpue)) + 
-  stat_contour(aes(colour = ..level..), binwidth = .1, size = 2) + facet_wrap(~ spp + type) + 
-  scale_colour_gradient(low = 'white', high = 'red')
+  stat_contour(aes(colour = ..level..), binwidth = .1) + facet_wrap(~ spp + type) + 
+  scale_colour_gradient2(low = 'blue', high = 'red', limits = c(0, 1))
 
+for_contour %>% filter(init_dist == 'unif') %>% tail
+
+
+
+volcano3d <- melt(volcano)
+
+v + stat_contour(geom="polygon", aes(fill=..level..))
+fc2 <- for_contour %>% group_by(dep1, dep2, init_dist, type) %>% summarize(tot_mean_cpue = sum(mean_cpue))
+
+#This makes sense
+ggplot(fc2, aes(x = dep1, y = dep2, z = tot_mean_cpue)) + stat_contour(aes(colour = ..level..), 
+  binwidth = .1, size = 1) + facet_wrap(~ init_dist + type, ncol = 2) + scale_colour_gradient(low = 'white',
+  high = 'red')
+
+
+#Try plotting this as dots? Something seems wrong
 
 
 funi %>% group_by(nfish1, nfish2, type) %>% mutate(tot_cpue = sum(cpue)) %>% as.data.frame %>% head
