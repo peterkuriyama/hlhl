@@ -28,9 +28,6 @@ if(Sys.info()['sysname'] == 'Darwin' & nncores != 22){
   results_dir <- "/Volumes/udrive/hlsimulator_runs"
 }
 
-setwd("/udrive.uw.edu/udrive/")
-list.files("Volumes/udrive/hlsimulator_runs")
-
 if(Sys.info()['sysname'] == 'Windows'){
   setwd("C://Users//Peter//Desktop//hlsimulator")
 }
@@ -51,6 +48,7 @@ library(hlsimulator)
 shape_list1 <- data.frame(scen = c('leftskew', 'rightskew', 'normdist', 'uniform', 'patchy'),
   shapes1 = c(10, 1, 5, 1, .1),
   shapes2 = c(1 , 10 ,5, 1, 10))
+shape_list1$for_plot <- c('Left Skew', 'Right Skew', 'Normal', 'Uniform', 'Patchy')
 
 ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, 
       nfish1 = 100000,
@@ -59,19 +57,43 @@ ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05,
       shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)    
 
 #--------------------------------------------------------------------------------------------
+#REMOVE RIGHTSKEW
+shape_list4 <- subset(shape_list1, scen != 'rightskew')
+
 #Figure 1. Show distributions of each sceanrio
+ctl1$nfish1 <- 50000
+
 #Format this figure
-inits <- lapply(1:nrow(shape_list1), FUN = function(ss){
-  ctl1$shapes <- c(shape_list1[ss, 2], shape_list1[ss, 3])
+inits <- lapply(1:nrow(shape_list4), FUN = function(ss){
+  ctl1$shapes <- c(shape_list4[ss, 2], shape_list4[ss, 3])
   temp <- initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
   return(temp)
 })
 
+letts <- c('a)', 'b)', 'c)', 'd)')
+# inits[[4]][which(inits[[4]] >= 325)] <- 325
+
 #Work on this plot
-hist(inits[[1]], breaks = 30)
-hist(inits[[2]], breaks = 30)
-hist(inits[[3]], breaks = 30)
-hist(inits[[4]], breaks = 30)
+par(mfcol = c(2, 2), mar = c(0, 0, 0, 0), oma = c(5, 5, .5, .5))
+
+for(ii in 1:length(inits)){
+  temp <- inits[[ii]]
+  hist(temp, breaks = seq(0, 2000, 5), main = shape_list1[ii, 'scen'], freq = FALSE, 
+    xlim = c(0, 300), axes = F, ann = F, ylim = c(0, .14), yaxs = 'i', xaxs = 'i')
+  box()
+  mtext(letts[ii], side = 3, line = -1.7, adj = 0.01, cex = 1.5)
+  mtext(shape_list4[ii, 'for_plot'], side = 3, line = -1.7, adj = .95, cex = 1.5)
+  mtext(paste0('mean = ', round(mean(temp), digits = 0)), side = 3, line = -3, adj = .95)
+  mtext(paste0('range = ', range(temp)[1], ', ', range(temp)[2]), side = 3, line = -4, adj = .95)
+  if(ii == 1) axis(side = 2, at = seq(0, 0.12, by = .02), labels = seq(0, 0.12, by = .02), las = 2)
+  if(ii == 2){
+    axis(side = 2, at = seq(0, 0.12, by = .02), labels = seq(0, 0.12, by = .02), las = 2)
+    axis(side = 1, at = seq(0, 250, by = 50))
+  } 
+  if(ii == 4) axis(side = 1)
+}
+mtext(side = 1, "Number of Fish", outer = T, cex = 2, line = 3)
+mtext(side = 2, "Proportion", outer = T, cex = 2, line = 3)
 
 #--------------------------------------------------------------------------------------------
 #Figure 2
@@ -100,14 +122,86 @@ save(onespp, file = "onespp_1000.Rdata")
 #first run took 8 hours I think
 #----------------------------------------
 #Load the data if run already
-load("output/onespp.Rdata")
+load("output/onespp1.Rdata")
 
 #Calculate mean, variance, and cv of each value
-# onespp <- onespp %>% group_by(nsites, init_dist, nfish1, spp, type) %>% 
-#   mutate(mean_cpue = mean(cpue), sd_cpue = sd(cpue), cv_cpue = sd_cpue / mean_cpue) %>%
-#   as.data.frame
+onespp <- onespp %>% group_by(nsites, init_dist, nfish1, spp, type) %>% 
+  mutate(mean_cpue = mean(cpue), sd_cpue = sd(cpue), cv_cpue = sd_cpue / mean_cpue) %>%
+  as.data.frame
 
-# ggplot(onespp) + geom_point(aes(x = nsites, y = cv_cpue, colour = init_dist))
+
+
+#-----------------------------------------------------------------------------
+#Fig 2. Single species results with point and stick
+#in ggplot
+png(width = 15, height = 9, units = 'in', res = 200, file = 'figs/hlfig2.png')
+ggplot(onespp, aes(x = dep, y = cpue)) + geom_boxplot(aes(colour = type)) + 
+  facet_wrap(init_dist ~ nsites)
+dev.off()
+
+onespp$nsites <- as.numeric(as.character(onespp$nsites))
+
+to_plot <- onespp %>% group_by(nsites, dep, init_dist, spp, type) %>% summarize(med_cpue = median(cpue),
+  q5 = quantile(cpue, .05), q95 = quantile(cpue, .95)) %>% as.data.frame
+
+to_plot$unq <- paste(to_plot$nsites, to_plot$init_dist, to_plot$spp)
+add_int <- data.frame(unq = unique(to_plot$unq), ind = 1:length(unique(to_plot$unq)))
+add_int$unq <- as.character(add_int$unq)
+
+to_plot <- inner_join(to_plot, add_int, by = 'unq')
+to_plot$unq <- NULL
+
+
+#Filter to_plot so that the dimensions of final plot are 4X4
+to_plot <- to_plot %>% filter(nsites != 30)
+
+
+#Calculate mean and 95% intervals at each level of depletion
+delta <- .02
+
+png(width = 15.3, height = 11, units = 'in', res = 150, file = 'figs/hlfig2.png')
+
+par(mfcol = c(4, 4), mar = c(0, 0, 0, 0), oma = c(4, 6, 3, 2))
+
+for(ii in 1:25){
+  temp <- subset(to_plot, ind == ii)
+  temp$dep <- as.numeric(as.character(temp$dep))
+  
+  temp$dep_adj <- temp$dep
+  
+  prefs <- subset(temp, type == 'preferential')
+  prefs$dep_adj <- prefs$dep_adj - delta
+  
+  rands <- subset(temp, type == 'random')
+  rands$dep_adj <- rands$dep_adj + delta
+
+  plot(temp$dep_adj, temp$med_cpue, type = 'n', ylim = c(0, 1.1), ann = FALSE, 
+    axes = FALSE, xlim = c(-delta, 1))
+  box()
+
+  #Add Axes
+  if(ii == 1) legend('topleft', pch = c(19, 17), legend = c('preferential', 'random' ), bty = 'n')
+  if(ii < 6) axis(side = 2, las = 2)
+  if(ii %% 5 == 0) axis(side = 1)
+  if(ii %% 5 == 1) mtext(side = 3, unique(temp$nsites))
+  if(ii > 20) mtext(side = 4, temp$init_dist, line = .6)
+  
+  #Plot points and segments 
+  points(prefs$dep_adj, prefs$med_cpue, pch = 19)
+  segments(x0 = prefs$dep_adj, y0 = prefs$med_cpue, y1 = prefs$q95)
+  segments(x0 = prefs$dep_adj, y0 = prefs$q5, y1 = prefs$med_cpue)
+  
+  points(rands$dep_adj, rands$med_cpue, pch = 17)
+  segments(x0 = rands$dep_adj, y0 = rands$med_cpue, y1 = rands$q95, lty = 1)
+  segments(x0 = rands$dep_adj, y0 = rands$q5, y1 = rands$med_cpue, lty = 1)
+}
+
+mtext(side = 1, "Depletion", outer = T, line = 3, cex = 2)
+mtext(side = 2, "CPUE", outer = T, line = 3, cex = 2)
+
+dev.off()
+
+
 
 # onespp %>% ggplot() + 
 #   geom_point(aes(dep, cpue, colour = nsites)) + 
