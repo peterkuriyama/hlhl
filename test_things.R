@@ -57,6 +57,9 @@ ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05,
       shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)    
 
 #--------------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------------
+#Figure 1
+#--------------------------------------------------------------------------------------------
 #REMOVE RIGHTSKEW
 shape_list4 <- subset(shape_list1, scen != 'rightskew')
 
@@ -74,7 +77,10 @@ letts <- c('a)', 'b)', 'c)', 'd)')
 # inits[[4]][which(inits[[4]] >= 325)] <- 325
 
 #Work on this plot
-par(mfcol = c(2, 2), mar = c(0, 0, 0, 0), oma = c(5, 5, .5, .5))
+
+#Should probably be a one column figure
+png(width = 7, height = 7, units = 'in', res = 150, file = 'hlfig1.png')
+par(mfcol = c(2, 2), mar = c(0, 0, 0, 0), oma = c(5, 5, .5, .75))
 
 for(ii in 1:length(inits)){
   temp <- inits[[ii]]
@@ -92,9 +98,9 @@ for(ii in 1:length(inits)){
   } 
   if(ii == 4) axis(side = 1)
 }
-mtext(side = 1, "Number of Fish", outer = T, cex = 2, line = 3)
-mtext(side = 2, "Proportion", outer = T, cex = 2, line = 3)
-
+mtext(side = 1, "Number of Fish", outer = T, cex = 1.75, line = 3)
+mtext(side = 2, "Proportion", outer = T, cex = 1.75, line = 3)
+dev.off()
 #--------------------------------------------------------------------------------------------
 #Figure 2
 #--------------------------------------------------------------------------------------------
@@ -122,27 +128,33 @@ save(onespp, file = "onespp_1000.Rdata")
 #first run took 8 hours I think
 #----------------------------------------
 #Load the data if run already
-load("output/onespp1.Rdata")
+
+load("output/onespp1.Rdata") #has 5, 10, 30, 50, 100 nsites samples
+# onespp1 <- onespp
+load("output/onespp20.Rdata")
+onespp <- rbind(onespp, onespp20)
 
 #Calculate mean, variance, and cv of each value
-onespp <- onespp %>% group_by(nsites, init_dist, nfish1, spp, type) %>% 
-  mutate(mean_cpue = mean(cpue), sd_cpue = sd(cpue), cv_cpue = sd_cpue / mean_cpue) %>%
-  as.data.frame
-
-
+# onespp <- onespp %>% group_by(nsites, init_dist, nfish1, spp, type) %>% 
+#   mutate(mean_cpue = mean(cpue), sd_cpue = sd(cpue), cv_cpue = sd_cpue / mean_cpue) %>%
+#   as.data.frame
 
 #-----------------------------------------------------------------------------
 #Fig 2. Single species results with point and stick
 #in ggplot
-png(width = 15, height = 9, units = 'in', res = 200, file = 'figs/hlfig2.png')
-ggplot(onespp, aes(x = dep, y = cpue)) + geom_boxplot(aes(colour = type)) + 
-  facet_wrap(init_dist ~ nsites)
-dev.off()
+# png(width = 15, height = 9, units = 'in', res = 200, file = 'figs/hlfig2.png')
+# ggplot(onespp, aes(x = dep, y = cpue)) + geom_boxplot(aes(colour = type)) + 
+#   facet_wrap(init_dist ~ nsites)
+# dev.off()
 
 onespp$nsites <- as.numeric(as.character(onespp$nsites))
 
 to_plot <- onespp %>% group_by(nsites, dep, init_dist, spp, type) %>% summarize(med_cpue = median(cpue),
   q5 = quantile(cpue, .05), q95 = quantile(cpue, .95)) %>% as.data.frame
+
+#Filter specific nsites and initial distributions so that the number of 
+to_plot <- to_plot %>% filter(nsites != 10 & nsites != 30)
+to_plot <- to_plot %>% filter(init_dist != 'rightskew')
 
 to_plot$unq <- paste(to_plot$nsites, to_plot$init_dist, to_plot$spp)
 add_int <- data.frame(unq = unique(to_plot$unq), ind = 1:length(unique(to_plot$unq)))
@@ -152,18 +164,14 @@ to_plot <- inner_join(to_plot, add_int, by = 'unq')
 to_plot$unq <- NULL
 
 
-#Filter to_plot so that the dimensions of final plot are 4X4
-to_plot <- to_plot %>% filter(nsites != 30)
-
-
 #Calculate mean and 95% intervals at each level of depletion
 delta <- .02
 
-png(width = 15.3, height = 11, units = 'in', res = 150, file = 'figs/hlfig2.png')
+png(width = 10, height = 10, units = 'in', res = 150, file = 'figs/hlfig2.png')
 
 par(mfcol = c(4, 4), mar = c(0, 0, 0, 0), oma = c(4, 6, 3, 2))
 
-for(ii in 1:25){
+for(ii in 1:16){
   temp <- subset(to_plot, ind == ii)
   temp$dep <- as.numeric(as.character(temp$dep))
   
@@ -176,15 +184,15 @@ for(ii in 1:25){
   rands$dep_adj <- rands$dep_adj + delta
 
   plot(temp$dep_adj, temp$med_cpue, type = 'n', ylim = c(0, 1.1), ann = FALSE, 
-    axes = FALSE, xlim = c(-delta, 1))
+    axes = FALSE, xlim = c(-delta, 1 + delta))
   box()
 
   #Add Axes
   if(ii == 1) legend('topleft', pch = c(19, 17), legend = c('preferential', 'random' ), bty = 'n')
-  if(ii < 6) axis(side = 2, las = 2)
-  if(ii %% 5 == 0) axis(side = 1)
-  if(ii %% 5 == 1) mtext(side = 3, unique(temp$nsites))
-  if(ii > 20) mtext(side = 4, temp$init_dist, line = .6)
+  if(ii < 5) axis(side = 2, las = 2)
+  if(ii %% 4 == 0) axis(side = 1)
+  if(ii %% 4 == 1) mtext(side = 3, unique(temp$nsites))
+  if(ii > 12) mtext(side = 4, temp$init_dist, line = .6)
   
   #Plot points and segments 
   points(prefs$dep_adj, prefs$med_cpue, pch = 19)
