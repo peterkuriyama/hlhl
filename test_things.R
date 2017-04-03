@@ -57,6 +57,7 @@ ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05,
       shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)    
 
 #--------------------------------------------------------------------------------------------
+#Order is left skew, normal, uniform, and patchy
 #--------------------------------------------------------------------------------------------
 #Figure 1
 #--------------------------------------------------------------------------------------------
@@ -74,13 +75,11 @@ inits <- lapply(1:nrow(shape_list4), FUN = function(ss){
 })
 
 letts <- c('a)', 'b)', 'c)', 'd)')
-# inits[[4]][which(inits[[4]] >= 325)] <- 325
-
-#Work on this plot
 
 #Should probably be a one column figure
 png(width = 7, height = 7, units = 'in', res = 150, file = 'hlfig1.png')
-par(mfcol = c(2, 2), mar = c(0, 0, 0, 0), oma = c(5, 5, .5, .75))
+
+par(mfrow = c(2, 2), mar = c(0, 0, 0, 0), oma = c(5, 5, .5, .75))
 
 for(ii in 1:length(inits)){
   temp <- inits[[ii]]
@@ -92,7 +91,7 @@ for(ii in 1:length(inits)){
   mtext(paste0('mean = ', round(mean(temp), digits = 0)), side = 3, line = -3, adj = .95)
   mtext(paste0('range = ', range(temp)[1], ', ', range(temp)[2]), side = 3, line = -4, adj = .95)
   if(ii == 1) axis(side = 2, at = seq(0, 0.12, by = .02), labels = seq(0, 0.12, by = .02), las = 2)
-  if(ii == 2){
+  if(ii == 3){
     axis(side = 2, at = seq(0, 0.12, by = .02), labels = seq(0, 0.12, by = .02), las = 2)
     axis(side = 1, at = seq(0, 250, by = 50))
   } 
@@ -100,7 +99,10 @@ for(ii in 1:length(inits)){
 }
 mtext(side = 1, "Number of Fish", outer = T, cex = 1.75, line = 3)
 mtext(side = 2, "Proportion", outer = T, cex = 1.75, line = 3)
+
 dev.off()
+
+
 #--------------------------------------------------------------------------------------------
 #Figure 2
 #--------------------------------------------------------------------------------------------
@@ -154,6 +156,12 @@ onespp$nsites <- as.numeric(as.character(onespp$nsites))
 to_plot <- onespp %>% group_by(nsites, dep, init_dist, spp, type) %>% summarize(med_cpue = median(cpue),
   q5 = quantile(cpue, .05), q95 = quantile(cpue, .95)) %>% as.data.frame
 
+#Convert init_dist to a factor to order then conert back to character
+to_plot$init_dist <- factor(to_plot$init_dist, levels = c('leftskew', 'normdist',
+  'uniform', 'patchy', 'rightskew'))
+to_plot <- to_plot %>% arrange(init_dist)
+to_plot$init_dist <- as.character(to_plot$init_dist)
+
 #Filter specific nsites and initial distributions so that the number of 
 to_plot <- to_plot %>% filter(nsites != 10 & nsites != 30)
 to_plot <- to_plot %>% filter(init_dist != 'rightskew')
@@ -164,49 +172,55 @@ add_int$unq <- as.character(add_int$unq)
 
 to_plot <- inner_join(to_plot, add_int, by = 'unq')
 to_plot$unq <- NULL
+nn <- data.frame(init_dist = unique(to_plot$init_dist), init_dist_plot = c('Left Skew', 'Normal', 'Uniform',
+  'Patchy'), stringsAsFactors = FALSE)
+to_plot <- left_join(to_plot, nn, by = 'init_dist')
 
 #Calculate mean and 95% intervals at each level of depletion
 delta <- .02
+fig1_letts <- paste0(letters[1:16], ')')
 
 png(width = 10, height = 10, units = 'in', res = 150, file = 'figs/hlfig2.png')
 
-par(mfcol = c(4, 4), mar = c(0, 0, 0, 0), oma = c(4, 6, 3, 2))
+  par(mfrow = c(4, 4), mar = c(0, 0, 0, 0), oma = c(4, 6, 3, 2), mgp = c(0, .5, 0))
 
-for(ii in 1:16){
-  temp <- subset(to_plot, ind == ii)
-  temp$dep <- as.numeric(as.character(temp$dep))
-  
-  temp$dep_adj <- temp$dep
-  
-  prefs <- subset(temp, type == 'preferential')
-  prefs$dep_adj <- prefs$dep_adj - delta
-  
-  rands <- subset(temp, type == 'random')
-  rands$dep_adj <- rands$dep_adj + delta
+  for(ii in 1:16){
+    temp <- subset(to_plot, ind == ii)
+    temp$dep <- as.numeric(as.character(temp$dep))
+    
+    temp$dep_adj <- temp$dep
+    
+    prefs <- subset(temp, type == 'preferential')
+    prefs$dep_adj <- prefs$dep_adj - delta
+    
+    rands <- subset(temp, type == 'random')
+    rands$dep_adj <- rands$dep_adj + delta
 
-  plot(temp$dep_adj, temp$med_cpue, type = 'n', ylim = c(0, 1.1), ann = FALSE, 
-    axes = FALSE, xlim = c(-delta, 1 + delta))
-  box()
+    plot(temp$dep_adj, temp$med_cpue, type = 'n', ylim = c(0, 1.05), ann = FALSE, 
+      axes = FALSE, xlim = c(-delta, 1 + .05))
+    box()
 
-  #Add Axes
-  if(ii == 1) legend('topleft', pch = c(19, 17), legend = c('preferential', 'random' ), bty = 'n')
-  if(ii < 5) axis(side = 2, las = 2)
-  if(ii %% 4 == 0) axis(side = 1)
-  if(ii %% 4 == 1) mtext(side = 3, unique(temp$nsites))
-  if(ii > 12) mtext(side = 4, unique(temp$init_dist), line = .6)
-  
-  #Plot points and segments 
-  points(prefs$dep_adj, prefs$med_cpue, pch = 19)
-  segments(x0 = prefs$dep_adj, y0 = prefs$med_cpue, y1 = prefs$q95)
-  segments(x0 = prefs$dep_adj, y0 = prefs$q5, y1 = prefs$med_cpue)
-  
-  points(rands$dep_adj, rands$med_cpue, pch = 17)
-  segments(x0 = rands$dep_adj, y0 = rands$med_cpue, y1 = rands$q95, lty = 1)
-  segments(x0 = rands$dep_adj, y0 = rands$q5, y1 = rands$med_cpue, lty = 1)
-}
+    #Add Axes
+    if(ii == 1) legend('bottomright', pch = c(19, 17), legend = c('preferential', 'random' ), 
+      cex = 1.1, bty = 'n')
+    if(ii %% 4 == 1) axis(side = 2, las = 2)
+    if(ii < 5) mtext(side = 3, unique(temp$nsites))
+    if(ii > 12) axis(side = 1)
+    if(ii %% 4 == 0) mtext(side = 4, unique(temp$init_dist_plot), line = .6)
+    
+    #Plot points and segments 
+    points(prefs$dep_adj, prefs$med_cpue, pch = 19)
+    segments(x0 = prefs$dep_adj, y0 = prefs$med_cpue, y1 = prefs$q95)
+    segments(x0 = prefs$dep_adj, y0 = prefs$q5, y1 = prefs$med_cpue)
+    
+    points(rands$dep_adj, rands$med_cpue, pch = 17)
+    segments(x0 = rands$dep_adj, y0 = rands$med_cpue, y1 = rands$q95, lty = 1)
+    segments(x0 = rands$dep_adj, y0 = rands$q5, y1 = rands$med_cpue, lty = 1)
+    mtext(side = 3, adj = .02, fig1_letts[ii], line = -1.5)
+  }
 
-mtext(side = 1, "Depletion", outer = T, line = 3, cex = 2)
-mtext(side = 2, "CPUE", outer = T, line = 3, cex = 2)
+  mtext(side = 1, "Depletion", outer = T, line = 3, cex = 2)
+  mtext(side = 2, "CPUE", outer = T, line = 3, cex = 2)
 
 dev.off()
 
@@ -218,31 +232,9 @@ dev.off()
 
 temp <- onespp %>% filter(nsites == 5, init_dist == 'leftskew', type == 'random')
   
-sample_change <- function(nsamps = 1000, dep_fixed, dep_vec, input){   
-  high <- input %>% filter(dep == dep_fixed)
-  
-  ss <- lapply(dep_vec, FUN = function(dd){
-          low <- input %>% filter(dep == dd)
-          s2 <- sample(high$cpue, size = nsamps, replace = TRUE)
-          s1 <- sample(low$cpue, size = nsamps, replace = TRUE)
-          diffs <- s1 - s2
-          outs <- c(median(diffs), as.numeric(quantile(diffs, c(.05, .95))))
-      
-          return(outs)
-        })
-  names(ss) <- dep_vec
-  ss <- ldply(ss)
-  names(ss) <- c('dep', 'med_cpue', 'cpue5', 'cpue95')
-  ss$start_dep <- dep_fixed
-  ss$dep <- as.numeric(ss$dep)
-  ss$delta_dep <- ss$start_dep - ss$dep
-  return(ss)
-}
-
 plot3 <- onespp %>% group_by(nsites, init_dist, type) %>% 
            do({out <- sample_change(dep_fixed = 1, dep_vec = seq(.1, .9, by = .1), input = .)
               }) %>% as.data.frame 
-
 
 #hlfig3 sketch
 png(width = 13, height = 9, units = 'in', res = 150, file = 'figs/hlfig3_sketch.png')           
@@ -251,52 +243,73 @@ ggplot(plot3, aes(x = delta_dep)) + geom_point(aes(y = med_cpue, colour = type))
   facet_wrap(nsites ~ init_dist, ncol = 5)
 dev.off()
 
-ggplot(plot3, aes(x = delta_dep, y = cpue95, colour = nsites)) + geom_point() +
- facet_wrap(~ init_dist + type)
-
-#Power is invariant among random vs preferential sampling..
+#Filter plot 3 before plot
+plot3 <- plot3 %>% filter(nsites != 10 & nsites != 30 & init_dist != 'rightskew')
 
 
+inds <- plot3 %>% group_by(nsites, init_dist) %>% filter(row_number() == 1) %>% 
+  select(nsites, init_dist) %>% as.data.frame
+inds$init_dist <- factor(inds$init_dist, levels = c('leftskew', 'normdist', 'uniform', 'patchy'))
+inds <- inds %>% arrange(init_dist)
+inds$init_dist <- as.character(inds$init_dist)
+inds$init_dist_plot <- c(rep('Left Skew', 4), rep('Normal', 4), 
+  rep('Uniform', 4), rep('Patchy', 4))
+
+inds <- inds %>% arrange(nsites)
+
+fig2_letts <- as.vector(matrix(fig1_letts, nrow = 4, ncol = 4, byrow = TRUE))
+
+png(width = 10, height = 10, units = 'in', res = 150, file = 'figs/hlfig3.png')
+par(mfcol = c(4, 4), mar = c(0, 0, 0, 0), oma = c(4, 6, 3, 2), xpd = T, 
+  mgp = c(0, .5, 0))
+
+for(ii in 1:16){
+  temp_inds <- inds[ii, ]
+  temp <- plot3 %>% filter(nsites == temp_inds$nsites, init_dist == temp_inds$init_dist)
+
+  temp$dep <- as.numeric(as.character(temp$dep))  
+  temp$dep_adj <- temp$delta_dep
+  
+  prefs <- subset(temp, type == 'preferential')
+  prefs$dep_adj <- prefs$dep_adj - delta
+  
+  rands <- subset(temp, type == 'random')
+  rands$dep_adj <- rands$dep_adj + delta
+
+  plot(temp$dep_adj, temp$med_cpue, type = 'n', ylim = c(-.85, .45), ann = FALSE, 
+    axes = FALSE, xlim = c(-delta, 1 + delta))
+  abline(h = 0, lty = 2)
+  box()
+
+  #Add Axes
+  if(ii == 1) legend('bottomleft', pch = c(19, 17), legend = c('preferential', 'random' ), bty = 'n')
+  if(ii < 5) axis(side = 2, las = 2)
+  if(ii %% 4 == 0) axis(side = 1)
+  if(ii %% 4 == 1) mtext(side = 3, unique(temp$nsites))
+  if(ii > 12) mtext(side = 4, unique(temp_inds$init_dist_plot), line = .6)
+  
+  #Plot points and segments 
+  points(prefs$dep_adj, prefs$med_cpue, pch = 19)
+  segments(x0 = prefs$dep_adj, y0 = prefs$med_cpue, y1 = prefs$cpue95)
+  segments(x0 = prefs$dep_adj, y0 = prefs$cpue5, y1 = prefs$med_cpue)
+  
+  points(rands$dep_adj, rands$med_cpue, pch = 17)
+  segments(x0 = rands$dep_adj, y0 = rands$med_cpue, y1 = rands$cpue95, lty = 1)
+  segments(x0 = rands$dep_adj, y0 = rands$cpue5, y1 = rands$med_cpue, lty = 1)
+  mtext(side = 3, adj = .02, fig2_letts[ii], line = -1.5)
+}
+
+mtext(side = 1, "Decrease from Unfished", outer = T, line = 3, cex = 2)
+mtext(side = 2, "Change in CPUE", outer = T, line = 3, cex = 2)
+
+dev.off()
+
+#-----------------------------------------------------------------------------
+#Figure 4 - Probability of increase or decrease
+#Starting at some level and going up and down
+#-----------------------------------------------------------------------------
 
 
-
-sample_change(dep_fixed = 1, dep_vec = seq(.1, .9, by = .1), input = temp)
-
-
-
-
-
-temp <- onespp %>% filter(nsites == 5, init_dist == 'leftskew', type == 'random')
-
-
-onespp %>% group_by(nsites, init_dist, type, dep) %>% 
-  summarize(mean = sample_change(depletion = unique(dep), input = .)[1],
-    low = sample_change(depletion = unique(dep), input = .)[2],
-    high = sample_change(depletion = unique(dep), input = .)[3])
-
-
-%>% 
-  do({
-    out <- sample_change(depletion = .2, input = .)
-    data.frame(., out)
-  })
-
-sample_change(depletion = .2, input = temp)
-
-
-temp <- onespp %>% filter(nsites == 5, init_dist == 'leftskew', type == 'random')
-temp1 <- temp %>% filter(dep == 1)
-temp.1 <- temp %>% filter(dep == .1)
-
-#resampled change in depletion vs. change in cpue
-#Resample 1000 times and save difference
-s1 <- sample(temp1$cpue, size = 1000, replace = TRUE)
-s2 <- sample(temp.1$cpue, size = 1000, replace = TRUE)
-
-#calculate mean, 5%, 95% intervals 
-
-
-hist(s1 - s2)
 
 
 #---------------------------------------------
