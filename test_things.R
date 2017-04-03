@@ -132,6 +132,8 @@ save(onespp, file = "onespp_1000.Rdata")
 load("output/onespp1.Rdata") #has 5, 10, 30, 50, 100 nsites samples
 # onespp1 <- onespp
 load("output/onespp20.Rdata")
+load('output/onespp_1000.Rdata')
+
 onespp <- rbind(onespp, onespp20)
 
 #Calculate mean, variance, and cv of each value
@@ -163,7 +165,6 @@ add_int$unq <- as.character(add_int$unq)
 to_plot <- inner_join(to_plot, add_int, by = 'unq')
 to_plot$unq <- NULL
 
-
 #Calculate mean and 95% intervals at each level of depletion
 delta <- .02
 
@@ -192,7 +193,7 @@ for(ii in 1:16){
   if(ii < 5) axis(side = 2, las = 2)
   if(ii %% 4 == 0) axis(side = 1)
   if(ii %% 4 == 1) mtext(side = 3, unique(temp$nsites))
-  if(ii > 12) mtext(side = 4, temp$init_dist, line = .6)
+  if(ii > 12) mtext(side = 4, unique(temp$init_dist), line = .6)
   
   #Plot points and segments 
   points(prefs$dep_adj, prefs$med_cpue, pch = 19)
@@ -209,33 +210,94 @@ mtext(side = 2, "CPUE", outer = T, line = 3, cex = 2)
 
 dev.off()
 
+#-----------------------------------------------------------------------------
+#Figure 3 - Probability of increase or decrease
+#Power of the survey. all from depletion 1 to .1
+#-----------------------------------------------------------------------------
+#Variability from 1 in ability to detect change in cpue with change in depletion
+
+temp <- onespp %>% filter(nsites == 5, init_dist == 'leftskew', type == 'random')
+  
+sample_change <- function(nsamps = 1000, dep_fixed, dep_vec, input){   
+  high <- input %>% filter(dep == dep_fixed)
+  
+  ss <- lapply(dep_vec, FUN = function(dd){
+          low <- input %>% filter(dep == dd)
+          s2 <- sample(high$cpue, size = nsamps, replace = TRUE)
+          s1 <- sample(low$cpue, size = nsamps, replace = TRUE)
+          diffs <- s1 - s2
+          outs <- c(median(diffs), as.numeric(quantile(diffs, c(.05, .95))))
+      
+          return(outs)
+        })
+  names(ss) <- dep_vec
+  ss <- ldply(ss)
+  names(ss) <- c('dep', 'med_cpue', 'cpue5', 'cpue95')
+  ss$start_dep <- dep_fixed
+  ss$dep <- as.numeric(ss$dep)
+  ss$delta_dep <- ss$start_dep - ss$dep
+  return(ss)
+}
+
+plot3 <- onespp %>% group_by(nsites, init_dist, type) %>% 
+           do({out <- sample_change(dep_fixed = 1, dep_vec = seq(.1, .9, by = .1), input = .)
+              }) %>% as.data.frame 
 
 
-# onespp %>% ggplot() + 
-#   geom_point(aes(dep, cpue, colour = nsites)) + 
-#   facet_wrap(~ init_dist + type, ncol = 2)
+#hlfig3 sketch
+png(width = 13, height = 9, units = 'in', res = 150, file = 'figs/hlfig3_sketch.png')           
+ggplot(plot3, aes(x = delta_dep)) + geom_point(aes(y = med_cpue, colour = type)) + 
+  geom_line(aes(y = cpue5, colour = type)) + geom_line(aes(y = cpue95, colour = type)) +
+  facet_wrap(nsites ~ init_dist, ncol = 5)
+dev.off()
 
-# onespp %>% filter(init_dist == 'rightskew') %>% ggplot() + 
-#   geom_boxplot(aes(dep, cpue, colour = nsites)) + facet_wrap(~ type)
+ggplot(plot3, aes(x = delta_dep, y = cpue95, colour = nsites)) + geom_point() +
+ facet_wrap(~ init_dist + type)
 
-# png(width = 11.5, height = 9, units = 'in', res = 150, file = 'figs/onespp_uniform.png')
-# onespp %>% filter(init_dist == 'unif') %>% ggplot() + 
-#   geom_boxplot(aes(dep, cpue, colour = type)) + facet_wrap(~ nsites)
-# dev.off()
+#Power is invariant among random vs preferential sampling..
 
 
-# png(width = 11.5, height = 9, units = 'in', res = 150, file = 'figs/onespp_rightskew.png')
-# onespp %>% filter(init_dist == 'patchy') %>% ggplot() + 
-#   geom_boxplot(aes(dep, cpue, colour = type)) + facet_wrap(~ nsites)
-# dev.off()
 
-# png(width = 11.5, height = 9, units = 'in', res = 150, file = 'figs/onespp_patchy.png')
-# onespp %>% filter(init_dist == 'patchy') %>% ggplot() + 
-#   geom_boxplot(aes(dep, cpue, colour = type)) + facet_wrap(~ nsites)
-# dev.off()
 
-# Increasing number of sites gets closer to true curve
-#Least variability as fish distribution gets more even
+
+sample_change(dep_fixed = 1, dep_vec = seq(.1, .9, by = .1), input = temp)
+
+
+
+
+
+temp <- onespp %>% filter(nsites == 5, init_dist == 'leftskew', type == 'random')
+
+
+onespp %>% group_by(nsites, init_dist, type, dep) %>% 
+  summarize(mean = sample_change(depletion = unique(dep), input = .)[1],
+    low = sample_change(depletion = unique(dep), input = .)[2],
+    high = sample_change(depletion = unique(dep), input = .)[3])
+
+
+%>% 
+  do({
+    out <- sample_change(depletion = .2, input = .)
+    data.frame(., out)
+  })
+
+sample_change(depletion = .2, input = temp)
+
+
+temp <- onespp %>% filter(nsites == 5, init_dist == 'leftskew', type == 'random')
+temp1 <- temp %>% filter(dep == 1)
+temp.1 <- temp %>% filter(dep == .1)
+
+#resampled change in depletion vs. change in cpue
+#Resample 1000 times and save difference
+s1 <- sample(temp1$cpue, size = 1000, replace = TRUE)
+s2 <- sample(temp.1$cpue, size = 1000, replace = TRUE)
+
+#calculate mean, 5%, 95% intervals 
+
+
+hist(s1 - s2)
+
 
 #---------------------------------------------
 #---------------------------------------------
