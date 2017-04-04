@@ -30,8 +30,10 @@ if(Sys.info()['sysname'] == 'Darwin' & nncores != 22){
   results_dir <- "/Volumes/udrive/hlsimulator_runs"
 }
 
+#Computer lab computers, save to UDRIVE
 if(Sys.info()['sysname'] == 'Windows'){
   setwd("C://Users//Peter//Desktop//hlsimulator")
+  results_dir <- "Z://hlsimulator_runs"
 }
 
 #--------------------------------------------------------------------------------------------
