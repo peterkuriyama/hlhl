@@ -4,7 +4,7 @@
 \alias{initialize_population_prob}
 \title{Initialize Population Probabilities}
 \usage{
-initialize_population_prob(ctl, nfish)
+initialize_population_prob(ctl)
 }
 \arguments{
 \item{ctl}{List of control parameters from make_ctl function, description of arguments in 

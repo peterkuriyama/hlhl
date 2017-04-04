@@ -17,7 +17,6 @@ initialize_population_prob <- function(ctl){
   percent <- ctl$percent
   # seed <- ctl$seed
   area <- ctl$area
-
   #---------------------------------------------------------------------------------------------------------
   #Beta distributed fish distribution
   if(distribute == 'beta'){
