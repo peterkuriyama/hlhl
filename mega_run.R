@@ -101,7 +101,7 @@ if(sys == 'Windows'){
 } 
 run_time <- Sys.time() - start_time
 
-#save results
+#save results in U Drive
 thing1_outs 
 
 save(twospp, file = paste0('twospp', run_this_ind))
