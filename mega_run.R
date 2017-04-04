@@ -88,8 +88,6 @@ to_loop$nreps <- nreps
 tot <- 1:nrow(to_loop)
 tots <- split(tot, ceiling(seq_along(tot) / 726))
 
-
-tots <- split(tot, ceiling(seq_along(tot) / 6))
 #Specify Index for each computer
 #-----------------
 run_this_ind <- 1
