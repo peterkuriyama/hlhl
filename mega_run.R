@@ -75,20 +75,35 @@ to_loop$nsites <- nsites
 to_loop$nreps <- nreps
 
 #--------------------------------------------------------------------------------------------
+#To Do for lab computers
 
-#Specify the number of fish1, the number of sites to sample,
-#the number of replicates
-#the shape of the initial distribution
+#Specify udrive directory to save things in
 
-dd <- fixed_parallel(index = 3000, ctl1 = ctl1)
 
+#Create indices for each computer, plan is to do this on five computers
+tot <- 1:nrow(to_loop)
+tots <- split(tot, ceiling(seq_along(tot) / 726))
+
+#Specify Index for each computer
+run_this_ind <- 1
+to_run <- tots[[run_this_ind]]
+
+start_time <- Sys.time()
 if(sys == 'Windows'){
   registerDoParallel(nncores)
 
-  thing1_outs <- foreach(ii = 3000:3005, 
+  twospp <- foreach(ii = to_run, 
     .packages = c('plyr', 'dplyr', 'reshape2'), .export = c('ctl1')) %dopar%
     fixed_parallel(index = ii, ctl1 = ctl1)
 
   stopImplicitCluster()
 
 } 
+run_time <- Sys.time() - start_time
+
+#save results
+thing1_outs 
+
+save(twospp, file = paste0('twospp', run_this_ind))
+send_email(body = paste('run', run_this_ind, 'done'))
+
