@@ -99,19 +99,27 @@ to_run <- tots[[run_this_ind]]
 
 start_time <- Sys.time()
 
-registerDoParallel(nncores)
+clusters <- parallel::makeCluster(nncores)
+doParallel::registerDoParallel(clusters)
 
-twospp <- foreach(ii = to_run, 
-  .packages = c('plyr', 'dplyr', 'reshape2', 'hlsimulator'), .export = c('to_loop')) %dopar%
-  fixed_parallel(index = ii, ctl1 = ctl1)
+twospp <- foreach(ii = to_run,
+  .packages = c('plyr', 'dplyr', 'reshape2', 'hlsimulator'), .export = c("shape_list1")) %dopar% {
+    fixed_parallel(index = ii, ctl1 = ctl1, to_loop = to_loop)  
+  }
 
+#Close clusters
 stopImplicitCluster()
 
+#Format output
+twospp <- ldply(twospp)  
+
+assign(paste0("twospp", run_this_ind ), twospp)
+ll = paste0("twospp", run_this_ind )
+
+#Save output in U drive
+save(list = ll, file = paste0(results_dir, "//" , paste0(ll, '.Rdata')))
 run_time <- Sys.time() - start_time
 
-#save results in U Drive
-thing1_outs 
-
-save(twospp, file = paste0('twospp', run_this_ind))
+#Send email that run is done
 send_email(body = paste('run', run_this_ind, 'done'))
 
