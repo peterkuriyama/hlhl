@@ -9,11 +9,9 @@
 
 #' @export
 
-initialize_population_prob <- function(ctl, nfish){
-  nfish_orig <- nfish
+initialize_population_prob <- function(ctl){
   numrow <- ctl$numrow
   numcol <- ctl$numcol
-  # nfish <- ctl$nfish
   distribute <- ctl$distribute
   maxfish <- ctl$maxfish
   percent <- ctl$percent
