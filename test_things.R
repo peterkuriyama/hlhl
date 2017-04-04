@@ -131,9 +131,10 @@ save(onespp, file = "onespp_1000.Rdata")
 #----------------------------------------
 #Load the data if run already
 
-load("output/onespp1.Rdata") #has 5, 10, 30, 50, 100 nsites samples
+# load("output/onespp1.Rdata") #has 5, 10, 30, 50, 100 nsites samples
 # onespp1 <- onespp
-load("output/onespp20.Rdata")
+# load("output/onespp20.Rdata")
+load('output/onespp20_1000.Rdata')
 load('output/onespp_1000.Rdata')
 
 onespp <- rbind(onespp, onespp20)
@@ -319,7 +320,6 @@ downs <- onespp %>% group_by(nsites, init_dist, type) %>%
 downs$x_dep <- downs$start_dep - downs$delta_dep
 
 downs$x_dep_lab <- paste0('-', downs$delta_dep)
-
 
 plot4 <- rbind(ups, downs)
 
