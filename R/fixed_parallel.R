@@ -5,7 +5,7 @@
 #' @param ctl1 Starting ctl list
 #' @export
 
-fixed_parallel <- function(index, ctl1){
+fixed_parallel <- function(index, ctl1, to_loop = to_loop){
   ctl_temp <- ctl1
   tt <- to_loop[index, ]
   ctl_temp$nfish1 <- tt$nfish1
