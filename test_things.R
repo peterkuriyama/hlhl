@@ -77,7 +77,7 @@ inits <- lapply(1:nrow(shape_list4), FUN = function(ss){
 letts <- c('a)', 'b)', 'c)', 'd)')
 
 #Should probably be a one column figure
-png(width = 7, height = 7, units = 'in', res = 150, file = 'hlfig1.png')
+png(width = 7, height = 7, units = 'in', res = 150, file = 'figs/hlfig1.png')
 
 par(mfrow = c(2, 2), mar = c(0, 0, 0, 0), oma = c(5, 5, .5, .75))
 
@@ -373,76 +373,105 @@ dev.off()
 
 
 #-----------------------------------------------------------------------------
-#Figure 5 - Two Species Plots
-#Starting at some level and going up and down
-#-----------------------------------------------------------------------------
+#Load and format two species data
 #Run these on lab computers
-load("output/twospp1_10iter.Rdata")
-load("output/twospp2_10iter.Rdata")
-load("output/twospp4_10iter.Rdata")
-load("output/twospp5_10iter.Rdata")
-twospp <- rbind(twospp1, twospp2, twospp4, twospp5)
+#-----------------------------------------------------------------------------
+
+load("output/twospp1_50.Rdata")
+load("output/twospp23_50.Rdata")
+load("output/twospp45_50.Rdata")
+
+twospp <- rbind(twospp1, twospp23, twospp45)
 
 #Add depletion calculation
-twospp <- twospp %>% group_by(init_dist, spp, type, comp_coeff) %>% mutate(dep = nfish_orig / max(nfish_orig)) %>%
-  as.data.frame
+twospp$dep1 <- twospp$nfish1 / 2e5
+twospp$dep2 <- twospp$nfish2 / 2e5
 
-#Split out numbers of fish1 and fish2
+#-----------------------------------------------------------------------------
+#Figure 5 - Two Species Plots
+#Easy plot simply understand the interaction between two two species
+#-----------------------------------------------------------------------------
+#Comp_coeff of 0.3, 0.5, 0.7 for one case, and sampling in 50 sites
 
-twospp1 %>% filter(init_dist == 'leftskew', comp_coeff == 0.3,
-  type == 'pref', nfish_orig == 0) 
+plot5 <- twospp %>% filter(init_dist == 'patchy')
+plot5$tot_fish <- plot5$nfish1 + plot5$nfish2
+plot5$prop1 <- plot5$nfish1 / plot5$tot_fish
 
-, init_dist == 'leftskew', 'comp_coeff' == 0.3,
-  type == 'pref', iter == 1)
+plot5 <- plot5 %>% group_by(spp, comp_coeff, init_dist, for_plot, type, nsites, prop1) %>% 
+  summarize(median_cpue = median(cpue), quant5 = quantile(cpue, .05),
+  quant95 = quantile(cpue, .95), nvals = length(cpue)) %>% as.data.frame
+
+#Plot 5 Sketch
+ggplot(plot5, aes(x = prop1, y = median_cpue)) + geom_point(aes(colour = spp)) + 
+  facet_wrap(~ type + comp_coeff, ncol = 3)
+
+#Add indices for subsetting
+fig5_letts <- paste0(letters[1:6], ")")
+inds5 <- plot5 %>% select(comp_coeff, type) %>% distinct() %>% arrange(type)
+inds5$ind <- 1:6
+plot5 <- inner_join(plot5, inds5, by = c("comp_coeff", "type"))
 
 
-#Simplify twospp
+png(width = 7.45, height = 6, units = 'in', res = 150, file = 'figs/hlfig5.png')
+par(mfrow = c(2, 3), mar = c(0, 0, 0, 0), oma = c(4, 4, 4, 2), xpd = T, 
+  mgp = c(0, .5, 0))
 
+for(ii in 1:6){
+  temp <- subset(plot5, ind == ii)
 
+  temp1 <- subset(temp, spp == 'spp1')
+  temp2 <- subset(temp, spp == 'spp2')
 
-
-twospp %>% group_by(spp, init_dist, comp_coeff, type, iter) %>% summarize(nn = mean(dep))
+  #Plot empty plot
+  plot(temp$prop1, temp$median_cpue, type = 'n', axes = F, ann = F, ylim = c(0, 1.05),
+    xlim = c(0, 1.05))
+  box()
   
-  init_dist, nsites, iter, type, comp_coeff, spp) %>% 
-  summarize(n = unique(dep))
+  #Add points
+  points(temp1$prop1, temp1$median_cpue, pch = 19)
+  points(temp2$prop1, temp2$median_cpue, pch = 19, col = 'gray')
 
-#Check that different things actually ran
-unique(twospp$comp_coeff)
+  #Add Text
+  mtext(side = 3, adj = 0.02, fig5_letts[ii], line = -1.5)
+  if(ii < 4) mtext(side = 3, unique(temp1$comp_coeff))
+  if(ii < 4) mtext(side = 3, unique(temp1$comp_coeff))
+  if(ii == 3) mtext(side = 4, "Preferential", line = .3)
+  if(ii == 6) mtext(side = 4, "Random", line = .3)
+  
+  #Add Axes
+  if(ii %% 3 == 1) axis(side = 2, las = 2)
+  if(ii > 3) axis(side = 1)
+  if(ii == 6) legend('topright', c('Species 1', 'Species 2'), col = c('black', 'gray'), 
+    pch = 19, bty = 'n')
+}
+
+mtext(side = 1, outer = T, "Proportion Species 1", line = 2, cex = 1.2)
+mtext(side = 2, outer = T, "Median CPUE", line = 2, cex = 1.2)
+mtext(side = 3, outer = T, "Patchy Distribution", line = 2, cex = 1.4)
+
+dev.off()
 
 
-#Calculate depletion
+#-----------------------------------------------------------------------------
+#Figure 6 - Two Species Plots
+#Starting at some level and going up and down
+#-----------------------------------------------------------------------------
 
-dep2 <- twospp %>% dcast(iter + comp_coeff + init_dist + type ~ spp, mean,
-  value.var = dep)
-
-tt <- tail(twospp, n = 30)
-
-tt %>% dcast(iter +  year + comp_coeff + init_dist + type ~ spp, value.var = 'dep')
-
-#change formats
-twospp$nfish1 <- as.numeric(twospp$nfish1)
-twospp$nfish2 <- as.numeric(twospp$nfish2)
-
-dep2 <- twospp %>% select(nfish_total + init_dist, nsites, iter, type, nfish_orig, comp_coeff,
-  spp, dep) %>% dcast(nfish_total + init_dist + nsites + iter + type + nfish_orig + comp_coeff ~ spp,
-  value.var = 'dep')
-
-#Swing dep by species for plots
-dep2 <- twospp %>% dcast(init_dist + nsites + iter + type + 
-  nfish_orig + comp_coeff ~ spp, value.var = 'dep')
-
-twospp %>% dcast(iter + year + comp_coeff + init_dist + type + nsites +
-  nfish_orig ~ spp, value.var = 'dep')
-
-names(dep2)[grep('spp', names(dep2))] <- c('dep1', 'dep2')
-
-twospp <- inner_join(twospp, dep2, by = c('nfish1', 'nfish2', 'init_dist', 'nsites',
-  'rep', 'iter', 'type'))
 
 
 
 #Sketch out this plot
-#Visualize mean contours with ggplot
+#Visualize mean contours with ggplot, colors or shading indicates SD or Variance?
+plot5 <- twospp %>% group_by(spp, comp_coeff, init_dist, for_plot, type, nsites, dep1, dep2) %>% 
+  summarize(mean_cpue = mean(cpue), sd_cpue = sd(cpue)) %>% as.data.frame
+
+tt <- plot5 %>% filter(init_dist == 'patchy')
+
+ggplot(tt) + geom_point(aes(x = dep1, y = dep2, colour = mean_cpue)) + 
+  facet_wrap(~ spp + comp_coeff + type)
+
+test <- twospp %>% filter() 
+
 
 ggplot(twospp, aes(x = ))
 
