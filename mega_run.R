@@ -23,6 +23,7 @@ nncores <- detectCores() - 2
 
 #Big Lab Mac
 if(Sys.info()['sysname'] == 'Darwin' & nncores == 22){
+  #Make sure to login to 
   setwd("/Users/fish/Desktop/peter")
 
   ##Make sure that udrive is functional
@@ -35,8 +36,13 @@ if(Sys.info()['sysname'] == 'Darwin' & nncores != 22){
   results_dir <- "/Volumes/udrive/hlsimulator_runs"
 }
 
+#Whitefish
+if(Sys.info()['sysname'] == 'Windows' & nncores == 10){
+  results_dir <- "C://Users//Peter//Desktop//hlsimulator"
+}
+
 #Smaller Lab computers, save to UDRIVE
-if(Sys.info()['sysname'] == 'Windows' & nncores < 11){
+if(Sys.info()['sysname'] == 'Windows' & nncores < 10){
   # setwd("C://Users//Peter//Desktop//hlsimulator")
   results_dir <- "Z://hlsimulator_runs"
 }
@@ -116,7 +122,7 @@ doParallel::registerDoParallel(clusters)
 twospp <- foreach(ii = to_run,
   .packages = c('plyr', 'dplyr', 'reshape2', 'hlsimulator'), .export = c("shape_list1")) %dopar% {
     fixed_parallel(index = ii, ctl1 = ctl1, to_loop = to_loop)  
-  }
+}
 
 #Close clusters
 stopImplicitCluster()
@@ -136,5 +142,7 @@ filename <- paste0("twospp", run_this_ind )
 save(list = filename, file = paste0(results_dir, "//" , paste0(filename, "_", nreps, '.Rdata')))
 
 #Send email that run is done
-send_email(body = paste('run', run_this_ind, 'done'))
+send_email(body = paste(paste('run', run_this_ind, 'done'), 
+  '\n', run_time, units(run_time),  '\n'))
+
 

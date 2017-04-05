@@ -371,6 +371,88 @@ dev.off()
 #At what depletion levels will ability to detect a change be significant?
 #Results will be what number of 
 
+
+#-----------------------------------------------------------------------------
+#Figure 5 - Two Species Plots
+#Starting at some level and going up and down
+#-----------------------------------------------------------------------------
+#Run these on lab computers
+load("output/twospp1_10iter.Rdata")
+load("output/twospp2_10iter.Rdata")
+load("output/twospp4_10iter.Rdata")
+load("output/twospp5_10iter.Rdata")
+twospp <- rbind(twospp1, twospp2, twospp4, twospp5)
+
+#Add depletion calculation
+twospp <- twospp %>% group_by(init_dist, spp, type, comp_coeff) %>% mutate(dep = nfish_orig / max(nfish_orig)) %>%
+  as.data.frame
+
+#Split out numbers of fish1 and fish2
+
+twospp1 %>% filter(init_dist == 'leftskew', comp_coeff == 0.3,
+  type == 'pref', nfish_orig == 0) 
+
+, init_dist == 'leftskew', 'comp_coeff' == 0.3,
+  type == 'pref', iter == 1)
+
+
+#Simplify twospp
+
+
+
+
+twospp %>% group_by(spp, init_dist, comp_coeff, type, iter) %>% summarize(nn = mean(dep))
+  
+  init_dist, nsites, iter, type, comp_coeff, spp) %>% 
+  summarize(n = unique(dep))
+
+#Check that different things actually ran
+unique(twospp$comp_coeff)
+
+
+#Calculate depletion
+
+dep2 <- twospp %>% dcast(iter + comp_coeff + init_dist + type ~ spp, mean,
+  value.var = dep)
+
+tt <- tail(twospp, n = 30)
+
+tt %>% dcast(iter +  year + comp_coeff + init_dist + type ~ spp, value.var = 'dep')
+
+#change formats
+twospp$nfish1 <- as.numeric(twospp$nfish1)
+twospp$nfish2 <- as.numeric(twospp$nfish2)
+
+dep2 <- twospp %>% select(nfish_total + init_dist, nsites, iter, type, nfish_orig, comp_coeff,
+  spp, dep) %>% dcast(nfish_total + init_dist + nsites + iter + type + nfish_orig + comp_coeff ~ spp,
+  value.var = 'dep')
+
+#Swing dep by species for plots
+dep2 <- twospp %>% dcast(init_dist + nsites + iter + type + 
+  nfish_orig + comp_coeff ~ spp, value.var = 'dep')
+
+twospp %>% dcast(iter + year + comp_coeff + init_dist + type + nsites +
+  nfish_orig ~ spp, value.var = 'dep')
+
+names(dep2)[grep('spp', names(dep2))] <- c('dep1', 'dep2')
+
+twospp <- inner_join(twospp, dep2, by = c('nfish1', 'nfish2', 'init_dist', 'nsites',
+  'rep', 'iter', 'type'))
+
+
+
+#Sketch out this plot
+#Visualize mean contours with ggplot
+
+ggplot(twospp, aes(x = ))
+
+twospp %>% group_by(spp,)
+
+
+
+
+
+
 #---------------------------------------------
 #---------------------------------------------
 #Two species with comp_coeff equal to 0.5
