@@ -43,6 +43,7 @@ if(Sys.info()['sysname'] == 'Windows' & nncores < 11){
 
 #Big Lab computer, save to UDRIVE
 if(Sys.info()['sysname'] == 'Windows' & nncores > 11){
+  nncores <- 20
   #Specify somehing here, I think it's U
   results_dir <- "U://hlsimulator_runs"
 }
