@@ -21,21 +21,30 @@ library(sendmailR)
 #Automatically detect # of cores
 nncores <- detectCores() - 2
 
+#Big Lab Mac
 if(Sys.info()['sysname'] == 'Darwin' & nncores == 22){
   setwd("/Users/fish/Desktop/peter")
+
+  ##Make sure that udrive is functional
 }
 
-#Mac
+#My Laptop Mac
 if(Sys.info()['sysname'] == 'Darwin' & nncores != 22){
   setwd("/Users/peterkuriyama/School/Research/hlsimulator")  
   type <- 'mac'
   results_dir <- "/Volumes/udrive/hlsimulator_runs"
 }
 
-#Computer lab computers, save to UDRIVE
-if(Sys.info()['sysname'] == 'Windows'){
+#Smaller Lab computers, save to UDRIVE
+if(Sys.info()['sysname'] == 'Windows' & nncores < 11){
   # setwd("C://Users//Peter//Desktop//hlsimulator")
   results_dir <- "Z://hlsimulator_runs"
+}
+
+#Big Lab computer, save to UDRIVE
+if(Sys.info()['sysname'] == 'Windows' & nncores > 11){
+  #Specify somehing here, I think it's U
+  results_dir <- "U://hlsimulator_runs"
 }
 
 #--------------------------------------------------------------------------------------------
@@ -67,7 +76,7 @@ fishes2 <- seq(0, 200000, by = 20000)
 nsites <- 50
 
 #Number of repetitions is important
-nreps <- 10
+nreps <- 50
 
 #--------------------------------------------------------------------------------------------
 #Build the grid of things to loop over
@@ -81,9 +90,6 @@ to_loop$nreps <- nreps
 #--------------------------------------------------------------------------------------------
 #To Do for lab computers
 
-#Specify udrive directory to save things in
-
-
 #Create indices for each computer, plan is to do this on five computers
 tot <- 1:nrow(to_loop)
 tots <- split(tot, ceiling(seq_along(tot) / 726))
@@ -91,9 +97,15 @@ tots <- split(tot, ceiling(seq_along(tot) / 726))
 #Specify Index for each computer
 #-----------------
 run_this_ind <- 1
+
+run_this_ind <- 1:2
 #-----------------
 
-to_run <- tots[[run_this_ind]]
+if(length(run_this_ind) == 1) to_run <- tots[[run_this_ind]]
+if(length(run_this_ind) > 1){
+  to_run <- unlist(tots[run_this_ind])
+  names(to_run) <- NULL
+} 
 
 start_time <- Sys.time()
 
@@ -108,15 +120,19 @@ twospp <- foreach(ii = to_run,
 #Close clusters
 stopImplicitCluster()
 
+#Record run time
+run_time <- Sys.time() - start_time
+
 #Format output
 twospp <- ldply(twospp)  
 
+if(length(run_this_ind) > 1) run_this_ind <- paste(run_this_ind, collapse = "")
+
 assign(paste0("twospp", run_this_ind ), twospp)
-ll = paste0("twospp", run_this_ind )
+filename <- paste0("twospp", run_this_ind )
 
 #Save output in U drive
-save(list = ll, file = paste0(results_dir, "//" , paste0(ll, '.Rdata')))
-run_time <- Sys.time() - start_time
+save(list = filename, file = paste0(results_dir, "//" , paste0(filename, "_", nreps, '.Rdata')))
 
 #Send email that run is done
 send_email(body = paste('run', run_this_ind, 'done'))
