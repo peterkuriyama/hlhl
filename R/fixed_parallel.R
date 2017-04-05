@@ -42,5 +42,7 @@ fixed_parallel <- function(index, ctl1, to_loop = to_loop){
   outs <- outs %>% filter(year == 1) #Filter results to only keep year 1 results
   outs$location <- NULL
   outs$index <- index
+  outs$nfish1 <- tt$nfish1
+  outs$nfish2 <- tt$nfish2
   return(outs)
 }
