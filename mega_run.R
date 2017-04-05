@@ -1,4 +1,6 @@
 #mega run in computer lab
+install.packages('devtools')
+install.packages("sendmailR")
 
 #--------------------------------------------------------------------------------------------
 #Load Packages
@@ -30,8 +32,10 @@ if(Sys.info()['sysname'] == 'Darwin' & nncores != 22){
   results_dir <- "/Volumes/udrive/hlsimulator_runs"
 }
 
+#Computer lab computers, save to UDRIVE
 if(Sys.info()['sysname'] == 'Windows'){
-  setwd("C://Users//Peter//Desktop//hlsimulator")
+  # setwd("C://Users//Peter//Desktop//hlsimulator")
+  results_dir <- "Z://hlsimulator_runs"
 }
 
 #--------------------------------------------------------------------------------------------
@@ -85,25 +89,35 @@ tot <- 1:nrow(to_loop)
 tots <- split(tot, ceiling(seq_along(tot) / 726))
 
 #Specify Index for each computer
+#-----------------
 run_this_ind <- 1
+#-----------------
+
 to_run <- tots[[run_this_ind]]
 
 start_time <- Sys.time()
-if(sys == 'Windows'){
-  registerDoParallel(nncores)
 
-  twospp <- foreach(ii = to_run, 
-    .packages = c('plyr', 'dplyr', 'reshape2'), .export = c('ctl1')) %dopar%
-    fixed_parallel(index = ii, ctl1 = ctl1)
+clusters <- parallel::makeCluster(nncores)
+doParallel::registerDoParallel(clusters)
 
-  stopImplicitCluster()
+twospp <- foreach(ii = to_run,
+  .packages = c('plyr', 'dplyr', 'reshape2', 'hlsimulator'), .export = c("shape_list1")) %dopar% {
+    fixed_parallel(index = ii, ctl1 = ctl1, to_loop = to_loop)  
+  }
 
-} 
+#Close clusters
+stopImplicitCluster()
+
+#Format output
+twospp <- ldply(twospp)  
+
+assign(paste0("twospp", run_this_ind ), twospp)
+ll = paste0("twospp", run_this_ind )
+
+#Save output in U drive
+save(list = ll, file = paste0(results_dir, "//" , paste0(ll, '.Rdata')))
 run_time <- Sys.time() - start_time
 
-#save results in U Drive
-thing1_outs 
-
-save(twospp, file = paste0('twospp', run_this_ind))
+#Send email that run is done
 send_email(body = paste('run', run_this_ind, 'done'))
 

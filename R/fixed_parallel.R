@@ -5,7 +5,15 @@
 #' @param ctl1 Starting ctl list
 #' @export
 
-fixed_parallel <- function(index, ctl1){
+fixed_parallel <- function(index, ctl1, to_loop = to_loop){
+  #Define shape_list internally to the function
+  shape_list1 <- data.frame(scen = c('leftskew', 'rightskew', 'normdist', 'uniform', 'patchy'),
+                            shapes1 = c(10, 1, 5, 1, .1),
+                            shapes2 = c(1 , 10 ,5, 1, 10))
+  shape_list1$for_plot <- c('Left Skew', 'Right Skew', 'Normal', 'Uniform', 'Patchy')
+  
+  #
+  
   ctl_temp <- ctl1
   tt <- to_loop[index, ]
   ctl_temp$nfish1 <- tt$nfish1
