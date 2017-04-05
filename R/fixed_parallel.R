@@ -35,5 +35,6 @@ fixed_parallel <- function(index, ctl1){
   outs$iter <- gsub('loc_case', "", outs$location)
   outs <- outs %>% filter(year == 1) #Filter results to only keep year 1 results
   outs$location <- NULL
+  outs$index <- index
   return(outs)
 }
