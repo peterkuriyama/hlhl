@@ -451,13 +451,82 @@ mtext(side = 3, outer = T, "Patchy Distribution", line = 2, cex = 1.4)
 
 dev.off()
 
-
 #-----------------------------------------------------------------------------
-#Figure 6 - Two Species Plots
+#Figure 6 - Two Species Contour Plots
 #Starting at some level and going up and down
 #-----------------------------------------------------------------------------
+# twospp$tot_fish <- twospp$nfish1 + twospp$nfish2
 
 
+plot6 <- twospp %>% group_by(spp, comp_coeff, init_dist, for_plot, type, nsites, dep1, dep2) %>%
+  summarize(median_cpue = median(cpue), sd_cpue = sd(cpue)) %>% as.data.frame
+
+# plot6 <- plot6 %>% filter(init_dist == 'patchy')
+
+ggplot(plot6, aes(x = dep1, y = dep2, z = median_cpue)) + 
+  geom_contour(aes(colour = ..level..)) + 
+  facet_wrap(~ type + comp_coeff + spp, ncol = 6)
+
+
+ggplot(plot6, aes(x = dep1, y = dep2, z = median_cpue)) + 
+  stat_contour(geom = 'polygon', aes(fill = ..level..)) + 
+  facet_wrap(~ type + comp_coeff + spp, ncol = 6)
+
+ggplot(plot6, aes(x = dep1, y = dep2, z = median_cpue)) + 
+  geom_raster(aes(fill = median_cpue)) + geom_contour(colour = 'white', bins = 10) + 
+  facet_wrap(~ init_dist + type + comp_coeff + spp, ncol = 6) + 
+  scale_colour_gradient(limits = c(0, 1))
+
+ls6 <- plot6 %>% filter(init_dist == 'leftskew')
+png(width = 13, height = 7, units = 'in', res = 150, file = 'figs/hlfig6_leftskew.png')
+ggplot(ls6, aes(x = dep1, y = dep2, z = median_cpue)) + 
+  geom_raster(aes(fill = median_cpue)) + geom_contour(colour = 'white', bins = 10) + 
+  facet_wrap(~ type + comp_coeff + spp, ncol = 6)+ 
+  scale_colour_gradient(limits = c(0, 1))
+dev.off()
+
+n6 <- plot6 %>% filter(init_dist == 'normdist')
+png(width = 13, height = 7, units = 'in', res = 150, file = 'figs/hlfig6_norm.png')
+ggplot(n6, aes(x = dep1, y = dep2, z = median_cpue)) + 
+  geom_raster(aes(fill = median_cpue)) + geom_contour(colour = 'white', bins = 10) + 
+  facet_wrap(~ type + comp_coeff + spp, ncol = 6) + 
+  scale_colour_gradient(limits = c(0, 1))
+dev.off()  
+
+p6 <- plot6 %>% filter(init_dist == 'patchy')
+png(width = 13, height = 7, units = 'in', res = 150, file = 'figs/hlfig6_patchy.png')
+ggplot(p6, aes(x = dep1, y = dep2, z = median_cpue)) + 
+  geom_raster(aes(fill = median_cpue)) + geom_contour(colour = 'white', bins = 10) + 
+  facet_wrap(~ type + comp_coeff + spp, ncol = 6) + 
+  scale_colour_gradient(limits = c(0, 1))
+dev.off()  
+
+u6 <- plot6 %>% filter(init_dist == 'uniform')
+png(width = 13, height = 7, units = 'in', res = 150, file = 'figs/hlfig6_uniform.png')
+ggplot(u6, aes(x = dep1, y = dep2, z = median_cpue)) + 
+  geom_raster(aes(fill = median_cpue)) + geom_contour(colour = 'white', bins = 10) + 
+  facet_wrap(~ type + comp_coeff + spp, ncol = 6) + 
+  scale_colour_gradient(limits = c(0, 1))
+dev.off()  
+
+rs6 <- plot6 %>% filter(init_dist == 'rightskew')
+png(width = 13, height = 7, units = 'in', res = 150, file = 'figs/hlfig6_rightskew.png')
+ggplot(rs6, aes(x = dep1, y = dep2, z = median_cpue)) + 
+  geom_raster(aes(fill = median_cpue)) + geom_contour(colour = 'white', bins = 10) + 
+  facet_wrap(~ type + comp_coeff + spp, ncol = 6) + 
+  scale_colour_gradient(limits = c(0, 1))
+dev.off()  
+
+
+
+
+
+
+plot5$prop1 <- plot5$nfish1 / plot5$tot_fish
+
+plot5 <- plot5 %>% group_by(spp, comp_coeff, init_dist, for_plot, type, nsites, prop1) %>% 
+  summarize(median_cpue = median(cpue), quant5 = quantile(cpue, .05),
+  quant95 = quantile(cpue, .95), nvals = length(cpue)) %>% as.data.frame
 
 
 #Sketch out this plot
