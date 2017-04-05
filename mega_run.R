@@ -83,7 +83,7 @@ fishes2 <- seq(0, 200000, by = 20000)
 nsites <- 50
 
 #Number of repetitions is important
-nreps <- 50
+nreps <- 1000
 
 #--------------------------------------------------------------------------------------------
 #Build the grid of things to loop over
@@ -99,7 +99,7 @@ to_loop$nreps <- nreps
 
 #Create indices for each computer, plan is to do this on five computers
 tot <- 1:nrow(to_loop)
-tots <- split(tot, ceiling(seq_along(tot) / 726))
+tots <- split(tot, ceiling(seq_along(tot) / 605)) #break this up into six
 
 #Specify Index for each computer
 #-----------------
@@ -145,4 +145,5 @@ save(list = filename, file = paste0(results_dir, "//" , paste0(filename, "_", nr
 send_email(body = paste(paste('run', run_this_ind, 'done'), 
   '\n', run_time, units(run_time),  '\n'))
 
-
+#Clear workspace for others
+rm(list = ls())
