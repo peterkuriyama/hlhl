@@ -541,9 +541,7 @@ matlay <- matrix(c(1, 2, 3, 4,  5,  6,
                    
                    
 layout(matlay, heights=c(1,1,0.2,1,1))
-# par(mar=c(0,0,0,0), oma=c(4,4,6,3), mgp = c(.25, .6, 0))
-# par(mar = c(0, 0, 0, 0), oma = c(4, 5, 2, 1))
-par(mar = c(0.5, 0.5, 0.5, 0.5), oma = c(4, 5, 2, 1))
+par(mar = c(0.0, 0.5, 0.5, 0.5), oma = c(4, 5, 5, 1))
 
 for(jj in 1:24){
   #------------------
@@ -594,16 +592,21 @@ for(jj in 1:24){
 
   if(jj > 18) axis(side = 1, at = c(10, 30, 50, 70, 90, 110), labels = c(0, .2, .4, .6, .8, 1))
 
-  
+  #Add Text
+  if(jj < 7 & jj %% 2 == 1) mtext(side = 3, "Species 1")
+  if(jj < 7 & jj %% 2 == 0) mtext(side = 3, "Species 2")
+  if(jj %in% c(6, 18)) mtext(side = 4, "Preferential", line = .5)
+  if(jj %in% c(12, 24)) mtext(side = 4, "Random", line = .5)
+  # if(jj %% 6 == 0 & jj %% 12 == 0) mtext(side = 4, "Preferential", line = .5)
 }
 #------------------
 #Add outside text
 mtext(side = 1, "Species 1 Depletion", outer = T, line = 2.2, cex = 1.5)
 mtext(side = 2, "Species 2 Depletion", outer = T, line = 2, cex = 1.5)
 mtext(side = 3, "Normal", outer = T, line = .2, cex = 1.5, adj = 0.01)
-mtext(side = 3, "Patchy", outer = T, line = -25.8, cex = 1.5, adj = 0.01)
+mtext(side = 3, "Patchy", outer = T, line = -23, cex = 1.5, adj = 0.01)
 
-
+#Do this as 8.5 x 7 inch png?
 
 #Evaluate for only one case
 ttest <- p6 %>% filter(spp == 'spp1', comp_coeff == 0.3, type == 'pref')
