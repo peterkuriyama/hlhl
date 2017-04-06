@@ -88,7 +88,8 @@ for(ii in 1:length(inits)){
   box()
   mtext(letts[ii], side = 3, line = -1.7, adj = 0.01, cex = 1.5)
   mtext(shape_list4[ii, 'for_plot'], side = 3, line = -1.7, adj = .95, cex = 1.5)
-  mtext(paste0('mean = ', round(mean(temp), digits = 0)), side = 3, line = -3, adj = .95)
+  # mtext(paste0('mean = ', round(mean(temp), digits = 0)), side = 3, line = -3, adj = .95)
+  mtext(paste0('median = ', round(median(temp), digits = 0)), side = 3, line = -3, adj = .95)
   mtext(paste0('range = ', range(temp)[1], ', ', range(temp)[2]), side = 3, line = -4, adj = .95)
   if(ii == 1) axis(side = 2, at = seq(0, 0.12, by = .02), labels = seq(0, 0.12, by = .02), las = 2)
   if(ii == 3){
@@ -106,7 +107,6 @@ dev.off()
 #--------------------------------------------------------------------------------------------
 #Figure 2
 #--------------------------------------------------------------------------------------------
-#RUN 1
 
 #----------------------------------------
 #Format simulation
@@ -376,6 +376,7 @@ dev.off()
 #Load and format two species data
 #Run these on lab computers
 #-----------------------------------------------------------------------------
+#Two spp things run in "mega_run.R"
 
 load("output/twospp1_50.Rdata")
 load("output/twospp23_50.Rdata")
@@ -461,6 +462,7 @@ dev.off()
 plot6 <- twospp %>% group_by(spp, comp_coeff, init_dist, for_plot, type, nsites, dep1, dep2) %>%
   summarize(median_cpue = median(cpue), sd_cpue = sd(cpue)) %>% as.data.frame
 
+
 # plot6 <- plot6 %>% filter(init_dist == 'patchy')
 
 ggplot(plot6, aes(x = dep1, y = dep2, z = median_cpue)) + 
@@ -518,36 +520,108 @@ ggplot(rs6, aes(x = dep1, y = dep2, z = median_cpue)) +
 dev.off()  
 
 
+#####Figure out which things to compare
+#Look at Patchy and Normal Distribution for differences
+the_data <- rbind(p6, n6)
+
+inds <- rbind(p6, n6) %>% select(type, spp, comp_coeff, init_dist) %>% distinct() %>%
+   arrange(init_dist, type, comp_coeff, spp)
+
+inds$ind <- 1:24
+#Define function to rotate matrix
+
+rotate <- function(x) t(apply(x, 2, rev))
+
+
+matlay <- matrix(c(1, 2, 3, 4,  5,  6,
+                   7, 8, 9, 10, 11, 12,
+                   0, 0, 0, 0,  0,  0,
+                   13, 14, 15, 16, 17, 18,
+                   19, 20, 21, 22, 23, 24), ncol = 6, byrow = TRUE)
+                   
+                   
+layout(matlay, heights=c(1,1,0.2,1,1))
+# par(mar=c(0,0,0,0), oma=c(4,4,6,3), mgp = c(.25, .6, 0))
+# par(mar = c(0, 0, 0, 0), oma = c(4, 5, 2, 1))
+par(mar = c(0.5, 0.5, 0.5, 0.5), oma = c(4, 5, 2, 1))
+
+for(jj in 1:24){
+  #------------------
+  #Format the data
+  temp <- inds[jj, ]
+
+  #tp for temp plot 
+  tp <- rbind(p6, n6) %>% filter(type == temp$type, spp == temp$spp, comp_coeff == temp$comp_coeff,
+    init_dist == temp$init_dist)
+
+  #------------------
+  #Create the matrix of median_cpue values
+  #Dep1 is the columns, y
+  ind1 <- data.frame(dep1 = unique(tp$dep1), col_dep1 = 1:11)
+  # ind1 <- data.frame(dep1 = unique(tp$dep1), col_dep1 = 11:1)
+  tp <- inner_join(tp, ind1, by = 'dep1')
+  
+  #Dep2 is the rows, x
+  # ind2 <- data.frame(dep2 = unique(tp$dep2), row_dep2 = 1:11)
+  ind2 <- data.frame(dep2 = unique(tp$dep2), row_dep2 = 11:1)
+  tp <- inner_join(tp, ind2, by = 'dep2')
+
+  #Fill in the Matrix
+  mm <- matrix(NA, nrow = 11, ncol = 11)
+  for(ii in 1:nrow(tp)){
+    mm[tp[ii, 'row_dep2'], tp[ii, 'col_dep1']] <- tp[ii, 'median_cpue']  
+    # mm[tp[ii, 'col_dep1'], tp[ii, 'row_dep2']] <- tp[ii, 'median_cpue']  
+  }
+
+  #------------------
+  #plots
+  mylevels <- seq(0, 1, .1)
+  greys <- paste0('grey', seq(100, 0, -10))
+  
+  x <- 10 * (1:11)
+  y <- 10 *(1:11)
+  mm <- rotate(mm)
+  
+  filled.contour2(x, y, mm, levels = mylevels,  col = greys, ann = F, axes = F)
+  box()
+  contour(x, y, mm, levels = mylevels, add = T, labcex = 1)
+
+  #------------------
+  #Add axes 
+  if(jj %% 6 == 1){
+    axis(side = 2, las = 2, at = c(10, 30, 50, 70, 90, 110), labels = c(0, .2, .4, .6, .8, 1))
+  } 
+
+  if(jj > 18) axis(side = 1, at = c(10, 30, 50, 70, 90, 110), labels = c(0, .2, .4, .6, .8, 1))
+
+  
+}
+#------------------
+#Add outside text
+mtext(side = 1, "Species 1 Depletion", outer = T, line = 2.2, cex = 1.5)
+mtext(side = 2, "Species 2 Depletion", outer = T, line = 2, cex = 1.5)
+mtext(side = 3, "Normal", outer = T, line = .2, cex = 1.5, adj = 0.01)
+mtext(side = 3, "Patchy", outer = T, line = -25.8, cex = 1.5, adj = 0.01)
+
+
+
+#Evaluate for only one case
+ttest <- p6 %>% filter(spp == 'spp1', comp_coeff == 0.3, type == 'pref')
+
+
+
+#Try image
+x <- 10 * 1:nrow(mm)
+y <- 10 * 1:ncol(mm)
+
+mylevels <- seq(0, 1, .1)
+filled.contour2(x, y, mm, levels = mylevels,  col = greys)
+contour(x, y, mm, levels = mylevels, add = T)
 
 
 
 
-plot5$prop1 <- plot5$nfish1 / plot5$tot_fish
-
-plot5 <- plot5 %>% group_by(spp, comp_coeff, init_dist, for_plot, type, nsites, prop1) %>% 
-  summarize(median_cpue = median(cpue), quant5 = quantile(cpue, .05),
-  quant95 = quantile(cpue, .95), nvals = length(cpue)) %>% as.data.frame
-
-
-#Sketch out this plot
-#Visualize mean contours with ggplot, colors or shading indicates SD or Variance?
-plot5 <- twospp %>% group_by(spp, comp_coeff, init_dist, for_plot, type, nsites, dep1, dep2) %>% 
-  summarize(mean_cpue = mean(cpue), sd_cpue = sd(cpue)) %>% as.data.frame
-
-tt <- plot5 %>% filter(init_dist == 'patchy')
-
-ggplot(tt) + geom_point(aes(x = dep1, y = dep2, colour = mean_cpue)) + 
-  facet_wrap(~ spp + comp_coeff + type)
-
-test <- twospp %>% filter() 
-
-
-ggplot(twospp, aes(x = ))
-
-twospp %>% group_by(spp,)
-
-
-
+image(x, y, mm, ann = F, axes = F, col = greys)
 
 
 
