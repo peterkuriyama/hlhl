@@ -532,6 +532,7 @@ inds$ind <- 1:24
 
 rotate <- function(x) t(apply(x, 2, rev))
 
+png(width = 11.29, height = 8.15, file = 'figs/hlfig6.png', units = 'in', res = 150)                   
 
 matlay <- matrix(c(1, 2, 0, 3, 4, 0, 5,  6,
                    7, 8, 0, 9, 10, 0, 11, 12,
@@ -539,8 +540,6 @@ matlay <- matrix(c(1, 2, 0, 3, 4, 0, 5,  6,
                    13, 14, 0, 15, 16, 0, 17, 18,
                    19, 20, 0, 21, 22, 0, 23, 24), ncol = 8, byrow = TRUE)
                    
-
-png(width = 11.29, height = 8.15, file = 'figs/hlfig6.png', units = 'in', res = 150)                   
 layout(matlay, heights = c(1,1,0.2,1,1), widths = c(1, 1, 0.1, 1, 1, 0.1, 1, 1))
 par(mar = c(0.0, 0.5, 0.7, 0.3), oma = c(4, 4, 5, 2), mgp = c(.6, .5, 0))
 fig6_letts <- paste0(letters[1:24], ")")
@@ -584,7 +583,14 @@ for(jj in 1:24){
   
   filled.contour2(x, y, mm, levels = mylevels,  col = greys, ann = F, axes = F)
   box()
-  contour(x, y, mm, levels = mylevels, add = T, labcex = 1)
+  if(jj %in% c(2, 3, 4, 5, 8, 10, 11, 14, 16, 17)){
+    contour(x, y, mm, levels = mylevels, add = T, labcex = 1, col = 'white')
+    # text(103, 103, fig6_letts[jj], cex = 1.3, col = 'white')
+  } 
+  if(jj %in% c(2, 3, 4, 5, 8, 10, 11, 14, 16, 17) == FALSE){
+    contour(x, y, mm, levels = mylevels, add = T, labcex = 1)
+  } 
+  
 
   #------------------
   #Add axes 
