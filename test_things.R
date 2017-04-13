@@ -194,19 +194,22 @@ plot4 <- rbind(ups, downs)
 
 #Two spp things run in "mega_run.R"
 
-# load("output/twospp1_50.Rdata")
-# load("output/twospp23_50.Rdata")
-# load("output/twospp45_50.Rdata")
+load("output/twospp1_50.Rdata")
+load("output/twospp23_50.Rdata")
+load("output/twospp45_50.Rdata")
+twospp <- rbind(twospp1, twospp23, twospp45)
 
+#Check number of iterations for each
+twospp %>% group_by(init_dist) %>% summarize(niters = length(unique(iter)), 
+  nindex = length(unique(index)))
 
 load('output/twospp12_1000.Rdata')
 load('output/twospp34_1000.Rdata')
-
-twospp <- rbind(twospp12, twospp34)
+twospp1000 <- rbind(twospp12, twospp34)
 
 #Check number of iterations for each
-twospp %>% group_by(init_dist) %>% summarize(niters = length(unique(index)))
-
+twospp1000 %>% group_by(init_dist) %>% summarize(niters = length(unique(iter)),
+  nindex = length(unique(index)))
 
 #Add depletion calculation
 twospp$dep1 <- twospp$nfish1 / 2e5
@@ -243,6 +246,19 @@ ls6 <- plot6 %>% filter(init_dist == 'leftskew')
 n6 <- plot6 %>% filter(init_dist == 'normdist')
 p6 <- plot6 %>% filter(init_dist == 'patchy')
 u6 <- plot6 %>% filter(init_dist == 'uniform')
+
+the_data <- rbind(p6, n6)
+
+inds <- rbind(p6, n6) %>% select(type, spp, comp_coeff, init_dist) %>% distinct() %>%
+   arrange(init_dist, type, comp_coeff, spp)
+
+inds$ind <- 1:24
+#Define function to rotate matrix
+
+rotate <- function(x) t(apply(x, 2, rev))
+
+
+
 
 #--------------------------------------------------------------------------------------------
 #Order is left skew, normal, uniform, and patchy
@@ -481,20 +497,9 @@ dev.off()
 #Figure 6 - Two Species Contour Plots
 #Starting at some level and going up and down
 #-----------------------------------------------------------------------------
-# twospp$tot_fish <- twospp$nfish1 + twospp$nfish2
-
 
 #####Figure out which things to compare
 #Look at Patchy and Normal Distribution for differences
-the_data <- rbind(p6, n6)
-
-inds <- rbind(p6, n6) %>% select(type, spp, comp_coeff, init_dist) %>% distinct() %>%
-   arrange(init_dist, type, comp_coeff, spp)
-
-inds$ind <- 1:24
-#Define function to rotate matrix
-
-rotate <- function(x) t(apply(x, 2, rev))
 
 png(width = 11.29, height = 8.15, file = 'figs/hlfig6.png', units = 'in', res = 150)                   
 
@@ -592,163 +597,5 @@ mtext(side = 3, "Patchy", outer = T, line = -27.5, cex = 1.5, adj = .005)
 
 #Do this as 8.5 x 7 inch png?
 dev.off()
-
-
-
-# #---------------------------------------------
-# #---------------------------------------------
-# #Two species with comp_coeff equal to 0.5
-
-# #Increasing number of location with two species, even comp_coeff
-# #Both species increasing together
-
-# fishes1 <- seq(0, 200000, by = 20000)
-# fishes2 <- rev(fishes1)
-
-# #Change comp_coeff sometime
-# ctl1$comp_coeff <- 0.5
-
-# start_time2 <- Sys.time()
-# twospp <- run_sampled_locs_2spp(shape_list = shape_list1, nsites_vec = c(5, 10, 30, 50, 100),
-#   ncores = nncores, ctl_o = ctl1, thing1 = fishes1, thing2 = fishes2, name1 = 'nfish1', 
-#   name2 = 'nfish2', nreps = 100)
-# run_time2 <- Sys.time() - start_time2
-  
-# send_email()
-  
-# #Save results
-# # paste0(results_dir, '//inc12.Rdata')
-# # save(twospp, file = paste0(results_dir, '//inc12.Rdata'))
-# save(twospp, file = 'twospp.Rdata')
-
-
-# load('output/twospp.Rdata')
-
-# #Took 14 hours!
-
-# #change formats
-# twospp$nfish1 <- as.numeric(twospp$nfish1)
-# twospp$nfish2 <- as.numeric(twospp$nfish2)
-
-# #Swing dep by species for plots
-# dep2 <- twospp %>% dcast(nfish1 + nfish2 + init_dist + nsites + 
-#   rep + iter + type ~ spp, value.var = 'dep')
-# names(dep2)[grep('spp', names(dep2))] <- c('dep1', 'dep2')
-
-# twospp <- inner_join(twospp, dep2, by = c('nfish1', 'nfish2', 'init_dist', 'nsites',
-#   'rep', 'iter', 'type'))
-
-
-# #Look only at simulations that sampled 50 sites
-# focus <- twospp %>% filter(nsites == 50) 
-# focus %>% group_by(init_dist, rep, nfish1, nfish2, type) %>% mutate(tot_cpue = sum(cpue)) %>% 
-#   as.data.frame -> focus
-
-# focus %>% group_by(dep1, dep2, init_dist, spp, type) %>% 
-
-# summarize(mean_cpue = mean(cpue),
-#   sd_cpue = sd(cpue), cv_cpue = sd_cpue / mean_cpue) %>% as.data.frame -> for_contour
-
-
-# #Remove duplicated values
-# # focus %>% group_by(init_dist, dep1, dep2, spp, type) %>% filter(row_number(cv_cpue) == 1) %>% 
-# #   as.data.frame -> focus
-
-#  %>% filter(init_dist == 'unif' & dep1 == 0.1 & dep2 == 1.0) %>% head
-
-
-# #What colors to use?
-# #Patchy contour plot
-# for_contour %>% filter(init_dist == 'unif') %>% ggplot(aes(x = dep1, y = dep2, z = mean_cpue)) + 
-#   stat_contour(aes(colour = ..level..), binwidth = .1) + facet_wrap(~ spp + type) + 
-#   scale_colour_gradient2(low = 'blue', high = 'red', limits = c(0, 1))
-
-# for_contour %>% filter(init_dist == 'unif') %>% tail
-
-
-
-# volcano3d <- melt(volcano)
-
-# v + stat_contour(geom="polygon", aes(fill=..level..))
-# fc2 <- for_contour %>% group_by(dep1, dep2, init_dist, type) %>% summarize(tot_mean_cpue = sum(mean_cpue))
-
-# #This makes sense
-# ggplot(fc2, aes(x = dep1, y = dep2, z = tot_mean_cpue)) + stat_contour(aes(colour = ..level..), 
-#   binwidth = .1, size = 1) + facet_wrap(~ init_dist + type, ncol = 2) + scale_colour_gradient(low = 'white',
-#   high = 'red')
-
-
-# #Try plotting this as dots? Something seems wrong
-
-
-# funi %>% group_by(nfish1, nfish2, type) %>% mutate(tot_cpue = sum(cpue)) %>% as.data.frame %>% head
-
-
-# #Patchy contour plot
-# focus %>% filter(init_dist == 'patchy') %>% ggplot(aes(x = dep1, y = dep2, z = mean_cpue)) + 
-#   geom_contour(aes(colour = ..level..), bins = 5) + facet_wrap(~ spp + type)
-
-
-# # with ggplot > 2.0.0 you'll need to add method="bottom.pieces" (or top.pieces) to the direct.label call
-# funi <- focus %>% filter(init_dist == 'unif')
-
-
-
-# focus %>% filter(init_dist == 'unif') %>% ggplot() + geom_point(aes(x = dep1, y = dep2, colour = mean_cpue)) + 
-#   facet_wrap(~ spp + type)
-
-
-
-# unique(paste(focus$dep1, focus$dep2))
-
-
-
-#Sketch out plots with ggplot
-
-ggplot(plot6, aes(x = dep1, y = dep2, z = median_cpue)) + 
-  geom_raster(aes(fill = median_cpue)) + geom_contour(colour = 'white', bins = 10) + 
-  facet_wrap(~ init_dist + type + comp_coeff + spp, ncol = 6) + 
-  scale_colour_gradient(limits = c(0, 1))
-
-png(width = 13, height = 7, units = 'in', res = 150, file = 'figs/hlfig6_leftskew.png')
-ggplot(ls6, aes(x = dep1, y = dep2, z = median_cpue)) + 
-  geom_raster(aes(fill = median_cpue)) + geom_contour(colour = 'white', bins = 10) + 
-  facet_wrap(~ type + comp_coeff + spp, ncol = 6)+ 
-  scale_colour_gradient(limits = c(0, 1))
-dev.off()
-
-
-
-png(width = 13, height = 7, units = 'in', res = 150, file = 'figs/hlfig6_norm.png')
-ggplot(n6, aes(x = dep1, y = dep2, z = median_cpue)) + 
-  geom_raster(aes(fill = median_cpue)) + geom_contour(colour = 'white', bins = 10) + 
-  facet_wrap(~ type + comp_coeff + spp, ncol = 6) + 
-  scale_colour_gradient(limits = c(0, 1))
-dev.off()  
-
-
-png(width = 13, height = 7, units = 'in', res = 150, file = 'figs/hlfig6_patchy.png')
-ggplot(p6, aes(x = dep1, y = dep2, z = median_cpue)) + 
-  geom_raster(aes(fill = median_cpue)) + geom_contour(colour = 'white', bins = 10) + 
-  facet_wrap(~ type + comp_coeff + spp, ncol = 6) + 
-  scale_colour_gradient(limits = c(0, 1))
-dev.off()  
-
-
-png(width = 13, height = 7, units = 'in', res = 150, file = 'figs/hlfig6_uniform.png')
-ggplot(u6, aes(x = dep1, y = dep2, z = median_cpue)) + 
-  geom_raster(aes(fill = median_cpue)) + geom_contour(colour = 'white', bins = 10) + 
-  facet_wrap(~ type + comp_coeff + spp, ncol = 6) + 
-  scale_colour_gradient(limits = c(0, 1))
-dev.off()  
-
-rs6 <- plot6 %>% filter(init_dist == 'rightskew')
-png(width = 13, height = 7, units = 'in', res = 150, file = 'figs/hlfig6_rightskew.png')
-ggplot(rs6, aes(x = dep1, y = dep2, z = median_cpue)) + 
-  geom_raster(aes(fill = median_cpue)) + geom_contour(colour = 'white', bins = 10) + 
-  facet_wrap(~ type + comp_coeff + spp, ncol = 6) + 
-  scale_colour_gradient(limits = c(0, 1))
-dev.off()  
-
 
 
