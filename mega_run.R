@@ -72,9 +72,13 @@ shape_list1 <- data.frame(scen = c('leftskew', 'rightskew', 'normdist', 'uniform
   shapes2 = c(1 , 10 ,5, 1, 10))
 shape_list1$for_plot <- c('Left Skew', 'Right Skew', 'Normal', 'Uniform', 'Patchy')
 
+#Only run for patchy and normal
+shape_list1 <- subset(shape_list1, scen %in% c('normdist', 'patchy'))
+
+#Keep the same prob1 and prob2
 ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, 
       nfish1 = 100000,
-      nfish2 = 0, prob1 = .01, prob2 = .05, nyear = 2, scope = 0, seed = 1,
+      nfish2 = 0, prob1 = .01, prob2 = .01, nyear = 2, scope = 0, seed = 1,
       location = data.frame(vessel = 1, x = 1, y = 1), numrow = 30, numcol = 30,
       shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)    
 
@@ -83,7 +87,7 @@ fishes2 <- seq(0, 200000, by = 20000)
 nsites <- 50
 
 #Number of repetitions is important
-nreps <- 1000
+nreps <- 100
 
 #--------------------------------------------------------------------------------------------
 #Build the grid of things to loop over
@@ -99,13 +103,15 @@ to_loop$nreps <- nreps
 
 #Create indices for each computer, plan is to do this on five computers
 tot <- 1:nrow(to_loop)
-tots <- split(tot, ceiling(seq_along(tot) / 605)) #break this up into six
+tots <- split(tot, ceiling(seq_along(tot) / 3630))
+
+# tots <- split(tot, ceiling(seq_along(tot) / 605)) #break this up into six
 
 #Specify Index for each computer
 #-----------------
 run_this_ind <- 1
 
-run_this_ind <- 1:2
+# run_this_ind <- 1:2
 #-----------------
 
 if(length(run_this_ind) == 1) to_run <- tots[[run_this_ind]]
