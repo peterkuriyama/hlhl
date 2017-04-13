@@ -5,7 +5,7 @@
 \title{Function that takes fixed inputs and runs scenarios
 Function that calls run_scenario. Allows for parallelization across greater number of cores}
 \usage{
-fixed_parallel(index, ctl1)
+fixed_parallel(index, ctl1, to_loop = to_loop, change_these)
 }
 \arguments{
 \item{index}{Index of to_loop to subset}
