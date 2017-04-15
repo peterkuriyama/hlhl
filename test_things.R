@@ -75,24 +75,24 @@ inits <- lapply(1:nrow(shape_list4), FUN = function(ss){
 
 letts <- c('a)', 'b)', 'c)', 'd)')
 
-
 #----------------------------------------
 #Figure 2 Stuff
-fishes <- seq(0, 200000, by = 20000)
+# fishes <- seq(0, 200000, by = 20000)
 
-#Run Simulation with 1000 replicates
-start_time <- Sys.time()
-onespp <- run_sampled_locs(shape_list = shape_list1, ncores = nncores,
-  ctl_o = ctl1, thing1 = fishes, name1 = 'nfish1', nreps = 1000, 
-  nsites_vec = c(5, 10, 30, 50, 100))
-onespp <- onespp %>% filter(spp == 'spp1')
+# #Run Simulation with 1000 replicates
+# start_time <- Sys.time()
+# onespp <- run_sampled_locs(shape_list = shape_list1, ncores = nncores,
+#   ctl_o = ctl1, thing1 = fishes, name1 = 'nfish1', nreps = 1000, 
+#   nsites_vec = c(5, 10, 30, 50, 100))
+# onespp <- onespp %>% filter(spp == 'spp1')
 
-run_time <- Sys.time() - start_time
-send_email(body = 'lab mac run done')
+# run_time <- Sys.time() - start_time
+# send_email(body = 'lab mac run done')
 
-onespp$dep <- factor(onespp$dep, levels = unique(onespp$dep))
-onespp$nsites <- factor(onespp$nsites, levels = unique(onespp$nsites))
-save(onespp, file = "onespp_1000.Rdata")
+# onespp$dep <- factor(onespp$dep, levels = unique(onespp$dep))
+# onespp$nsites <- factor(onespp$nsites, levels = unique(onespp$nsites))
+# save(onespp, file = "onespp_1000.Rdata")
+
 # save(onespp, file = 'onespp.Rdata')
 
 #first run took 8 hours I think
@@ -141,6 +141,46 @@ to_plot <- left_join(to_plot, nn, by = 'init_dist')
 delta <- .02
 fig1_letts <- paste0(letters[1:16], ')')
 
+#Calculate results of interest for figure 2
+#Difference in means between preferential and random sampling
+to_plot$qrange <- to_plot$q95 - to_plot$q5
+
+ggplot(to_plot, aes(x = dep, y = qrange)) + geom_point(aes(group = type, colour = type)) + 
+  facet_wrap(~ init_dist + nsites)
+
+to_plot %>% group_by(nsites, dep, init_dist) %>% summarize(diff = round(med_cpue[1] - med_cpue[2], digits = 3)) %>%
+  as.data.frame  %>% arrange(init_dist) -> fig2_diffs
+
+ggplot(fig2_diffs) + geom_point(aes(x = dep, y = diff, colour = nsites)) + facet_wrap(~ init_dist)
+
+fig2_diffs %>% filter(init_dist == 'patchy') %>% select(diff) %>% summarize(mean(diff))
+
+to_plot %>% group_by(nsites, dep, init_dist) %>% summarize
+
+plot2 <- to_plot
+
+to_plot %>% filter(init_dist == 'patchy' & nsites == 100) %>% select(type, qrange) %>%
+  arrange(type, desc(qrange))
+
+#Leftskew and normal distribution
+plot2 %>% dcast(nsites + dep + init_dist ~ type, value.var = 'med_cpue') %>% 
+  filter(init_dist %in% c('leftskew', 'normdist')) %>% 
+  mutate(diff = round(preferential - random, digits = 3)) %>% range(diff)
+
+plot2 %>% filter(med_cpue != 0) %>% dcast(nsites + dep + init_dist ~ type, value.var = 'med_cpue') %>% 
+  filter(init_dist %in% c('uniform')) %>% 
+  mutate(diff = round(preferential - random, digits = 3)) %>% select(diff) %>%
+  summarize(min(diff), max(diff))
+
+#Calculate difference from 1-1 line. 
+plot2$dep <- as.numeric(as.character(plot2$dep))
+plot2$resid <- plot2$med_cpue - plot2$dep
+
+plot2 %>% group_by(nsites, init_dist, type) %>% summarize(ss = sum(resid^2)) %>% as.data.frame %>%
+  arrange(init_dist, type) %>% group_by(init_dist, type)  %>% summarize(mean(ss))
+
+
+
 #----------------------------------------
 #Figure 3
 #Variability from 1 in ability to detect change in cpue with change in depletion  
@@ -149,11 +189,11 @@ plot3 <- onespp %>% group_by(nsites, init_dist, type) %>%
               }) %>% as.data.frame 
 
 #hlfig3 sketch
-png(width = 13, height = 9, units = 'in', res = 150, file = 'figs/hlfig3_sketch.png')           
-ggplot(plot3, aes(x = delta_dep)) + geom_point(aes(y = med_cpue, colour = type)) + 
-  geom_line(aes(y = cpue5, colour = type)) + geom_line(aes(y = cpue95, colour = type)) +
-  facet_wrap(nsites ~ init_dist, ncol = 5)
-dev.off()
+# png(width = 13, height = 9, units = 'in', res = 150, file = 'figs/hlfig3_sketch.png')           
+# ggplot(plot3, aes(x = delta_dep)) + geom_point(aes(y = med_cpue, colour = type)) + 
+#   geom_line(aes(y = cpue5, colour = type)) + geom_line(aes(y = cpue95, colour = type)) +
+#   facet_wrap(nsites ~ init_dist, ncol = 5)
+# dev.off()
 
 #Filter plot 3 before plot
 plot3 <- plot3 %>% filter(nsites != 10 & nsites != 30 & init_dist != 'rightskew')
@@ -169,6 +209,13 @@ inds$init_dist_plot <- c(rep('Left Skew', 4), rep('Normal', 4),
 inds <- inds %>% arrange(nsites)
 
 fig2_letts <- as.vector(matrix(fig1_letts, nrow = 4, ncol = 4, byrow = TRUE))
+
+##results
+#See at what decrease does the survey not overlap with 0
+plot3 %>% filter(cpue95 < 0) %>% group_by(nsites, init_dist, type) %>% 
+  summarize(lvl = max(dep)) %>% as.data.frame %>%  
+  dcast(nsites + init_dist ~ type, value.var = 'lvl') %>% arrange(init_dist) %>% 
+  filter(init_dist == 'patchy')
 
 #----------------------------------------
 #Figure 4
@@ -188,6 +235,19 @@ downs$x_dep <- downs$start_dep - downs$delta_dep
 downs$x_dep_lab <- paste0('-', downs$delta_dep)
 
 plot4 <- rbind(ups, downs)
+
+#See at what decrease does the survey not overlap with 0
+ups %>% filter(cpue5 > 0) %>% group_by(nsites, init_dist, type) %>% 
+  summarize(lvl = max(dep)) %>% as.data.frame %>%  
+  dcast(nsites + init_dist ~ type, value.var = 'lvl') %>% arrange(init_dist) -> u1
+u1$change <- 'up'
+
+downs %>% filter(cpue95 < 0) %>% group_by(nsites, init_dist, type) %>% 
+  summarize(lvl = max(dep)) %>% as.data.frame %>%  
+  dcast(nsites + init_dist ~ type, value.var = 'lvl') %>% arrange(init_dist) -> d1
+d1$change <- 'down'
+
+rbind(u1, d1) %>% arrange(init_dist, change, nsites)
 
 #----------------------------------------
 #Figure 5
@@ -232,7 +292,7 @@ fig5_letts <- paste0(letters[1:6], ")")
 inds5 <- plot5 %>% select(comp_coeff, type) %>% distinct() %>% arrange(type)
 #Wait for final run to evaluate the randoms
 
-inds5$ind <- 1:3
+inds5$ind <- 1:6
 plot5 <- inner_join(plot5, inds5, by = c("comp_coeff", "type"))
 
 #----------------------------------------
@@ -384,7 +444,7 @@ for(ii in 1:16){
   mtext(side = 3, adj = .02, fig2_letts[ii], line = -1.5)
 
   #add anchor point
-  points(0, 0, pch = 21, cex = 2)
+  points(0, 0, pch = 21, cex = 2, bg = 'white')
 }
 
 mtext(side = 1, "Decrease from Unfished", outer = T, line = 3, cex = 2)
@@ -399,7 +459,7 @@ dev.off()
 
 png(width = 10, height = 10, units = 'in', res = 150, file = 'figs/hlfig4.png')
 
-par(mfcol = c(4, 4), mar = c(0, 0, 0, 0), oma = c(4, 6, 3, 2), xpd = T, 
+par(mfcol = c(4, 4), mar = c(0, 0, 0, 0), oma = c(4.5, 6, 3, 2), xpd = T, 
   mgp = c(0, .5, 0))
 
 for(ii in 1:16){
@@ -437,7 +497,7 @@ for(ii in 1:16){
   segments(x0 = rands$dep_adj, y0 = rands$med_cpue, y1 = rands$cpue95, lty = 1)
   segments(x0 = rands$dep_adj, y0 = rands$cpue5, y1 = rands$med_cpue, lty = 1)
   mtext(side = 3, adj = .02, fig2_letts[ii], line = -1.5)
-  points(x = .5, y = 0, pch = 21, cex = 2) #add anchor point
+  points(x = .5, y = 0, pch = 21, cex = 2, bg = 'white') #add anchor point
 }
 
 mtext(side = 1, "Change from 0.5", outer = T, line = 3, cex = 2)
