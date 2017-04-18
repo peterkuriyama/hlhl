@@ -63,17 +63,66 @@ ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05,
 #REMOVE RIGHTSKEW
 shape_list4 <- subset(shape_list1, scen != 'rightskew')
 
+shape_list4$for_plot[2] <- 'Symmetric'
+
+
 #Figure 1. Show distributions of each sceanrio
 ctl1$nfish1 <- 60000
 
-#Format this figure
+
+#Make table of values for initial distributions
+letts <- c('a)', 'b)', 'c)', 'd)')
+
 inits <- lapply(1:nrow(shape_list4), FUN = function(ss){
   ctl1$shapes <- c(shape_list4[ss, 2], shape_list4[ss, 3])
   temp <- initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
   return(temp)
 })
 
-letts <- c('a)', 'b)', 'c)', 'd)')
+
+
+fish1s <- seq(20000, 200000, 20000)
+inits_list <- vector('list', length(fish1s))
+
+for(ff in 1:length(fish1s)){
+  #Make Table of values also 
+  #Format this figure
+  inits1 <- lapply(1:nrow(shape_list4), FUN = function(ss){
+    ctl1$shapes <- c(shape_list4[ss, 2], shape_list4[ss, 3])
+    temp <- initialize_population(ctl = ctl1, nfish = fish1s[ff])
+    return(temp)
+  })
+  
+  inits2 <- lapply(inits1, FUN = function(x){
+    c(median(x), min(x), max(x))
+  })
+  
+  inits2 <- ldply(inits2)
+  names(inits2) <- c('meds', 'mins', 'maxs')
+  inits2$nfish <- fish1s[ff]
+  inits2$scen <- shape_list4$scen
+
+  inits_list[[ff]] <- inits2
+
+}
+
+inits_list <- ldply(inits_list)
+
+#add in range values
+inits_list$rng <- paste(inits_list$mins, inits_list$maxs, sep = ' - ')
+inits_list$rng <- as.character(inits_list$rng)
+
+#Dcast the median values
+inits_list_meds <- inits_list %>% select(meds, nfish, scen) %>% dcast(nfish ~ scen, value.var = 'meds')
+write.csv(inits_list_meds, file = 'output/table1_meds.csv', row.names = FALSE)
+
+#dcast the range values
+inits_list_rng <- inits_list %>% select(rng, nfish, scen) %>% dcast(nfish ~ scen, value.var = 'rng')
+write.csv(inits_list_rng, file = 'output/table1_rng.csv', row.names = FALSE)
+
+
+inits_med <- dcast(inits_list,   scen ~ nfish, value.var = 'median')
+
 
 #----------------------------------------
 #Figure 2 Stuff
@@ -107,6 +156,13 @@ load('output/onespp_1000.Rdata')
 
 onespp <- rbind(onespp, onespp20)
 
+#add zeros for 20 samps
+zero20 <- onespp %>% filter(nsites == 5, nfish_orig == 0)
+zero20$nsites <- 20
+
+onespp <- rbind(onespp, zero20)
+
+
 #Calculate mean, variance, and cv of each value
 # onespp <- onespp %>% group_by(nsites, init_dist, nfish1, spp, type) %>% 
 #   mutate(mean_cpue = mean(cpue), sd_cpue = sd(cpue), cv_cpue = sd_cpue / mean_cpue) %>%
@@ -133,7 +189,7 @@ add_int$unq <- as.character(add_int$unq)
 
 to_plot <- inner_join(to_plot, add_int, by = 'unq')
 to_plot$unq <- NULL
-nn <- data.frame(init_dist = unique(to_plot$init_dist), init_dist_plot = c('Left Skew', 'Normal', 'Uniform',
+nn <- data.frame(init_dist = unique(to_plot$init_dist), init_dist_plot = c('Left Skew', 'Symmetric', 'Uniform',
   'Patchy'), stringsAsFactors = FALSE)
 to_plot <- left_join(to_plot, nn, by = 'init_dist')
 
@@ -145,13 +201,13 @@ fig1_letts <- paste0(letters[1:16], ')')
 #Difference in means between preferential and random sampling
 to_plot$qrange <- to_plot$q95 - to_plot$q5
 
-ggplot(to_plot, aes(x = dep, y = qrange)) + geom_point(aes(group = type, colour = type)) + 
-  facet_wrap(~ init_dist + nsites)
+# ggplot(to_plot, aes(x = dep, y = qrange)) + geom_point(aes(group = type, colour = type)) + 
+#   facet_wrap(~ init_dist + nsites)
 
 to_plot %>% group_by(nsites, dep, init_dist) %>% summarize(diff = round(med_cpue[1] - med_cpue[2], digits = 3)) %>%
   as.data.frame  %>% arrange(init_dist) -> fig2_diffs
 
-ggplot(fig2_diffs) + geom_point(aes(x = dep, y = diff, colour = nsites)) + facet_wrap(~ init_dist)
+# ggplot(fig2_diffs) + geom_point(aes(x = dep, y = diff, colour = nsites)) + facet_wrap(~ init_dist)
 
 fig2_diffs %>% filter(init_dist == 'patchy') %>% select(diff) %>% summarize(mean(diff))
 
@@ -179,8 +235,6 @@ plot2$resid <- plot2$med_cpue - plot2$dep
 plot2 %>% group_by(nsites, init_dist, type) %>% summarize(ss = sum(resid^2)) %>% as.data.frame %>%
   arrange(init_dist, type) %>% group_by(init_dist, type)  %>% summarize(mean(ss))
 
-
-
 #----------------------------------------
 #Figure 3
 #Variability from 1 in ability to detect change in cpue with change in depletion  
@@ -203,7 +257,7 @@ inds <- plot3 %>% group_by(nsites, init_dist) %>% filter(row_number() == 1) %>%
 inds$init_dist <- factor(inds$init_dist, levels = c('leftskew', 'normdist', 'uniform', 'patchy'))
 inds <- inds %>% arrange(init_dist)
 inds$init_dist <- as.character(inds$init_dist)
-inds$init_dist_plot <- c(rep('Left Skew', 4), rep('Normal', 4), 
+inds$init_dist_plot <- c(rep('Left Skew', 4), rep('Symmetric', 4), 
   rep('Uniform', 4), rep('Patchy', 4))
 
 inds <- inds %>% arrange(nsites)
@@ -252,24 +306,29 @@ rbind(u1, d1) %>% arrange(init_dist, change, nsites)
 #----------------------------------------
 #Figure 5
 
+# load("output/twospp1_50sens.Rdata")
 #Two spp things run in "mega_run.R"
 
-load("output/twospp1_50.Rdata")
-load("output/twospp23_50.Rdata")
-load("output/twospp45_50.Rdata")
-twospp <- rbind(twospp1, twospp23, twospp45)
+#These are with .01 and .05
+# load("output/twospp1_50.Rdata")
+# load("output/twospp23_50.Rdata")
+# load("output/twospp45_50.Rdata")
+# twospp <- rbind(twospp1, twospp23, twospp45)
+
+load('output/twospp.1.1_100.Rdata')
+twospp <- twospp1
 
 #Check number of iterations for each
 twospp %>% group_by(init_dist) %>% summarize(niters = length(unique(iter)), 
   nindex = length(unique(index)))
 
-load('output/twospp12_1000.Rdata')
-load('output/twospp34_1000.Rdata')
-twospp1000 <- rbind(twospp12, twospp34)
+# load('output/twospp12_1000.Rdata')
+# load('output/twospp34_1000.Rdata')
+# twospp1000 <- rbind(twospp12, twospp34)
 
-#Check number of iterations for each
-twospp1000 %>% group_by(init_dist) %>% summarize(niters = length(unique(iter)),
-  nindex = length(unique(index)))
+# #Check number of iterations for each
+# twospp1000 %>% group_by(init_dist) %>% summarize(niters = length(unique(iter)),
+#   nindex = length(unique(index)))
 
 #Add depletion calculation
 twospp$dep1 <- twospp$nfish1 / 2e5
@@ -278,6 +337,12 @@ twospp$dep2 <- twospp$nfish2 / 2e5
 plot5 <- twospp %>% filter(init_dist == 'patchy')
 plot5$tot_fish <- plot5$nfish1 + plot5$nfish2
 plot5$prop1 <- plot5$nfish1 / plot5$tot_fish
+
+#Remove points with no fish
+plot5 <- plot5 %>% filter(tot_fish != 0)
+
+#Remove end points also because those are obvious
+plot5 <- plot5 %>% filter(prop1 != 0, prop1 != 1)
 
 plot5 <- plot5 %>% group_by(spp, comp_coeff, init_dist, for_plot, type, nsites, prop1) %>% 
   summarize(median_cpue = median(cpue), quant5 = quantile(cpue, .05),
@@ -295,9 +360,19 @@ inds5 <- plot5 %>% select(comp_coeff, type) %>% distinct() %>% arrange(type)
 inds5$ind <- 1:6
 plot5 <- inner_join(plot5, inds5, by = c("comp_coeff", "type"))
 
+#Remove outliers
+plot5 %>% filter(median_cpue != 0) %>% group_by(comp_coeff, type, spp) %>% 
+  summarize(min_med = min(median_cpue),
+    max_med = max(median_cpue)) %>% arrange(type) %>% filter(comp_coeff == 0.3)
+
+xx <- plot5 %>% filter(comp_coeff == 0.3, type == 'pref', spp == 'spp1') 
+
+hist(xx$median_cpue)
+
+
+
 #----------------------------------------
 #Figure 6
-
 plot6 <- twospp %>% group_by(spp, comp_coeff, init_dist, for_plot, type, nsites, dep1, dep2) %>%
   summarize(median_cpue = median(cpue), sd_cpue = sd(cpue)) %>% as.data.frame
 
@@ -313,12 +388,29 @@ inds <- rbind(p6, n6) %>% select(type, spp, comp_coeff, init_dist) %>% distinct(
    arrange(init_dist, type, comp_coeff, spp)
 
 inds$ind <- 1:24
+
+#Rearrange so species 1, then species 2
+inds <- inds %>% arrange(init_dist, type, spp, comp_coeff)
+inds$ind <- 1:24
+
 #Define function to rotate matrix
 
 rotate <- function(x) t(apply(x, 2, rev))
 
+#Normal, spp 1
+the_data %>% filter(type == 'pref', init_dist == 'normdist', comp_coeff == 0.3) %>%
+  filter(spp == 'spp1', dep2 == .1)
+
+the_data %>% filter(type == 'pref', init_dist == 'normdist', median_cpue != 0) %>%
+    group_by(spp, comp_coeff) %>% summarize(min_cpue = min(median_cpue),
+    max_cpue = max(median_cpue), prop5 = length(which(median_cpue >= 0.5)) / length(median_cpue)) %>%
+    arrange(comp_coeff)
 
 
+#Ranges for patchy surveys
+the_data %>% filter(init_dist == 'patchy', median_cpue != 0, comp_coeff == 0.5) %>%
+   group_by(spp, type, comp_coeff) %>% summarize(mincpue = min(median_cpue),
+    maxcpue = max(median_cpue)) %>% arrange(comp_coeff)
 
 #--------------------------------------------------------------------------------------------
 #Order is left skew, normal, uniform, and patchy
@@ -328,27 +420,28 @@ rotate <- function(x) t(apply(x, 2, rev))
 #Should probably be a one column figure
 png(width = 7, height = 7, units = 'in', res = 150, file = 'figs/hlfig1.png')
 
-par(mfrow = c(2, 2), mar = c(0, 0, 0, 0), oma = c(5, 5, .5, .75))
+par(mfrow = c(2, 2), mar = c(0, 0, 0, 0), oma = c(4, 5, .5, 1), mgp = c(0, .7, 0))
 
 for(ii in 1:length(inits)){
   temp <- inits[[ii]]
   hist(temp, breaks = seq(0, 2270, 5), main = shape_list1[ii, 'scen'], freq = FALSE, 
     xlim = c(0, 300), axes = F, ann = F, ylim = c(0, .14), yaxs = 'i', xaxs = 'i')
   box()
-  mtext(letts[ii], side = 3, line = -1.7, adj = 0.01, cex = 1.5)
-  mtext(shape_list4[ii, 'for_plot'], side = 3, line = -1.7, adj = .95, cex = 1.5)
+  mtext(letts[ii], side = 3, line = -1.7, adj = 0.01, cex = 1.25)
+  mtext(shape_list4[ii, 'for_plot'], side = 3, line = -1.7, adj = .95, cex = 1.25)
   # mtext(paste0('mean = ', round(mean(temp), digits = 0)), side = 3, line = -3, adj = .95)
   mtext(paste0('median = ', round(median(temp), digits = 0)), side = 3, line = -3, adj = .95)
   mtext(paste0('range = ', range(temp)[1], ', ', range(temp)[2]), side = 3, line = -4, adj = .95)
-  if(ii == 1) axis(side = 2, at = seq(0, 0.12, by = .02), labels = seq(0, 0.12, by = .02), las = 2)
+  if(ii == 1) axis(side = 2, at = seq(0, 0.12, by = .02), labels = seq(0, 0.12, by = .02), las = 2, 
+    cex.axis = 1.2)
   if(ii == 3){
-    axis(side = 2, at = seq(0, 0.12, by = .02), labels = seq(0, 0.12, by = .02), las = 2)
-    axis(side = 1, at = seq(0, 250, by = 50))
+    axis(side = 2, at = seq(0, 0.12, by = .02), labels = seq(0, 0.12, by = .02), las = 2, cex.axis = 1.2)
+    axis(side = 1, at = seq(0, 250, by = 50), cex.axis = 1.2)
   } 
-  if(ii == 4) axis(side = 1)
+  if(ii == 4) axis(side = 1, cex.axis = 1.2)
 }
-mtext(side = 1, "Number of Fish / Site", outer = T, cex = 1.75, line = 3)
-mtext(side = 2, "Proportion", outer = T, cex = 1.75, line = 3)
+mtext(side = 1, "Number of fish", outer = T, cex = 1.5, line = 2.5)
+mtext(side = 2, "Proportion of sites", outer = T, cex = 1.5, line = 3)
 
 dev.off()
 
@@ -358,45 +451,45 @@ dev.off()
 #--------------------------------------------------------------------------------------------
 png(width = 10, height = 10, units = 'in', res = 150, file = 'figs/hlfig2.png')
 
-  par(mfrow = c(4, 4), mar = c(0, 0, 0, 0), oma = c(4, 6, 3, 2), mgp = c(0, .5, 0))
+par(mfrow = c(4, 4), mar = c(0, 0, 0, 0), oma = c(4, 6, 3, 2), mgp = c(0, .5, 0))
 
-  for(ii in 1:16){
-    temp <- subset(to_plot, ind == ii)
-    temp$dep <- as.numeric(as.character(temp$dep))
+for(ii in 1:16){
+  temp <- subset(to_plot, ind == ii)
+  temp$dep <- as.numeric(as.character(temp$dep))
     
-    temp$dep_adj <- temp$dep
+  temp$dep_adj <- temp$dep
     
-    prefs <- subset(temp, type == 'preferential')
-    prefs$dep_adj <- prefs$dep_adj - delta
+  prefs <- subset(temp, type == 'preferential')
+  prefs$dep_adj <- prefs$dep_adj - delta
     
-    rands <- subset(temp, type == 'random')
-    rands$dep_adj <- rands$dep_adj + delta
+  rands <- subset(temp, type == 'random')
+  rands$dep_adj <- rands$dep_adj + delta
 
-    plot(temp$dep_adj, temp$med_cpue, type = 'n', ylim = c(0, 1.05), ann = FALSE, 
-      axes = FALSE, xlim = c(-delta, 1 + .05))
-    box()
+  plot(temp$dep_adj, temp$med_cpue, type = 'n', ylim = c(0, 1.05), ann = FALSE, 
+    axes = FALSE, xlim = c(-delta, 1 + .05))
+  box()
 
-    #Add Axes
-    if(ii == 1) legend('bottomright', pch = c(19, 17), legend = c('preferential', 'random' ), 
-      cex = 1.1, bty = 'n')
-    if(ii %% 4 == 1) axis(side = 2, las = 2)
-    if(ii < 5) mtext(side = 3, unique(temp$nsites))
-    if(ii > 12) axis(side = 1)
-    if(ii %% 4 == 0) mtext(side = 4, unique(temp$init_dist_plot), line = .6)
+  #Add Axes
+  if(ii == 1) legend('bottomright', pch = c(19, 17), legend = c('preferential', 'random' ), 
+    cex = 1.3, bty = 'n')
+  if(ii %% 4 == 1) axis(side = 2, las = 2, cex.axis = 1.2)
+  if(ii < 5) mtext(side = 3, unique(temp$nsites))
+  if(ii > 12) axis(side = 1, cex.axis = 1.2)
+  if(ii %% 4 == 0) mtext(side = 4, unique(temp$init_dist_plot), line = .6)
     
-    #Plot points and segments 
-    points(prefs$dep_adj, prefs$med_cpue, pch = 19)
-    segments(x0 = prefs$dep_adj, y0 = prefs$med_cpue, y1 = prefs$q95)
-    segments(x0 = prefs$dep_adj, y0 = prefs$q5, y1 = prefs$med_cpue)
+  #Plot points and segments 
+  points(prefs$dep_adj, prefs$med_cpue, pch = 19, cex = 1.2)
+  segments(x0 = prefs$dep_adj, y0 = prefs$med_cpue, y1 = prefs$q95)
+  segments(x0 = prefs$dep_adj, y0 = prefs$q5, y1 = prefs$med_cpue)
     
-    points(rands$dep_adj, rands$med_cpue, pch = 17)
-    segments(x0 = rands$dep_adj, y0 = rands$med_cpue, y1 = rands$q95, lty = 1)
-    segments(x0 = rands$dep_adj, y0 = rands$q5, y1 = rands$med_cpue, lty = 1)
-    mtext(side = 3, adj = .02, fig1_letts[ii], line = -1.5)
-  }
+  points(rands$dep_adj, rands$med_cpue, pch = 17, cex = 1.2)
+  segments(x0 = rands$dep_adj, y0 = rands$med_cpue, y1 = rands$q95, lty = 1)
+  segments(x0 = rands$dep_adj, y0 = rands$q5, y1 = rands$med_cpue, lty = 1)
+  mtext(side = 3, adj = .02, fig1_letts[ii], line = -1.5)
+}
 
-  mtext(side = 1, "Relative Abundance", outer = T, line = 3, cex = 2)
-  mtext(side = 2, "CPUE", outer = T, line = 3, cex = 2)
+mtext(side = 1, "Relative Abundance", outer = T, line = 2.8, cex = 1.4)
+mtext(side = 2, "CPUE", outer = T, line = 3, cex = 1.4)
 
 dev.off()
 
@@ -404,7 +497,9 @@ dev.off()
 #Figure 3 - Probability of increase or decrease
 #Power of the survey. all from depletion 1 to .1
 #-----------------------------------------------------------------------------
+
 png(width = 10, height = 10, units = 'in', res = 150, file = 'figs/hlfig3.png')
+
 par(mfcol = c(4, 4), mar = c(0, 0, 0, 0), oma = c(4, 6, 3, 2), xpd = T, 
   mgp = c(0, .5, 0))
 
@@ -427,28 +522,29 @@ for(ii in 1:16){
   box()
 
   #Add Axes
-  if(ii == 1) legend('bottomleft', pch = c(19, 17), legend = c('preferential', 'random' ), bty = 'n')
-  if(ii < 5) axis(side = 2, las = 2)
-  if(ii %% 4 == 0) axis(side = 1)
+  if(ii == 1) legend('bottomleft', pch = c(19, 17), legend = c('preferential', 'random' ), bty = 'n',
+    cex = 1.3)
+  if(ii < 5) axis(side = 2, las = 2, cex.axis = 1.2)
+  if(ii %% 4 == 0) axis(side = 1, cex.axis = 1.2)
   if(ii %% 4 == 1) mtext(side = 3, unique(temp$nsites))
   if(ii > 12) mtext(side = 4, unique(temp_inds$init_dist_plot), line = .6)
   
   #Plot points and segments 
-  points(prefs$dep_adj, prefs$med_cpue, pch = 19)
+  points(prefs$dep_adj, prefs$med_cpue, pch = 19, cex = 1.2)
   segments(x0 = prefs$dep_adj, y0 = prefs$med_cpue, y1 = prefs$cpue95)
   segments(x0 = prefs$dep_adj, y0 = prefs$cpue5, y1 = prefs$med_cpue)
   
-  points(rands$dep_adj, rands$med_cpue, pch = 17)
+  points(rands$dep_adj, rands$med_cpue, pch = 17, cex = 1.2)
   segments(x0 = rands$dep_adj, y0 = rands$med_cpue, y1 = rands$cpue95, lty = 1)
   segments(x0 = rands$dep_adj, y0 = rands$cpue5, y1 = rands$med_cpue, lty = 1)
   mtext(side = 3, adj = .02, fig2_letts[ii], line = -1.5)
 
   #add anchor point
-  points(0, 0, pch = 21, cex = 2, bg = 'white')
+  points(0, 0, pch = 21, cex = 2, bg = 'gray')
 }
 
-mtext(side = 1, "Decrease from Unfished", outer = T, line = 3, cex = 2)
-mtext(side = 2, "Change in CPUE", outer = T, line = 3, cex = 2)
+mtext(side = 1, "Decrease from Unfished", outer = T, line = 2.7, cex = 1.4)
+mtext(side = 2, "Change in CPUE", outer = T, line = 3, cex = 1.4)
 
 dev.off()
 
@@ -515,7 +611,8 @@ dev.off()
 #Comp_coeff of 0.3, 0.5, 0.7 for one case, and sampling in 50 sites
 
 png(width = 7.45, height = 6, units = 'in', res = 150, file = 'figs/hlfig5.png')
-par(mfrow = c(2, 3), mar = c(0, 0, 0, 0), oma = c(4, 4, 4, 2), xpd = T, 
+
+par(mfrow = c(2, 3), mar = c(0, 0, 0, 0), oma = c(4, 4.5, 2, 2), xpd = T, 
   mgp = c(0, .5, 0))
 
 for(ii in 1:6){
@@ -525,31 +622,32 @@ for(ii in 1:6){
   temp2 <- subset(temp, spp == 'spp2')
 
   #Plot empty plot
-  plot(temp$prop1, temp$median_cpue, type = 'n', axes = F, ann = F, ylim = c(0, 1.05),
+  plot(temp$prop1, temp$median_cpue, type = 'n', axes = F, ann = F, ylim = c(0, .9),
     xlim = c(0, 1.05))
   box()
   
   #Add points
-  points(temp1$prop1, temp1$median_cpue, pch = 19)
-  points(temp2$prop1, temp2$median_cpue, pch = 19, col = 'gray')
+  points(temp1$prop1, temp1$median_cpue, pch = 19, cex = 1.2)
+  points(temp2$prop1, temp2$median_cpue, pch = 19, col = 'gray', cex = 1.2)
 
   #Add Text
-  mtext(side = 3, adj = 0.02, fig5_letts[ii], line = -1.5)
-  if(ii < 4) mtext(side = 3, unique(temp1$comp_coeff))
-  if(ii < 4) mtext(side = 3, unique(temp1$comp_coeff))
+  paste0('comp. coeff. = ', unique(temp1$comp_coeff))
+  mtext(side = 3, adj = 0.02, fig5_letts[ii], line = -1.5, cex = 1.1)
+  # if(ii < 4) mtext(side = 3, unique(temp1$comp_coeff))
+  if(ii < 4) mtext(side = 3, paste0('comp. = ', unique(temp1$comp_coeff)))
   if(ii == 3) mtext(side = 4, "Preferential", line = .3)
   if(ii == 6) mtext(side = 4, "Random", line = .3)
   
   #Add Axes
-  if(ii %% 3 == 1) axis(side = 2, las = 2)
-  if(ii > 3) axis(side = 1)
-  if(ii == 6) legend('topright', c('Species 1', 'Species 2'), col = c('black', 'gray'), 
-    pch = 19, bty = 'n')
+  if(ii %% 3 == 1) axis(side = 2, las = 2, cex.axis = 1.2)
+  if(ii > 3) axis(side = 1, cex.axis = 1.2)
+  if(ii == 1) legend('bottomright', c('Species 1', 'Species 2'), col = c('black', 'gray'), 
+    pch = 19, bty = 'n', cex = 1.3)
 }
 
-mtext(side = 1, outer = T, "Proportion Species 1", line = 2, cex = 1.2)
-mtext(side = 2, outer = T, "Median CPUE", line = 2, cex = 1.2)
-mtext(side = 3, outer = T, "Patchy Distribution", line = 2, cex = 1.4)
+mtext(side = 1, outer = T, "Proportion species 1", line = 2.5, cex = 1.2)
+mtext(side = 2, outer = T, "Median CPUE", line = 2.5, cex = 1.2)
+# mtext(side = 3, outer = T, "Patchy Distribution", line = 2, cex = 1.4)
 
 dev.off()
 
@@ -563,13 +661,16 @@ dev.off()
 
 png(width = 11.29, height = 8.15, file = 'figs/hlfig6.png', units = 'in', res = 150)                   
 
-matlay <- matrix(c(1, 2, 0, 3, 4, 0, 5,  6,
-                   7, 8, 0, 9, 10, 0, 11, 12,
-                   0, 0, 0, 0,  0,  0,0, 0,
-                   13, 14, 0, 15, 16, 0, 17, 18,
-                   19, 20, 0, 21, 22, 0, 23, 24), ncol = 8, byrow = TRUE)
+
+
+
+matlay <- matrix(c( 1,  2,  3, 0,  4,  5, 6,
+                    7,  8,  9, 0, 10, 11, 12,
+                    0,  0,  0, 0,  0,  0,  0,
+                   13, 14, 15, 0, 16, 17, 18,
+                   19, 20, 21, 0, 22, 23, 24), ncol = 7, byrow = TRUE)
                    
-layout(matlay, heights = c(1,1,0.2,1,1), widths = c(1, 1, 0.1, 1, 1, 0.1, 1, 1))
+layout(matlay, heights = c(1, 1, 0.2, 1, 1), widths = c(1, 1, 1, 0.1, 1, 1, 1))
 par(mar = c(0.0, 0.5, 0.7, 0.3), oma = c(4, 4, 5, 2), mgp = c(.6, .5, 0))
 fig6_letts <- paste0(letters[1:24], ")")
 
