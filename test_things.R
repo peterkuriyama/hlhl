@@ -631,7 +631,6 @@ for(ii in 1:6){
   points(temp2$prop1, temp2$median_cpue, pch = 19, col = 'gray', cex = 1.2)
 
   #Add Text
-  paste0('comp. coeff. = ', unique(temp1$comp_coeff))
   mtext(side = 3, adj = 0.02, fig5_letts[ii], line = -1.5, cex = 1.1)
   # if(ii < 4) mtext(side = 3, unique(temp1$comp_coeff))
   if(ii < 4) mtext(side = 3, paste0('comp. = ', unique(temp1$comp_coeff)))
@@ -661,9 +660,6 @@ dev.off()
 
 png(width = 11.29, height = 8.15, file = 'figs/hlfig6.png', units = 'in', res = 150)                   
 
-
-
-
 matlay <- matrix(c( 1,  2,  3, 0,  4,  5, 6,
                     7,  8,  9, 0, 10, 11, 12,
                     0,  0,  0, 0,  0,  0,  0,
@@ -671,7 +667,7 @@ matlay <- matrix(c( 1,  2,  3, 0,  4,  5, 6,
                    19, 20, 21, 0, 22, 23, 24), ncol = 7, byrow = TRUE)
                    
 layout(matlay, heights = c(1, 1, 0.2, 1, 1), widths = c(1, 1, 1, 0.1, 1, 1, 1))
-par(mar = c(0.0, 0.5, 0.7, 0.3), oma = c(4, 4, 5, 2), mgp = c(.6, .5, 0))
+par(mar = c(0.0, 0.5, 0.9, 0.3), oma = c(4, 4, 5, 2), mgp = c(.6, .5, 0))
 fig6_letts <- paste0(letters[1:24], ")")
 
 for(jj in 1:24){
@@ -725,21 +721,22 @@ for(jj in 1:24){
   #------------------
   #Add axes 
   if(jj %% 6 == 1){
-    axis(side = 2, las = 2, at = c(10, 30, 50, 70, 90, 110), labels = c(0, .2, .4, .6, .8, 1))
+    axis(side = 2, las = 2, at = c(10, 30, 50, 70, 90, 110), labels = c(0, .2, .4, .6, .8, 1), cex.axis = 1.2)
   } 
 
-  if(jj > 18) axis(side = 1, at = c(10, 30, 50, 70, 90, 110), labels = c(0, .2, .4, .6, .8, 1))
+  if(jj > 18) axis(side = 1, at = c(10, 30, 50, 70, 90, 110), labels = c(0, .2, .4, .6, .8, 1), cex.axis = 1.2)
 
   #Add Text
-  if(jj < 7 & jj %% 2 == 1) mtext(side = 3, "Species 1", adj = 0, line = .01)
-  if(jj < 7 & jj %% 2 == 0) mtext(side = 3, "Species 2", adj = 0, line = .05)
+  # if(jj < 7 & jj %% 2 == 1) mtext(side = 3, "Species 1", adj = 0, line = .01)
+  # if(jj < 7 & jj %% 2 == 0) mtext(side = 3, "Species 2", adj = 0, line = .05)
   if(jj %in% c(6, 18)) mtext(side = 4, "Preferential", line = .5)
   if(jj %in% c(12, 24)) mtext(side = 4, "Random", line = .5)
-  if(jj %in% c(1, 3, 5)){
-    mtext(side = 3, paste0("Comp = ", unique(tp$comp_coeff)), adj = 0, line = 1.5, cex = 1.05)
-    # mtext(side = 3, paste0("Comp = ", unique(tp$comp_coeff)), adj = 1.7, line = 2, cex = .9)
-  } 
-  
+  if(jj == 1) mtext(side = 3, "Species 1", adj = 0, line = 1.5, cex = 1.05)
+  if(jj == 4) mtext(side = 3, "Species 2", adj = 0, line = 1.5, cex = 1.05)
+
+  if(jj < 7) mtext(side = 3, paste0('comp. = ', unique(tp$comp_coeff)), adj = 0, cex = 1.05)
+
+
   #Add Letters
   if(jj %in% c(2, 3, 4, 5, 8, 10, 11, 14, 16, 17)){
     text(103, 103, fig6_letts[jj], cex = 1.3, col = 'white')
@@ -751,10 +748,10 @@ for(jj in 1:24){
 }
 #------------------
 #Add outside text
-mtext(side = 1, "Species 1 Depletion", outer = T, line = 2.2, cex = 1.5)
-mtext(side = 2, "Species 2 Depletion", outer = T, line = 2, cex = 1.5)
-mtext(side = 3, "Normal", outer = T, line = 2.7, cex = 1.5, adj = .005)
-mtext(side = 3, "Patchy", outer = T, line = -27.5, cex = 1.5, adj = .005)
+mtext(side = 1, "Species 1 relative abundance", outer = T, line = 2.3, cex = 1.4)
+mtext(side = 2, "Species 2 relative abundance", outer = T, line = 2, cex = 1.4)
+mtext(side = 3, "Symmetric", outer = T, line = 2.7, cex = 1.4, adj = .005)
+mtext(side = 3, "Patchy", outer = T, line = -27.5, cex = 1.4, adj = .005)
 
 #Do this as 8.5 x 7 inch png?
 dev.off()
