@@ -1,6 +1,6 @@
 #mega run in computer lab
-install.packages('devtools')
-install.packages("sendmailR")
+# install.packages('devtools')
+# install.packages("sendmailR")
 
 #--------------------------------------------------------------------------------------------
 #Load Packages
@@ -25,7 +25,7 @@ nncores <- detectCores() - 2
 if(Sys.info()['sysname'] == 'Darwin' & nncores == 22){
   #Make sure to login to 
   setwd("/Users/fish/Desktop/peter")
-
+  results_dir <- "/Volumes/udrive/hlsimulator_runs"
   ##Make sure that udrive is functional
 }
 
@@ -70,7 +70,7 @@ library(hlsimulator)
 shape_list1 <- data.frame(scen = c('leftskew', 'rightskew', 'normdist', 'uniform', 'patchy'),
   shapes1 = c(10, 1, 5, 1, .1),
   shapes2 = c(1 , 10 ,5, 1, 10))
-shape_list1$for_plot <- c('Left Skew', 'Right Skew', 'Normal', 'Uniform', 'Patchy')
+shape_list1$for_plot <- c('Left Skew', 'Right Skew', 'Symmetric', 'Uniform', 'Patchy')
 
 #Only run for patchy and normal
 shape_list1 <- subset(shape_list1, scen %in% c('normdist', 'patchy'))
@@ -87,12 +87,12 @@ fishes2 <- seq(0, 200000, by = 20000)
 nsites <- 50
 
 #Number of repetitions is important
-nreps <- 100
+nreps <- 1000
 
 #--------------------------------------------------------------------------------------------
 #Build the grid of things to loop over
 to_loop <- expand.grid(fishes1, fishes2, c(.3, .5, .7),
-  1:5, c('pref', 'rand'))
+  1:2, c('pref', 'rand'))
 names(to_loop) <- c('nfish1', 'nfish2', 'comp_coeff', 
   'shape_list_row', 'type')
 to_loop$nsites <- nsites
@@ -103,15 +103,17 @@ to_loop$nreps <- nreps
 
 #Create indices for each computer, plan is to do this on five computers
 tot <- 1:nrow(to_loop)
-tots <- split(tot, ceiling(seq_along(tot) / 3630))
+tots <- split(tot, ceiling(seq_along(tot) / (nrow(to_loop) / 2)))
 
 # tots <- split(tot, ceiling(seq_along(tot) / 605)) #break this up into six
 
 #Specify Index for each computer
 #-----------------
+#Mac
 run_this_ind <- 1
 
-# run_this_ind <- 1:2
+#PC
+run_this_ind <- 2
 #-----------------
 
 if(length(run_this_ind) == 1) to_run <- tots[[run_this_ind]]
@@ -142,7 +144,11 @@ twospp <- ldply(twospp)
 if(length(run_this_ind) > 1) run_this_ind <- paste(run_this_ind, collapse = "")
 
 assign(paste0("twospp", run_this_ind ), twospp)
-filename <- paste0("twospp", run_this_ind )
+#From previous runs
+# filename <- paste0("twospp", run_this_ind )
+
+#Run now, run2
+filename <- paste0("twospp_run2_", run_this_ind )
 
 #Save output in U drive
 save(list = filename, file = paste0(results_dir, "//" , paste0(filename, "_", nreps, '.Rdata')))
