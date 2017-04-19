@@ -65,10 +65,8 @@ shape_list4 <- subset(shape_list1, scen != 'rightskew')
 
 shape_list4$for_plot[2] <- 'Symmetric'
 
-
 #Figure 1. Show distributions of each sceanrio
 ctl1$nfish1 <- 60000
-
 
 #Make table of values for initial distributions
 letts <- c('a)', 'b)', 'c)', 'd)')
@@ -108,21 +106,15 @@ for(ff in 1:length(fish1s)){
 
 inits_list <- ldply(inits_list)
 
-#add in range values
-inits_list$rng <- paste(inits_list$mins, inits_list$maxs, sep = ' - ')
-inits_list$rng <- as.character(inits_list$rng)
+inits_list$summ <- paste(inits_list$mins, round(inits_list$meds, digits = 0), inits_list$maxs, sep = " - ")
+inits_list$abundance <- inits_list$nfish / max(inits_list$nfish)
 
-#Dcast the median values
-inits_list_meds <- inits_list %>% select(meds, nfish, scen) %>% dcast(nfish ~ scen, value.var = 'meds')
-write.csv(inits_list_meds, file = 'output/table1_meds.csv', row.names = FALSE)
-
-#dcast the range values
-inits_list_rng <- inits_list %>% select(rng, nfish, scen) %>% dcast(nfish ~ scen, value.var = 'rng')
-write.csv(inits_list_rng, file = 'output/table1_rng.csv', row.names = FALSE)
-
-
-inits_med <- dcast(inits_list,   scen ~ nfish, value.var = 'median')
-
+table1 <- inits_list %>% select(abundance, nfish, scen, summ)
+table1 <- table1 %>% dcast(abundance + nfish ~ scen, value.var = 'summ')
+table1 <- table1 %>% select(abundance, nfish, leftskew, normdist, uniform, patchy)
+names(table1) <- paste0(toupper(substr(names(table1), 1, 1)), 
+  substr(names(table1), 2, nchar(names(table1))))
+write.csv(table1, 'output/table1.csv', row.names = FALSE)
 
 #----------------------------------------
 #Figure 2 Stuff
@@ -372,7 +364,26 @@ hist(xx$median_cpue)
 
 
 #----------------------------------------
+#Check twospp results, to see if differences in fig 6 are due to 
+#weird smoothing algorithm differences
+
+cc <- the_data %>% filter(comp_coeff == .5, init_dist == 'normdist', type == 'pref')
+
+ggplot(cc, )
+ggplot(cc, aes(x = dep1, y = dep2, z = median_cpue)) + geom_tile() + facet_wrap(~ spp + init_dist)
+
+
+ggplot(cc, aes(x = dep1, y = dep2)) + geom_tile(aes(fill = median_cpue)) + 
+  facet_wrap(~ spp + type + init_dist)
+
+
+
+
+ggplot(cc, aes(x = dep1, y = dep2, z = median_cpue)) + geom_contour() + facet_wrap(~ spp + init_dist)
+
+#----------------------------------------
 #Figure 6
+
 plot6 <- twospp %>% group_by(spp, comp_coeff, init_dist, for_plot, type, nsites, dep1, dep2) %>%
   summarize(median_cpue = median(cpue), sd_cpue = sd(cpue)) %>% as.data.frame
 
@@ -405,6 +416,7 @@ the_data %>% filter(type == 'pref', init_dist == 'normdist', median_cpue != 0) %
     group_by(spp, comp_coeff) %>% summarize(min_cpue = min(median_cpue),
     max_cpue = max(median_cpue), prop5 = length(which(median_cpue >= 0.5)) / length(median_cpue)) %>%
     arrange(comp_coeff)
+
 
 
 #Ranges for patchy surveys
@@ -709,11 +721,11 @@ for(jj in 1:24){
   
   filled.contour2(x, y, mm, levels = mylevels,  col = greys, ann = F, axes = F)
   box()
-  if(jj %in% c(2, 3, 4, 5, 8, 10, 11, 14, 16, 17)){
+  if(jj %in% c(2, 3, 4, 5, 8, 9, 10, 11, 14, 15, 16, 17)){
     contour(x, y, mm, levels = mylevels, add = T, labcex = 1, col = 'white')
     # text(103, 103, fig6_letts[jj], cex = 1.3, col = 'white')
   } 
-  if(jj %in% c(2, 3, 4, 5, 8, 10, 11, 14, 16, 17) == FALSE){
+  if(jj %in% c(2, 3, 4, 5, 8, 9, 10, 11, 14, 15, 16, 17) == FALSE){
     contour(x, y, mm, levels = mylevels, add = T, labcex = 1)
   } 
   
@@ -738,10 +750,10 @@ for(jj in 1:24){
 
 
   #Add Letters
-  if(jj %in% c(2, 3, 4, 5, 8, 10, 11, 14, 16, 17)){
+  if(jj %in% c(2, 3, 4, 5, 8, 9, 10, 11, 14, 15, 16, 17)){
     text(103, 103, fig6_letts[jj], cex = 1.3, col = 'white')
   } 
-  if(jj %in% c(2, 3, 4, 5, 8, 10, 11, 14, 16, 17) == FALSE){
+  if(jj %in% c(2, 3, 4, 5, 8, 9, 10, 11, 14, 15, 16, 17) == FALSE){
     text(103, 103, fig6_letts[jj], cex = 1.3)
   } 
   
@@ -755,5 +767,18 @@ mtext(side = 3, "Patchy", outer = T, line = -27.5, cex = 1.4, adj = .005)
 
 #Do this as 8.5 x 7 inch png?
 dev.off()
+
+
+#-----------------------------------------------------------------------------
+#Figure S1 - Sensitivity to prob1 values
+#-----------------------------------------------------------------------------
+load('output/twospp1_50sens.Rdata')
+onespp_sens <- twospp1
+
+
+ggplot(onespp_sens, aes(x = ))
+
+
+
 
 
