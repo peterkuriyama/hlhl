@@ -129,7 +129,8 @@ doParallel::registerDoParallel(clusters)
 
 twospp <- foreach(ii = to_run,
   .packages = c('plyr', 'dplyr', 'reshape2', 'hlsimulator'), .export = c("shape_list1")) %dopar% {
-    fixed_parallel(index = ii, ctl1 = ctl1, to_loop = to_loop)  
+    fixed_parallel(index = ii, ctl1 = ctl1, to_loop = to_loop, 
+      change_these = c('nfish1', 'nfish2', 'comp_coeff'))  
 }
 
 #Close clusters
