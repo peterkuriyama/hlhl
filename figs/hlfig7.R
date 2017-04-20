@@ -7,7 +7,6 @@ dat <- Grand.2014.JF
 #--------------------------------------------------------------------------------------------
 boc <- dat %>% filter(ComName == 'Bocaccio')
 temp <- boc %>% filter(Year == 2013)
-boc %>% group_by(year)
 
 #Bocaccio cohort figure
 yrz <- 2004:2014
@@ -36,6 +35,7 @@ range(yranges)
 letts7 <- paste0(letters[1:11], ")")
 letts7 <- paste(letts7, yrz)
 
+png(file = 'figs/hlfig7.png', width = 5, height = 8.5, units = 'in', res = 150)
 #width = 5, height = 8.5, units = 'in'
 par(mfcol = c(11, 1), mar = c(0, 0, 0, 0), oma = c(3.5, 5, 2, 1), mgp = c(1, .5, 0))
 for(ii in 1:length(hists)){
@@ -48,3 +48,4 @@ for(ii in 1:length(hists)){
 }
 mtext("Length (cm)", side = 1, line = 2, cex = 1.2, outer = T)
 mtext("Proportion", side = 2, line = 2.5, cex = 1.2, outer = T)
+dev.off()
