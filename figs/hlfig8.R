@@ -27,7 +27,7 @@ ggplot(plot8, aes(x = cpue_boca, y = cpue_verm)) +
   geom_point(aes(size = cpue_tot), alpha = .2) + 
   facet_wrap(~ Year) + theme_bw()
 
-
+png(width = 8, height = 7, units = 'in', res = 150, file = 'figs/hlfig8.png')
 par(mfrow = c(3, 4),mar = c(0, 0, 0, 0), oma = c(3.5, 5, 2, 1), mgp = c(1, .5, 0),
   xpd = T)
 for(ii in 1:length(yrz)){
@@ -58,8 +58,7 @@ for(ii in 1:length(yrz)){
 mtext("Bocaccio CPUE", side = 1, outer = T, cex = 1.2, line = 2.2)
 mtext("Vermilion CPUE", side = 2, outer = T, cex = 1.2, line = 2.2)
 
-
-
+dev.off()
 
 
 
@@ -93,19 +92,3 @@ mtext("Vermilion CPUE", side = 2, outer = T, cex = 1.2, line = 2.2)
 # }
 # mtext("CPUE", side = 1, line = 2, cex = 1.2, outer = T)
 # mtext("Proportion", side = 2, line = 3.2, cex = 1.2, outer = T)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
