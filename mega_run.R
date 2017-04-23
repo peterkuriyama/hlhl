@@ -87,7 +87,10 @@ fishes2 <- seq(0, 200000, by = 20000)
 nsites <- 50
 
 #Number of repetitions is important
-nreps <- 1000
+# nreps <- 1000
+
+#For testing the new comp coefficient curves
+nreps <- 50 
 
 #--------------------------------------------------------------------------------------------
 #Build the grid of things to loop over
@@ -97,6 +100,9 @@ names(to_loop) <- c('nfish1', 'nfish2', 'comp_coeff',
   'shape_list_row', 'type')
 to_loop$nsites <- nsites
 to_loop$nreps <- nreps
+
+#remove the rows with 0 and 0 for numbers of fish
+to_loop <- to_loop[-which(to_loop$nfish1 == 0 & to_loop$nfish2 == 0), ]
 
 #--------------------------------------------------------------------------------------------
 #To Do for lab computers
