@@ -87,10 +87,10 @@ fishes2 <- seq(0, 200000, by = 20000)
 nsites <- 50
 
 #Number of repetitions is important
-# nreps <- 1000
+nreps <- 1000
 
 #For testing the new comp coefficient curves
-nreps <- 50 
+# nreps <- 50 
 
 #--------------------------------------------------------------------------------------------
 #Build the grid of things to loop over
@@ -155,7 +155,7 @@ assign(paste0("twospp", run_this_ind ), twospp)
 # filename <- paste0("twospp", run_this_ind )
 
 #Run now, run2
-filename <- paste0("twospp_run2_", run_this_ind )
+filename <- paste0("twospp_newcc_", run_this_ind ) #for new competition coefficient
 
 #Save output in U drive
 save(list = filename, file = paste0(results_dir, "//" , paste0(filename, "_", nreps, '.Rdata')))
