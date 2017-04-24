@@ -43,24 +43,28 @@ sample_exp <- function(nfish1, nfish2, prob1, prob2, comp_coeff){
 
   propfish1 <- nfish1 / (nfish1 + nfish2)
   
-  #Sampled directly in proportion to numbers
-  if(fish == 1 & comp_coeff == 0.5){
-    fish1 <- rbinom(n = 1, size = 1, prob = propfish1)
-    if(propfish1 == 1) fish1 <- 1
+  #Conditions if comp_coeff is not NA  
+  if(is.na(comp_coeff) == FALSE){
+    #Sampled directly in proportion to numbers
+    if(fish == 1 & comp_coeff == 0.5){
+      fish1 <- rbinom(n = 1, size = 1, prob = propfish1)
+      if(propfish1 == 1) fish1 <- 1
+    }
+  
+    #Hyperstable, favor species 1
+    if(fish == 1 & comp_coeff == 0.7){
+      adj_comp_coeff <- 1 - exp(-6 * propfish1)
+      fish1 <- rbinom(n = 1, size = 1, prob = adj_comp_coeff)
+    }
+  
+    #Hyperdepletion, favor species 2
+    if(fish == 1 & comp_coeff == 0.3){
+      adj_comp_coeff <- log(1 - propfish1) / -6 #inverse of function 3
+      if(propfish1 == 1) fish1 <- 1
+      fish1 <- rbinom(n = 1, size = 1, prob = adj_comp_coeff)
+    }
   }
-
-  #Hyperstable, favor species 1
-  if(fish == 1 & comp_coeff == 0.7){
-    adj_comp_coeff <- 1 - exp(-6 * propfish1)
-    fish1 <- rbinom(n = 1, size = 1, prob = adj_comp_coeff)
-  }
-
-  #Hyperdepletion, favor species 2
-  if(fish == 1 & comp_coeff == 0.3){
-    adj_comp_coeff <- log(1 - propfish1) / -6 #inverse of function 3
-    if(propfish1 == 1) fish1 <- 1
-    fish1 <- rbinom(n = 1, size = 1, prob = adj_comp_coeff)
-  }
+  
 
   if(fish1 == 0 & fish == 1 & nfish2 != 0){    
     fish2 <- 1
