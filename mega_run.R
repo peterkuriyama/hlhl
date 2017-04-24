@@ -117,8 +117,6 @@ to_loop <- to_loop[-which(to_loop$nfish1 == 0 & to_loop$nfish2 == 0), ]
 tot <- 1:nrow(to_loop)
 tots <- split(tot, ceiling(seq_along(tot) / (nrow(to_loop) / 2)))
 
-# tots <- split(tot, ceiling(seq_along(tot) / 605)) #break this up into six
-
 #Specify Index for each computer
 #-----------------
 #Mac
@@ -156,15 +154,15 @@ twospp <- ldply(twospp)
 
 if(length(run_this_ind) > 1) run_this_ind <- paste(run_this_ind, collapse = "")
 
-assign(paste0("twospp", run_this_ind ), twospp)
+assign(paste0("twospp", run_this_ind), twospp)
 #From previous runs
 # filename <- paste0("twospp", run_this_ind )
 
 #Run now, run2
-filename <- paste0("twospp_newcc_", run_this_ind ) #for new competition coefficient
+filename <- paste0("twospp", run_this_ind ) #for new competition coefficient
 
 #Save output in U drive
-save(list = filename, file = paste0(results_dir, "//" , paste0(filename, "_", nreps, '.Rdata')))
+save(list = filename, file = paste0(results_dir, "//" , paste0(filename, "_newcc_", nreps, '.Rdata')))
 
 #Send email that run is done
 send_email(body = paste(paste('run', run_this_ind, 'done'), 
