@@ -36,6 +36,12 @@ if(Sys.info()['sysname'] == 'Darwin' & nncores != 22){
   results_dir <- "/Volumes/udrive/hlsimulator_runs"
 }
 
+# CSDE Cluster
+if(Sys.info()['sysname'] == 'Windows' & ncores > 22){
+  results_dir <- "H:// "  
+}
+
+
 #Whitefish
 if(Sys.info()['sysname'] == 'Windows' & nncores == 10){
   results_dir <- "C://Users//Peter//Desktop//hlsimulator"
