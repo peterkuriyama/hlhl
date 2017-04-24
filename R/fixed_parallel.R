@@ -12,7 +12,6 @@ fixed_parallel <- function(index, ctl1, to_loop = to_loop, change_these){
                             shapes1 = c(10, 1, 5, 1, .1),
                             shapes2 = c(1 , 10 ,5, 1, 10))
   shape_list1$for_plot <- c('Left Skew', 'Right Skew', 'Normal', 'Uniform', 'Patchy')
-    
   ctl_temp <- ctl1
   tt <- to_loop[index, ]
 
@@ -52,6 +51,7 @@ fixed_parallel <- function(index, ctl1, to_loop = to_loop, change_these){
 
   outs <- outs %>% filter(year == 1) #Filter results to only keep year 1 results
   outs$location <- NULL
-  
+
   return(outs)
+
 }
