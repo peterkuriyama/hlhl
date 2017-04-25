@@ -28,6 +28,7 @@ if(Sys.info()['sysname'] == 'Darwin' & nncores == 22){
   #Make sure to login to 
   setwd("/Users/fish/Desktop/peter")
   results_dir <- "/Volumes/udrive/hlsimulator_runs"
+  sys <- 'mac'
   ##Make sure that udrive is functional
 }
 
@@ -54,6 +55,7 @@ if(Sys.info()['sysname'] == 'Windows' & nncores > 11){
   nncores <- 20
   #Specify somehing here, I think it's U
   results_dir <- "U://hlsimulator_runs"
+  sys <- 'pc'
 }
 
 #--------------------------------------------------------------------------------------------

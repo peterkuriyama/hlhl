@@ -19,11 +19,17 @@ to_loop$nreps <- nreps
 #Specify Index for each computer
 #-----------------
 #Mac
-run_this_ind <- 1
+if(sys == 'mac') run_this_ind <- 1
 
 #PC
-run_this_ind <- 2
+if(sys == 'pc') run_this_ind <- 2
+
+
 #-----------------
+#Check Run Index
+run_this_ind
+#-----------------
+
 
 #--------------------------------------------------------------------------------------------
 #To Do for lab computers
@@ -76,4 +82,4 @@ send_email(body = paste(paste('run', run_this_ind, 'done'),
   '\n', run_time, units(run_time),  '\n'))
 
 #Clear workspace for others
-rm(list = ls())
+# rm(list = ls())
