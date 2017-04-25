@@ -17,7 +17,7 @@ tots <- split(tot, ceiling(seq_along(tot) / (nrow(to_loop) / ((nrow(to_loop) / n
 
 #Specify Index for each computer
 #-----------------
-run_this_ind <- 1
+run_this_ind <- 240
 
 #-----------------
 
