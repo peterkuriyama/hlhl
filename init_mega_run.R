@@ -26,14 +26,14 @@ nncores <- detectCores() - 2
 #Big Lab Mac
 if(Sys.info()['sysname'] == 'Darwin' & nncores == 22){
   #Make sure to login to 
-  setwd("/Users/fish/Desktop/peter")
   results_dir <- "/Volumes/udrive/hlsimulator_runs"
   sys <- 'mac'
+  nncores <- 20
   ##Make sure that udrive is functional
 }
 
 #My Laptop Mac
-if(Sys.info()['sysname'] == 'Darwin' & nncores != 22){
+if(Sys.info()['sysname'] == 'Darwin' & nncores < 10){
   setwd("/Users/peterkuriyama/School/Research/hlsimulator")  
   type <- 'mac'
   results_dir <- "/Volumes/udrive/hlsimulator_runs"
