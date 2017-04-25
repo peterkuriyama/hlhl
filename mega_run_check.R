@@ -1,37 +1,25 @@
-#--------------------------------------------------------------------------------------------
-#Check results
-#Remove everything
-rm(twospp)
-rm(twospp1)
+#If there is a check data file there, remove it before running this again
+file.remove(paste0(results_dir, '//',  'twospp1_newcc_check_5.Rdata'))
 
-#Load stuff in
-load(paste0(results_dir, '//',  'twospp1_newcc_check_5.Rdata'))
-#Check results
-head(twospp1)
-
-#Now run big runs
-#Number of repetitions is important
-nreps <- 1000
+#For testing the new comp coefficient curves
+nreps <- 5 
 
 #Adjust number of reps
 to_loop$nreps <- nreps
 
-#Specify Index for each computer
-#-----------------
-#Mac
-run_this_ind <- 1
-
-#PC
-run_this_ind <- 2
-#-----------------
-
 #--------------------------------------------------------------------------------------------
-#To Do for lab computers
 
 #Create indices for each computer, plan is to do this on five computers
 tot <- 1:nrow(to_loop)
-tots <- split(tot, ceiling(seq_along(tot) / (nrow(to_loop) / 2)))
 
+#Specify one run for each core
+tots <- split(tot, ceiling(seq_along(tot) / (nrow(to_loop) / ((nrow(to_loop) / nncores)))))
+
+#Specify Index for each computer
+#-----------------
+run_this_ind <- 1
+
+#-----------------
 
 if(length(run_this_ind) == 1) to_run <- tots[[run_this_ind]]
 if(length(run_this_ind) > 1){
@@ -69,11 +57,4 @@ assign(paste0("twospp", run_this_ind), twospp)
 filename <- paste0("twospp", run_this_ind ) #for new competition coefficient
 
 #Save output in U drive
-save(list = filename, file = paste0(results_dir, "//" , paste0(filename, "_newcc_", nreps, '.Rdata')))
-
-#Send email that run is done
-send_email(body = paste(paste('run', run_this_ind, 'done'), 
-  '\n', run_time, units(run_time),  '\n'))
-
-#Clear workspace for others
-rm(list = ls())
+save(list = filename, file = paste0(results_dir, "//" , paste0(filename, "_newcc_check_", nreps, '.Rdata')))
