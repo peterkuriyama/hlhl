@@ -17,7 +17,6 @@
 sample_exp <- function(nfish1, nfish2, prob1, prob2, comp_coeff){
   #------------------------------------------------
   #Define probabilities based on number of fish
-
   #Might need to adjust the shape of this curve
   #Can adjust these to account for behavior of certain species
   p1 <- 1 - exp(-nfish1 * prob1) #use prob 1 to define probability of catching fish 1
@@ -34,38 +33,35 @@ sample_exp <- function(nfish1, nfish2, prob1, prob2, comp_coeff){
   fish1 <- 0
   fish2 <- 0
 
+  propfish1 <- nfish1 / (nfish1 + nfish2)
   #Scale this so that prob goes down as the numbers go down maybe?  
   #If a fish was caught determine if it was fish1 or fish2
-  if(fish == 1 & is.na(comp_coeff)){
-    p1a <- p1 / (p1 + p2)  
-    fish1 <- rbinom(n = 1, size = 1, prob = p1a)
-  }
+  # if(fish == 1 & is.na(comp_coeff)){
+    
+  #   fish1 <- rbinom(n = 1, size = 1, prob = p1a)
+  # }
 
-  propfish1 <- nfish1 / (nfish1 + nfish2)
-  
-  #Conditions if comp_coeff is not NA  
-  if(is.na(comp_coeff) == FALSE){
-    #Sampled directly in proportion to numbers
-    if(fish == 1 & comp_coeff == 0.5){
-      fish1 <- rbinom(n = 1, size = 1, prob = propfish1)
-      if(propfish1 == 1) fish1 <- 1
-    }
-  
-    #Hyperstable, favor species 1
-    if(fish == 1 & comp_coeff == 0.7){
-      adj_comp_coeff <- 1 - exp(-6 * propfish1)
-      fish1 <- rbinom(n = 1, size = 1, prob = adj_comp_coeff)
-    }
-  
-    #Hyperdepletion, favor species 2
-    if(fish == 1 & comp_coeff == 0.3){
-      adj_comp_coeff <- log(1 - propfish1) / -6 #inverse of function 3
-      if(propfish1 == 1) fish1 <- 1
-      fish1 <- rbinom(n = 1, size = 1, prob = adj_comp_coeff)
-    }
+  #Sampled directly in proportion to numbers
+  if(fish == 1 & comp_coeff == 0.5){
+    fish1 <- rbinom(n = 1, size = 1, prob = propfish1)
   }
   
+  #Hyperstable, favor species 1
+  if(fish == 1 & comp_coeff == 0.7){
+    adj_comp_coeff <- 1 - exp(-6 * propfish1)
+    if(propfish1 == 1) adj_comp_coeff <- 1
 
+    fish1 <- rbinom(n = 1, size = 1, prob = adj_comp_coeff)
+  }
+  
+  #Hyperdepletion, favor species 2
+  if(fish == 1 & comp_coeff == 0.3){
+    adj_comp_coeff <- log(1 - propfish1) / -6 #inverse of function 3
+    if(propfish1 == 1) adj_comp_coeff <- 1
+      
+    fish1 <- rbinom(n = 1, size = 1, prob = adj_comp_coeff)
+  }
+  
   if(fish1 == 0 & fish == 1 & nfish2 != 0){    
     fish2 <- 1
   } 
