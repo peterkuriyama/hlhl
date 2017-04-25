@@ -41,9 +41,6 @@ run_replicates <- function(ctl_in){
   #Create output list
   out_list <- vector('list', length = niters)
 
-  #Put NA in for comp_coeff if there is no species 2
-  if(sum(init_area2) == 0) comp_coeff <- NA
-  
   #Run scenarios for each iteration
   for(ii in 1:niters){
     out_list[[ii]] <- conduct_survey(init_area = list(init_area1, init_area2), nhooks = nhooks, 
