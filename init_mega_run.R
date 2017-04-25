@@ -75,7 +75,7 @@ shape_list1 <- data.frame(scen = c('leftskew', 'rightskew', 'normdist', 'uniform
 shape_list1$for_plot <- c('Left Skew', 'Right Skew', 'Symmetric', 'Uniform', 'Patchy')
 
 #Only run for patchy and normal
-shape_list1 <- subset(shape_list1, scen %in% c('normdist', 'patchy'))
+# shape_list1 <- subset(shape_list1, scen %in% c('normdist', 'patchy'))
 
 #Keep the same prob1 and prob2
 ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, 
@@ -84,14 +84,17 @@ ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05,
       location = data.frame(vessel = 1, x = 1, y = 1), numrow = 30, numcol = 30,
       shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)    
 
+#--------------------------------------------------------------------------------------------
+#Build grid of things to loop over
 fishes1 <- seq(0, 200000, by = 20000)
 fishes2 <- seq(0, 200000, by = 20000)
+comp_coeffs <- c(.3, .5, .7)
+shape_rows <- c(3, 5) #Normal and patchy distributions
 nsites <- 50
 
-#--------------------------------------------------------------------------------------------
 #Build the grid of things to loop over
-to_loop <- expand.grid(fishes1, fishes2, c(.3, .5, .7),
-  1:2, c('pref', 'rand'))
+to_loop <- expand.grid(fishes1, fishes2, comp_coeffs,
+  shape_rows, c('pref', 'rand'))
 names(to_loop) <- c('nfish1', 'nfish2', 'comp_coeff', 
   'shape_list_row', 'type')
 to_loop$nsites <- nsites
