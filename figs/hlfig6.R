@@ -1,10 +1,9 @@
-
-
 #----------------------------------------
 #Figure 6
 
 plot6 <- twospp %>% group_by(spp, comp_coeff, init_dist, for_plot, type, nsites, dep1, dep2) %>%
   summarize(median_cpue = median(cpue), sd_cpue = sd(cpue)) %>% as.data.frame
+
 
 #Filter Data for each distribution
 ls6 <- plot6 %>% filter(init_dist == 'leftskew')
@@ -13,6 +12,40 @@ p6 <- plot6 %>% filter(init_dist == 'patchy')
 u6 <- plot6 %>% filter(init_dist == 'uniform')
 
 the_data <- rbind(p6, n6)
+
+# add in 0, 0 for scenario in the data
+zeroes <- the_data %>% select(spp, comp_coeff, init_dist, for_plot, type, nsites) %>% distinct
+zeroes$dep1 <- 0
+zeroes$dep2 <- 0
+zeroes$median_cpue <- 0
+zeroes$sd_cpue <- 0
+  
+zeroes <- zeroes[, names(the_data)]
+
+the_data <- rbind(the_data, zeroes)
+
+#Look at one of the matrices of median_cpue values to see how 
+the_data %>% filter(spp == 'spp1', init_dist == 'normdist', type == 'pref',
+  comp_coeff == 0.3) %>% select(dep1, dep2, median_cpue) %>% arrange(dep1, desc(dep2)) -> p1
+
+#ggplot
+#contours
+ggplot(the_data, aes(x = dep1, y = dep2, z = median_cpue)) + geom_contour() + 
+  facet_wrap(~ type + init_dist + spp + comp_coeff, ncol = 6)
+#tiles
+ggplot(the_data, aes(x = dep1, y = dep2, fill = median_cpue)) + geom_tile() + 
+  facet_wrap(~ type + init_dist + spp + comp_coeff, ncol = 6)
+
+p1 <- p1 %>% order(dep1, dep2)
+p1$tot <- p1$dep1 + p1$dep2
+p1 <- p1 %>% arrange(tot, dep1, dep2)
+
+med_mat <- matrix(p1$median_cpue, nrow = 11, ncol = 11)
+med_mat <- rotate(med_mat)
+filled.contour2(x = seq(0, 100, 10), y = seq(0, 100, 10), z = med_mat)
+filled.contour2(x = seq(0, 1, 0.1), y = seq(0, 1, 0.1), z = med_mat)
+
+
 
 inds <- rbind(p6, n6) %>% select(type, spp, comp_coeff, init_dist) %>% distinct() %>%
    arrange(init_dist, type, comp_coeff, spp)
@@ -40,7 +73,6 @@ the_data %>% filter(init_dist == 'patchy', median_cpue != 0, comp_coeff == 0.5) 
    group_by(spp, type, comp_coeff) %>% summarize(mincpue = min(median_cpue),
     maxcpue = max(median_cpue)) %>% arrange(comp_coeff)
 
-
 #-----------------------------------------------------------------------------
 #Figure 6 - Two Species Contour Plots
 #Starting at some level and going up and down
@@ -56,6 +88,9 @@ matlay <- matrix(c( 1,  2,  3, 0,  4,  5, 6,
                     0,  0,  0, 0,  0,  0,  0,
                    13, 14, 15, 0, 16, 17, 18,
                    19, 20, 21, 0, 22, 23, 24), ncol = 7, byrow = TRUE)
+
+whites <- c(2, 3, 4, 5, 8, 9, 10, 11, 14, 15, 16, 17)
+blacks <- which(1:24 %in% whites == FALSE)
                    
 layout(matlay, heights = c(1, 1, 0.2, 1, 1), widths = c(1, 1, 1, 0.1, 1, 1, 1))
 par(mar = c(0.0, 0.5, 0.9, 0.3), oma = c(4, 4, 5, 2), mgp = c(.6, .5, 0))
@@ -67,55 +102,61 @@ for(jj in 1:24){
   temp <- inds[jj, ]
 
   #tp for temp plot 
-  tp <- rbind(p6, n6) %>% filter(type == temp$type, spp == temp$spp, comp_coeff == temp$comp_coeff,
+  tp <- the_data %>% filter(type == temp$type, spp == temp$spp, comp_coeff == temp$comp_coeff,
     init_dist == temp$init_dist)
 
+  tp <- tp %>% arrange(dep1, dep2)  
+  # tp$tot <- tp$dep1 + tp$dep2
+  # tp <- tp %>% arrange(tot, dep1, dep2)
+  mm <- matrix(tp$median_cpue, nrow = 11, ncol = 11)
+  mm1 <- apply(mm, 2, rev)
+  mm1 <- rotate(mm1)
   #------------------
   #Create the matrix of median_cpue values
   #Dep1 is the columns, y
-  ind1 <- data.frame(dep1 = unique(tp$dep1), col_dep1 = 1:11)
-  # ind1 <- data.frame(dep1 = unique(tp$dep1), col_dep1 = 11:1)
-  tp <- inner_join(tp, ind1, by = 'dep1')
+  # ind1 <- data.frame(dep1 = unique(tp$dep1), col_dep1 = 1:11)
+  # # ind1 <- data.frame(dep1 = unique(tp$dep1), col_dep1 = 11:1)
+  # tp <- inner_join(tp, ind1, by = 'dep1')
   
-  #Dep2 is the rows, x
-  # ind2 <- data.frame(dep2 = unique(tp$dep2), row_dep2 = 1:11)
-  ind2 <- data.frame(dep2 = unique(tp$dep2), row_dep2 = 11:1)
-  tp <- inner_join(tp, ind2, by = 'dep2')
+  # #Dep2 is the rows, x
+  # # ind2 <- data.frame(dep2 = unique(tp$dep2), row_dep2 = 1:11)
+  # ind2 <- data.frame(dep2 = unique(tp$dep2), row_dep2 = 11:1)
+  # tp <- inner_join(tp, ind2, by = 'dep2')
 
-  #Fill in the Matrix
-  mm <- matrix(NA, nrow = 11, ncol = 11)
-  for(ii in 1:nrow(tp)){
-    mm[tp[ii, 'row_dep2'], tp[ii, 'col_dep1']] <- tp[ii, 'median_cpue']  
-    # mm[tp[ii, 'col_dep1'], tp[ii, 'row_dep2']] <- tp[ii, 'median_cpue']  
-  }
+  # mm <- matrix(NA, nrow = 11, ncol = 11)
+  # for(ii in 1:nrow(tp)){
+  #   mm[tp[ii, 'row_dep2'], tp[ii, 'col_dep1']] <- tp[ii, 'median_cpue']  
+  #   # mm[tp[ii, 'col_dep1'], tp[ii, 'row_dep2']] <- tp[ii, 'median_cpue']  
+  # }
 
   #------------------
   #plots
   mylevels <- seq(0, 1, .1)
   greys <- paste0('grey', seq(100, 0, -10))
   
-  x <- 10 * (1:11)
-  y <- 10 *(1:11)
-  mm <- rotate(mm)
+  x <- seq(0, 100, by = 10)
+  y <- seq(0, 100, by = 10)
+  # mm <- rotate(mm)
+
   
-  filled.contour2(x, y, mm, levels = mylevels,  col = greys, ann = F, axes = F)
+  filled.contour2(x, y, mm1, levels = mylevels,  col = greys, ann = F, axes = F)
   box()
-  if(jj %in% c(2, 3, 4, 5, 8, 9, 10, 11, 14, 15, 16, 17)){
-    contour(x, y, mm, levels = mylevels, add = T, labcex = 1, col = 'white')
+  if(jj %in% whites){
+    contour(x, y, mm1, levels = mylevels, add = T, labcex = 1, col = 'white')
     # text(103, 103, fig6_letts[jj], cex = 1.3, col = 'white')
   } 
-  if(jj %in% c(2, 3, 4, 5, 8, 9, 10, 11, 14, 15, 16, 17) == FALSE){
-    contour(x, y, mm, levels = mylevels, add = T, labcex = 1)
+  if(jj %in% blacks){
+    contour(x, y, mm1, levels = mylevels, add = T, labcex = 1)
   } 
   
 
   #------------------
   #Add axes 
   if(jj %% 6 == 1){
-    axis(side = 2, las = 2, at = c(10, 30, 50, 70, 90, 110), labels = c(0, .2, .4, .6, .8, 1), cex.axis = 1.2)
+    axis(side = 2, las = 2, at = c(0, 20, 40, 60, 80, 100), labels = c(0, .2, .4, .6, .8, 1), cex.axis = 1.2)
   } 
 
-  if(jj > 18) axis(side = 1, at = c(10, 30, 50, 70, 90, 110), labels = c(0, .2, .4, .6, .8, 1), cex.axis = 1.2)
+  if(jj > 18) axis(side = 1, at = c(0, 20, 40, 60, 80, 100), labels = c(0, .2, .4, .6, .8, 1), cex.axis = 1.2)
 
   #Add Text
   # if(jj < 7 & jj %% 2 == 1) mtext(side = 3, "Species 1", adj = 0, line = .01)
@@ -125,15 +166,18 @@ for(jj in 1:24){
   if(jj == 1) mtext(side = 3, "Species 1", adj = 0, line = 1.5, cex = 1.05)
   if(jj == 4) mtext(side = 3, "Species 2", adj = 0, line = 1.5, cex = 1.05)
 
-  if(jj < 7) mtext(side = 3, paste0('comp. = ', unique(tp$comp_coeff)), adj = 0, cex = 1.05)
-
+  if(jj %in% c(1, 4)) mtext(side = 3, comp_captions[1], adj = 0, cex = 1.05)
+  if(jj %in% c(2, 5)) mtext(side = 3, comp_captions[2], adj = 0, cex = 1.05)
+  if(jj %in% c(3, 6)) mtext(side = 3, comp_captions[3], adj = 0, cex = 1.05)
+  # if(jj < 7) mtext(side = 3, paste0('comp. = ', unique(tp$comp_coeff)), adj = 0, cex = 1.05)
 
   #Add Letters
-  if(jj %in% c(2, 3, 4, 5, 8, 9, 10, 11, 14, 15, 16, 17)){
-    text(103, 103, fig6_letts[jj], cex = 1.3, col = 'white')
+  #Things in white
+  if(jj %in% whites){
+    text(94, 94, fig6_letts[jj], cex = 1.3, col = 'white')
   } 
-  if(jj %in% c(2, 3, 4, 5, 8, 9, 10, 11, 14, 15, 16, 17) == FALSE){
-    text(103, 103, fig6_letts[jj], cex = 1.3)
+  if(jj %in% blacks){
+    text(94, 94, fig6_letts[jj], cex = 1.3)
   } 
   
 }
