@@ -57,6 +57,7 @@ inds$ind <- 1:24
 #Define function to rotate matrix
 rotate <- function(x) t(apply(x, 2, rev))
 
+#-----------------------------------------------------------------------------
 #Normal, spp 1
 the_data %>% filter(type == 'pref', init_dist == 'normdist', comp_coeff == 0.3) %>%
   filter(spp == 'spp1', dep2 == .1)
@@ -69,7 +70,7 @@ the_data %>% filter(type == 'pref', init_dist == 'normdist', median_cpue != 0) %
 #Ranges for patchy surveys
 the_data %>% filter(init_dist == 'patchy', median_cpue != 0, comp_coeff == 0.5) %>%
    group_by(spp, type, comp_coeff) %>% summarize(mincpue = min(median_cpue),
-    maxcpue = max(median_cpue)) %>% arrange(comp_coeff)
+    maxcpue = max(median_cpue)) %>% arrange(comp_coeff, type)
 
 #-----------------------------------------------------------------------------
 #Figure 6 - Two Species Contour Plots
