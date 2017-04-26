@@ -1,7 +1,4 @@
 
-
-
-
 #----------------------------------------
 #Figure 5
 
@@ -14,8 +11,13 @@
 # load("output/twospp45_50.Rdata")
 # twospp <- rbind(twospp1, twospp23, twospp45)
 
-load('output/twospp.1.1_100.Rdata')
-twospp <- twospp1
+#Old versions
+# load('output/twospp.1.1_100.Rdata')
+
+load('output/twospp1_newcc_50_6.Rdata')
+load('output/twospp2_newcc_50_6.Rdata')
+
+twospp <- rbind(twospp1, twospp2 )
 
 #Check number of iterations for each
 twospp %>% group_by(init_dist) %>% summarize(niters = length(unique(iter)), 
@@ -64,9 +66,12 @@ plot5 %>% filter(median_cpue != 0) %>% group_by(comp_coeff, type, spp) %>%
   summarize(min_med = min(median_cpue),
     max_med = max(median_cpue)) %>% arrange(type) %>% filter(comp_coeff == 0.3)
 
-xx <- plot5 %>% filter(comp_coeff == 0.3, type == 'pref', spp == 'spp1') 
+# xx <- plot5 %>% filter(comp_coeff == 0.3, type == 'pref', spp == 'spp1') 
+# hist(xx$median_cpue)
 
-hist(xx$median_cpue)
+
+twospp %>% filter(comp_coeff == 0.3, spp == 'spp1', type == 'pref', 
+  init_dist == 'normdist', nfish1 > 180000) %>% ggplot(aes(x = cpue)) + geom_histogram()
 
 
 
@@ -91,6 +96,9 @@ ggplot(cc, aes(x = dep1, y = dep2, z = median_cpue)) + geom_contour() + facet_wr
 #-----------------------------------------------------------------------------
 #Comp_coeff of 0.3, 0.5, 0.7 for one case, and sampling in 50 sites
 
+#Comp captions
+comp_captions <- c('Spp1 < Spp2', 'Spp1 = Spp2', "Spp1 > Spp2")
+
 png(width = 7.45, height = 6, units = 'in', res = 150, file = 'figs/hlfig5.png')
 
 par(mfrow = c(2, 3), mar = c(0, 0, 0, 0), oma = c(4, 4.5, 2, 2), xpd = T, 
@@ -103,7 +111,7 @@ for(ii in 1:6){
   temp2 <- subset(temp, spp == 'spp2')
 
   #Plot empty plot
-  plot(temp$prop1, temp$median_cpue, type = 'n', axes = F, ann = F, ylim = c(0, .9),
+  plot(temp$prop1, temp$median_cpue, type = 'n', axes = F, ann = F, ylim = c(0, 1),
     xlim = c(0, 1.05))
   box()
   
@@ -114,7 +122,8 @@ for(ii in 1:6){
   #Add Text
   mtext(side = 3, adj = 0.02, fig5_letts[ii], line = -1.5, cex = 1.1)
   # if(ii < 4) mtext(side = 3, unique(temp1$comp_coeff))
-  if(ii < 4) mtext(side = 3, paste0('comp. = ', unique(temp1$comp_coeff)))
+  # if(ii < 4) mtext(side = 3, paste0('comp. = ', unique(temp1$comp_coeff)))
+  if(ii < 4) mtext(side = 3, comp_captions[ii])
   if(ii == 3) mtext(side = 4, "Preferential", line = .3)
   if(ii == 6) mtext(side = 4, "Random", line = .3)
   
