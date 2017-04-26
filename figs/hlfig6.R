@@ -45,8 +45,6 @@ med_mat <- rotate(med_mat)
 filled.contour2(x = seq(0, 100, 10), y = seq(0, 100, 10), z = med_mat)
 filled.contour2(x = seq(0, 1, 0.1), y = seq(0, 1, 0.1), z = med_mat)
 
-
-
 inds <- rbind(p6, n6) %>% select(type, spp, comp_coeff, init_dist) %>% distinct() %>%
    arrange(init_dist, type, comp_coeff, spp)
 
@@ -111,23 +109,6 @@ for(jj in 1:24){
   mm <- matrix(tp$median_cpue, nrow = 11, ncol = 11)
   mm1 <- apply(mm, 2, rev)
   mm1 <- rotate(mm1)
-  #------------------
-  #Create the matrix of median_cpue values
-  #Dep1 is the columns, y
-  # ind1 <- data.frame(dep1 = unique(tp$dep1), col_dep1 = 1:11)
-  # # ind1 <- data.frame(dep1 = unique(tp$dep1), col_dep1 = 11:1)
-  # tp <- inner_join(tp, ind1, by = 'dep1')
-  
-  # #Dep2 is the rows, x
-  # # ind2 <- data.frame(dep2 = unique(tp$dep2), row_dep2 = 1:11)
-  # ind2 <- data.frame(dep2 = unique(tp$dep2), row_dep2 = 11:1)
-  # tp <- inner_join(tp, ind2, by = 'dep2')
-
-  # mm <- matrix(NA, nrow = 11, ncol = 11)
-  # for(ii in 1:nrow(tp)){
-  #   mm[tp[ii, 'row_dep2'], tp[ii, 'col_dep1']] <- tp[ii, 'median_cpue']  
-  #   # mm[tp[ii, 'col_dep1'], tp[ii, 'row_dep2']] <- tp[ii, 'median_cpue']  
-  # }
 
   #------------------
   #plots
@@ -149,7 +130,6 @@ for(jj in 1:24){
     contour(x, y, mm1, levels = mylevels, add = T, labcex = 1)
   } 
   
-
   #------------------
   #Add axes 
   if(jj %% 6 == 1){
