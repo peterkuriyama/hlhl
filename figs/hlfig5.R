@@ -69,10 +69,15 @@ plot5 %>% filter(median_cpue != 0) %>% group_by(comp_coeff, type, spp) %>%
 # xx <- plot5 %>% filter(comp_coeff == 0.3, type == 'pref', spp == 'spp1') 
 # hist(xx$median_cpue)
 
-
 twospp %>% filter(comp_coeff == 0.3, spp == 'spp1', type == 'pref', 
   init_dist == 'normdist', nfish1 > 180000) %>% ggplot(aes(x = cpue)) + geom_histogram()
 
+#----------------------------------------
+#Summary results
+#Range of median CPUE values
+plot5 %>% filter(init_dist == 'patchy') %>% group_by(comp_coeff, type) %>% 
+  summarize(min_cpue = min(median_cpue), max_cpue = max(median_cpue)) %>% 
+  arrange(type, comp_coeff)
 
 
 #----------------------------------------
@@ -87,7 +92,6 @@ ggplot(cc, aes(x = dep1, y = dep2)) + geom_tile(aes(fill = median_cpue)) +
   facet_wrap(~ spp + type + init_dist)
 
 ggplot(cc, aes(x = dep1, y = dep2, z = median_cpue)) + geom_contour() + facet_wrap(~ spp + init_dist)
-
 
 
 #-----------------------------------------------------------------------------
