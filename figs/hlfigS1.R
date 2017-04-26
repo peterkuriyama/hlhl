@@ -20,7 +20,7 @@ names(comp)[3] <- 'comp_coeff'
 
 #combine comp type
 comp_types <- data.frame(comp_coeff = unique(comp$comp_coeff), 
-  comp_type = as.character(c('spp2 more', 'equal', 'spp1 more')))
+  comp_type = as.character(c('Spp1 < Spp2', 'Spp1 = Spp2', 'Spp1 > Spp2')))
 
 comp <- inner_join(comp, comp_types, by = 'comp_coeff')
 comp$comp_type <- as.character(comp$comp_type)
