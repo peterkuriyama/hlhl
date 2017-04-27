@@ -41,7 +41,6 @@ sample_exp <- function(nfish1, nfish2, prob1, prob2, comp_coeff){
     prop1 <- (c1 * nfish1) / ((c1 * nfish1) + (1 - c1) * nfish2)
   
     fish1 <- rbinom(n = 1, size = 1, prob = prop1)  
-
   }
 
   if(fish1 == 0 & fish == 1) fish2 <- 1
@@ -52,12 +51,13 @@ sample_exp <- function(nfish1, nfish2, prob1, prob2, comp_coeff){
 }
 
 
+
 #Test the function
 
 #Define function arguments
 # nsamps <- 100
-# fish1 <- 100
-# fish2 <- 300
+# fish1 <- 1
+# fish2 <- 3
 # prob1 <- .03
 # prob2 <- .01
 # comp_coeff <- 0.3 #comp_coeff no longer does anything in the function
