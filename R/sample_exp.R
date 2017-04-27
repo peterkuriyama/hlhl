@@ -32,14 +32,17 @@ sample_exp <- function(nfish1, nfish2, prob1, prob2, comp_coeff){
   #initially declare both as 0
   fish1 <- 0
   fish2 <- 0
-
-  #ratio of catchabilities between two species
-  c1 <- prob1 / (prob1 + prob2) #equivalent to competition coefficient
-
-  #Adjust proportion of fish based on catchability ratios
-  prop1 <- (c1 * nfish1) / ((c1 * nfish1) + (1 - c1) * nfish2)
   
-  fish1 <- rbinom(n = 1, size = 1, prob = prop1)
+  if(fish == 1){
+    #ratio of catchabilities between two species
+    c1 <- prob1 / (prob1 + prob2) #equivalent to competition coefficient
+
+    #Adjust proportion of fish based on catchability ratios
+    prop1 <- (c1 * nfish1) / ((c1 * nfish1) + (1 - c1) * nfish2)
+  
+    fish1 <- rbinom(n = 1, size = 1, prob = prop1)  
+
+  }
 
   if(fish1 == 0 & fish == 1) fish2 <- 1
 
