@@ -17,7 +17,7 @@ tots <- split(tot, ceiling(seq_along(tot) / (nrow(to_loop) / ((nrow(to_loop) / n
 
 #Specify Index for each computer
 #-----------------
-run_this_ind <- 240
+run_this_ind <- 1
 
 #-----------------
 
@@ -58,3 +58,11 @@ filename <- paste0("twospp", run_this_ind ) #for new competition coefficient
 
 #Save output in U drive
 save(list = filename, file = paste0(results_dir, "//" , paste0(filename, "_newcc_check_", nreps, '.Rdata')))
+
+
+#Run just one fixed_parallel
+# fixed_parallel(index = 14, ctl1 = ctl1, to_loop = to_loop, 
+#   change_these = c('nfish1', 'nfish2', 'comp_coeff'))
+
+
+
