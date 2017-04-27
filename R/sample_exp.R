@@ -14,10 +14,6 @@
 #' Put Example Here
 #'@export
 
-nfish1 <- 100
-nfish2 <- 100
-prob1 <- .01
-prob2 <- .05
 
 sample_exp <- function(nfish1, nfish2, prob1, prob2, comp_coeff){
   #------------------------------------------------
@@ -37,12 +33,10 @@ sample_exp <- function(nfish1, nfish2, prob1, prob2, comp_coeff){
   fish1 <- 0
   fish2 <- 0
 
-  # propfish1 <- nfish1 / (nfish1 + nfish2)
-
   #ratio of catchabilities between two species
   c1 <- prob1 / (prob1 + prob2) #equivalent to competition coefficient
 
-  #propo
+  #Adjust proportion of fish based on catchability ratios
   prop1 <- (c1 * nfish1) / ((c1 * nfish1) + (1 - c1) * nfish2)
   
   fish1 <- rbinom(n = 1, size = 1, prob = prop1)
@@ -54,65 +48,48 @@ sample_exp <- function(nfish1, nfish2, prob1, prob2, comp_coeff){
 
 }
 
+
 #Test the function
-# sample_exp(nfish1 = 100, nfish2 = 200, prob1 = .01, prob2 = .01, comp_coeff = 0.3)
 
-# nsamps <- 100
-# fish1 <- 300
-# fish2 <- 100
-# prob1 <- .01
-# prob2 <- .01
-# comp_coeff <- 0.3
+#Define function arguments
+nsamps <- 100
+fish1 <- 100
+fish2 <- 300
+prob1 <- .03
+prob2 <- .01
+comp_coeff <- 0.3 #comp_coeff no longer does anything in the function
 
-# temp_fish12 <- data.frame(nsamps = 1:nsamps, fish1 = rep(999, nsamps),
-#       fish2 = rep(999, nsamps))
+
+#setup output
+temp_fish12 <- data.frame(nsamps = 1:nsamps, fish1 = rep(999, nsamps),
+      fish2 = rep(999, nsamps))
       
-# for(nn in 1:nsamps){                    
-#   temp_samp <- sample_exp(nfish1 = fish1, nfish2 = fish2, 
-#     prob1 = prob1, prob2 = prob2, comp_coeff = comp_coeff)
+for(nn in 1:nsamps){                    
+  temp_samp <- sample_exp(nfish1 = fish1, nfish2 = fish2, 
+    prob1 = prob1, prob2 = prob2, comp_coeff = comp_coeff)
 
-#   #Make sure that catch of fish can't exceed number of fish      
-#   if(fish1 - temp_samp$fish1 < 0) {
-#     print('sp1')
-#     temp_samp$fish1 <- 0
-#   }
+  #Make sure that catch of fish can't exceed number of fish      
+  if(fish1 - temp_samp$fish1 < 0) {
+    print('sp1')
+    temp_samp$fish1 <- 0
+  }
 
-#   if(fish2 - temp_samp$fish2 < 0){
-#     print('sp2')
-#     # browser()
-#     temp_samp$fish2 <- 0
-#   }
+  if(fish2 - temp_samp$fish2 < 0){
+    print('sp2')
+    # browser()
+    temp_samp$fish2 <- 0
+  }
 
-#   temp_fish12[nn, 2:3] <- temp_samp
+  temp_fish12[nn, 2:3] <- temp_samp
   
-#   #update counts of fish1 and fish2
-#   fish1 <- fish1 - temp_samp$fish1
-#   fish2 <- fish2 - temp_samp$fish2
+  #update counts of fish1 and fish2
+  fish1 <- fish1 - temp_samp$fish1
+  fish2 <- fish2 - temp_samp$fish2
 
-#   #Change the probabilities if there aren't any more fish
-#   if(fish1 == 0) prob1 <- 0
-#   if(fish2 == 0) prob2 <- 0
-# }
+  #Change the probabilities if there aren't any more fish
+  if(fish1 == 0) prob1 <- 0
+  if(fish2 == 0) prob2 <- 0
+}
 
-# colSums(temp_fish12)
-
-#Old options
-  #If fish 1 was caught
-  # #Sampled directly in proportion to numbers
-  # if(fish == 1 & comp_coeff == 0.5){
-  #   fish1 <- rbinom(n = 1, size = 1, prob = propfish1)
-  # }
-  
-  # #Hyperstable, favor species 1
-  # if(fish == 1 & comp_coeff == 0.7){
-  #   adj_comp_coeff <- 1 - exp(-6 * propfish1)
-  #   if(adj_comp_coeff > 1) adj_comp_coeff <- 1
-  #   fish1 <- rbinom(n = 1, size = 1, prob = adj_comp_coeff)
-  # }
-    
-  # #Hyperdepletion, favor species 2
-  # if(fish == 1 & comp_coeff == 0.3){
-  #   adj_comp_coeff <- log(1 - propfish1) / -6 #inverse of function 3
-  #   if(adj_comp_coeff > 1) adj_comp_coeff <- 1          
-  #   fish1 <- rbinom(n = 1, size = 1, prob = adj_comp_coeff)
-  # }
+#Check results
+colSums(temp_fish12[, c(2, 3)])
