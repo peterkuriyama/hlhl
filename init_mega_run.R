@@ -82,7 +82,7 @@ shape_list1$for_plot <- c('Left Skew', 'Right Skew', 'Symmetric', 'Uniform', 'Pa
 #Keep the same prob1 and prob2
 ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05, 
       nfish1 = 100000,
-      nfish2 = 0, prob1 = .01, prob2 = .01, nyear = 2, scope = 0, seed = 1,
+      nfish2 = 0, prob1 = .01, prob2 = .01, nyear = 1, scope = 0, seed = 1,
       location = data.frame(vessel = 1, x = 1, y = 1), numrow = 30, numcol = 30,
       shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)    
 
@@ -90,7 +90,7 @@ ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05,
 #Build grid of things to loop over
 fishes1 <- seq(0, 200000, by = 20000)
 fishes2 <- seq(0, 200000, by = 20000)
-comp_coeffs <- c(.3, .5, .7)
+comp_coeffs <- c(.3, .5, .7) #Competition in favor of species 1
 shape_rows <- c(3, 5) #Normal and patchy distributions
 nsites <- 50
 
@@ -100,6 +100,9 @@ to_loop <- expand.grid(fishes1, fishes2, comp_coeffs,
 names(to_loop) <- c('nfish1', 'nfish2', 'comp_coeff', 
   'shape_list_row', 'type')
 to_loop$nsites <- nsites
+
+#Have probabilities sum to .02
+to_loop$c1_sum <- .02
 
 #remove the rows with 0 and 0 for numbers of fish
 to_loop <- to_loop[-which(to_loop$nfish1 == 0 & to_loop$nfish2 == 0), ]
