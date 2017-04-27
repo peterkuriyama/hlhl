@@ -54,7 +54,10 @@ fish_pop_loop <- function(fish_area, loc_row, nhooks, nangs, prob1, prob2, comp_
         if(fish1 == 0) prob1 <- 0
         if(fish2 == 0) prob2 <- 0
       }
-    
+
+#Maybe a faster way to do this...
+#Try sample_exp2    
+
     #Format Output
     #Update the fish matrices and return the location matrix with records
     samps <- data.frame(vessel = loc_row$vessel, x = loc_row$x, y = loc_row$y, 
