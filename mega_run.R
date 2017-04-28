@@ -24,12 +24,10 @@ if(sys == 'mac') run_this_ind <- 1
 #PC
 if(sys == 'pc') run_this_ind <- 2
 
-
 #-----------------
 #Check Run Index
 run_this_ind
 #-----------------
-
 
 #--------------------------------------------------------------------------------------------
 #To Do for lab computers
@@ -75,7 +73,10 @@ assign(paste0("twospp", run_this_ind), twospp)
 filename <- paste0("twospp", run_this_ind ) #for new competition coefficient
 
 #Save output in U drive
-save(list = filename, file = paste0(results_dir, "//" , paste0(filename, "_newcc_", nreps, '.Rdata')))
+#Name of c1_sum
+c1_nm <- gsub("\\.", "", as.character(unique(to_loop$c1_sum)))
+save(list = filename, file = paste0(results_dir, "//" , paste0(filename, "_newcc_", nreps, "_",
+  c1_nm, '.Rdata')))
 
 #Send email that run is done
 send_email(body = paste(paste('run', run_this_ind, 'done'), 

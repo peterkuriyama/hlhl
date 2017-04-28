@@ -102,7 +102,7 @@ names(to_loop) <- c('nfish1', 'nfish2', 'comp_coeff',
 to_loop$nsites <- nsites
 
 #Have probabilities sum to .02
-to_loop$c1_sum <- .02
+to_loop$c1_sum <- .01
 
 #remove the rows with 0 and 0 for numbers of fish
 to_loop <- to_loop[-which(to_loop$nfish1 == 0 & to_loop$nfish2 == 0), ]
