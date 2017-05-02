@@ -153,3 +153,166 @@ mtext(side = 1, "Relative Abundance", outer = T, line = 2.8, cex = 1.4)
 mtext(side = 2, "CPUE", outer = T, line = 3, cex = 1.4)
 
 dev.off()
+
+
+#--------------------------------------------------------------------------------------------
+#Slow reveal
+#First with only circles
+png(width = 7, height = 7, units = 'in', res = 150, file = 'figs/hlfig2_pres1.png')
+par(mgp = c(0, .5, 0))
+temp <- subset(to_plot, ind == 5)
+temp$dep <- as.numeric(as.character(temp$dep))
+    
+temp$dep_adj <- temp$dep
+    
+prefs <- subset(temp, type == 'preferential')
+prefs$dep_adj <- prefs$dep_adj - delta
+    
+rands <- subset(temp, type == 'random')
+rands$dep_adj <- rands$dep_adj + delta
+
+plot(temp$dep_adj, temp$med_cpue, type = 'n', ylim = c(0, 1.05), ann = FALSE, 
+  axes = FALSE, xlim = c(-delta, 1 + .05))
+box()
+  
+#Add Axes
+axis(side = 2, las = 2, cex.axis = 1.2)  
+mtext(side = 3, unique(temp$nsites))
+axis(side = 1, cex.axis = 1.2)  
+mtext(side = 4, unique(temp$init_dist_plot), line = .6)
+
+#Plot points and segments 
+points(prefs$dep_adj, prefs$med_cpue, pch = 19, cex = 1.2)
+segments(x0 = prefs$dep_adj, y0 = prefs$med_cpue, y1 = prefs$q95)
+segments(x0 = prefs$dep_adj, y0 = prefs$q5, y1 = prefs$med_cpue)
+mtext(side = 1, "Relative Abundance", line = 2, cex = 1.4)
+mtext(side = 2, "CPUE", line = 2.25, cex = 1.4)
+dev.off()
+
+#---------------------------------------------
+#Second reveal, add triangles and legend
+png(width = 7, height = 7, units = 'in', res = 150, file = 'figs/hlfig2_pres2.png')
+par(mgp = c(0, .5, 0))
+temp <- subset(to_plot, ind == 5)
+temp$dep <- as.numeric(as.character(temp$dep))
+    
+temp$dep_adj <- temp$dep
+    
+prefs <- subset(temp, type == 'preferential')
+prefs$dep_adj <- prefs$dep_adj - delta
+    
+rands <- subset(temp, type == 'random')
+rands$dep_adj <- rands$dep_adj + delta
+
+plot(temp$dep_adj, temp$med_cpue, type = 'n', ylim = c(0, 1.05), ann = FALSE, 
+  axes = FALSE, xlim = c(-delta, 1 + .05))
+box()
+  
+#Add Axes
+axis(side = 2, las = 2, cex.axis = 1.2)  
+mtext(side = 3, unique(temp$nsites))
+axis(side = 1, cex.axis = 1.2)  
+mtext(side = 4, unique(temp$init_dist_plot), line = .6)
+
+#Plot points and segments 
+points(prefs$dep_adj, prefs$med_cpue, pch = 19, cex = 1.2)
+segments(x0 = prefs$dep_adj, y0 = prefs$med_cpue, y1 = prefs$q95)
+segments(x0 = prefs$dep_adj, y0 = prefs$q5, y1 = prefs$med_cpue)
+mtext(side = 1, "Relative Abundance", line = 2, cex = 1.4)
+mtext(side = 2, "CPUE", line = 2.25, cex = 1.4)
+
+legend('bottomright', pch = c(19, 17), legend = c('preferential', 'random'), cex = 1.3, bty = 'n')    
+points(rands$dep_adj, rands$med_cpue, pch = 17, cex = 1.2)
+segments(x0 = rands$dep_adj, y0 = rands$med_cpue, y1 = rands$q95, lty = 1)
+segments(x0 = rands$dep_adj, y0 = rands$q5, y1 = rands$med_cpue, lty = 1)
+dev.off()
+
+#---------------------------------------------
+#Third reveal, for all symmetric distribution
+png(width = 12.5, height = 4.75, units = 'in', res = 150, file = 'figs/hlfig2_pres3.png')
+par(mfrow = c(1, 4), mar = c(0, 0, 0, 0), oma = c(4, 6, 3, 2), mgp = c(0, .5, 0))
+# par(mgp = c(0, .5, 0))
+for(ii in 5:8){
+  temp <- subset(to_plot, ind == ii)
+  temp$dep <- as.numeric(as.character(temp$dep))
+      
+  temp$dep_adj <- temp$dep
+      
+  prefs <- subset(temp, type == 'preferential')
+  prefs$dep_adj <- prefs$dep_adj - delta
+      
+  rands <- subset(temp, type == 'random')
+  rands$dep_adj <- rands$dep_adj + delta
+  
+  plot(temp$dep_adj, temp$med_cpue, type = 'n', ylim = c(0, 1.05), ann = FALSE, 
+    axes = FALSE, xlim = c(-delta, 1 + .05))
+  box()
+    
+  #Add Axes
+  if(ii == 5) axis(side = 2, las = 2, cex.axis = 1.2)  
+  mtext(side = 3, unique(temp$nsites))
+  axis(side = 1, cex.axis = 1.2)  
+  if(ii == 8) mtext(side = 4, unique(temp$init_dist_plot), line = .6)
+  
+  #Plot points and segments 
+  points(prefs$dep_adj, prefs$med_cpue, pch = 19, cex = 1.2)
+  segments(x0 = prefs$dep_adj, y0 = prefs$med_cpue, y1 = prefs$q95)
+  segments(x0 = prefs$dep_adj, y0 = prefs$q5, y1 = prefs$med_cpue)
+  # mtext(side = 1, "Relative Abundance", line = 2, cex = 1.4)
+  
+  
+  if(ii == 5) legend('bottomright', pch = c(19, 17), legend = c('preferential', 'random'), cex = 1.3, bty = 'n')    
+  points(rands$dep_adj, rands$med_cpue, pch = 17, cex = 1.2)
+  segments(x0 = rands$dep_adj, y0 = rands$med_cpue, y1 = rands$q95, lty = 1)
+  segments(x0 = rands$dep_adj, y0 = rands$q5, y1 = rands$med_cpue, lty = 1)
+}
+
+mtext(side = 1, "Relative Abundance", line = 2.5, cex = 1.4, outer = T)
+mtext(side = 2, "CPUE", line = 2.55, cex = 1.4, outer = T)
+
+dev.off()
+
+#--------------------------------------------------------------------------------------------
+
+png(width = 12.5, height = 6.6, units = 'in', res = 150, file = 'figs/hlfig2_pres4.png')
+par(mfrow = c(2, 4), mar = c(0, 0, 0, 0), oma = c(4, 6, 3, 2), mgp = c(0, .5, 0))
+for(ii in c(5:8, 13:16)){
+  temp <- subset(to_plot, ind == ii)
+  temp$dep <- as.numeric(as.character(temp$dep))
+    
+  temp$dep_adj <- temp$dep
+    
+  prefs <- subset(temp, type == 'preferential')
+  prefs$dep_adj <- prefs$dep_adj - delta
+    
+  rands <- subset(temp, type == 'random')
+  rands$dep_adj <- rands$dep_adj + delta
+
+  plot(temp$dep_adj, temp$med_cpue, type = 'n', ylim = c(0, 1.05), ann = FALSE, 
+    axes = FALSE, xlim = c(-delta, 1 + .05))
+  box()
+
+  #Add Axes
+  if(ii == 5) legend('bottomright', pch = c(19, 17), legend = c('preferential', 'random' ), 
+    cex = 1.3, bty = 'n')
+  if(ii %% 4 == 1) axis(side = 2, las = 2, cex.axis = 1.2)
+  if(ii <= 8) mtext(side = 3, unique(temp$nsites))
+  if(ii > 12) axis(side = 1, cex.axis = 1.2)
+  if(ii %% 4 == 0) mtext(side = 4, unique(temp$init_dist_plot), line = .6)
+    
+  #Plot points and segments 
+  points(prefs$dep_adj, prefs$med_cpue, pch = 19, cex = 1.2)
+  segments(x0 = prefs$dep_adj, y0 = prefs$med_cpue, y1 = prefs$q95)
+  segments(x0 = prefs$dep_adj, y0 = prefs$q5, y1 = prefs$med_cpue)
+    
+  points(rands$dep_adj, rands$med_cpue, pch = 17, cex = 1.2)
+  segments(x0 = rands$dep_adj, y0 = rands$med_cpue, y1 = rands$q95, lty = 1)
+  segments(x0 = rands$dep_adj, y0 = rands$q5, y1 = rands$med_cpue, lty = 1)
+  # mtext(side = 3, adj = .02, fig1_letts[ii], line = -1.5)
+}
+
+mtext(side = 1, "Relative Abundance", outer = T, line = 2.8, cex = 1.4)
+mtext(side = 2, "CPUE", outer = T, line = 3, cex = 1.4)
+dev.off()
+
+
