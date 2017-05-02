@@ -13,6 +13,7 @@ library(sendmailR)
 
 #--------------------------------------------------------------------------------------------
 #Update directory
+setwd("/Users/peterkuriyama/School/Research/hlsimulator")
 
 #Automatically detect # of cores
 nncores <- detectCores() - 2
@@ -32,13 +33,7 @@ if(Sys.info()['sysname'] == 'Windows'){
   setwd("C://Users//Peter//Desktop//hlsimulator")
 }
 
-#--------------------------------------------------------------------------------------------
-#May need to track depletion by drop at some points, this is in conduct_survey
-#--------------------------------------------------------------------------------------------
-#From github straight
-install_github('peterkuriyama/hlsimulator')
 library(hlsimulator)
-
 #--------------------------------------------------------------------------------------------
 #Define scenarios for all simulations
 shape_list1 <- data.frame(scen = c('leftskew', 'rightskew', 'normdist', 'uniform', 'patchy'),
@@ -92,7 +87,21 @@ ggplot(to_plot) + geom_point(aes(x = dep, y = unc, colour = type)) +
 dev.off()
 
 #-----------------------------------------------------------------------------
-#Figure S1 - Sensitivity to prob1 values
+#Random plots for presentation
+qs <- .01
+ns <- 1:1000
+ps <- 1 - exp(-ns * qs)
+plot(ns, ps)
+
+
+
+#-----------------------------------------------------------------------------
+#Figure S1 - Figure of competition scenarios with proportion of fish1
+#-----------------------------------------------------------------------------
+source('figs/hlfigS1.R')
+
+#-----------------------------------------------------------------------------
+#Figure S2 - Sensitivity to prob1 values
 #-----------------------------------------------------------------------------
 load('output/twospp1_50sens.Rdata')
 onespp_sens <- twospp1
@@ -101,7 +110,7 @@ onespp_sens$dep <- as.factor(onespp_sens$dep)
 
 s1 <- onespp_sens %>% filter(init_dist %in% c('normdist', 'patchy'), type == 'pref')
 
-png(width = 15, height = 5, file = 'figs/hlfigS1.png', units = 'in', res = 150)
+png(width = 15, height = 5, file = 'figs/hlfigS2.png', units = 'in', res = 150)
 ggplot(s1, aes(x = dep, y = cpue)) + geom_boxplot(aes()) + 
   facet_wrap(~ init_dist + prob1, ncol = 10)
 dev.off()
