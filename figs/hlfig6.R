@@ -40,15 +40,13 @@ p1 <- p1 %>% order(dep1, dep2)
 p1$tot <- p1$dep1 + p1$dep2
 p1 <- p1 %>% arrange(tot, dep1, dep2)
 
-med_mat <- matrix(p1$median_cpue, nrow = 11, ncol = 11)
-med_mat <- rotate(med_mat)
-filled.contour2(x = seq(0, 100, 10), y = seq(0, 100, 10), z = med_mat)
-filled.contour2(x = seq(0, 1, 0.1), y = seq(0, 1, 0.1), z = med_mat)
+# med_mat <- matrix(p1$median_cpue, nrow = 11, ncol = 11)
+# med_mat <- rotate(med_mat)
+# filled.contour2(x = seq(0, 100, 10), y = seq(0, 100, 10), z = med_mat)
+# filled.contour2(x = seq(0, 1, 0.1), y = seq(0, 1, 0.1), z = med_mat)
 
 inds <- rbind(p6, n6) %>% select(type, spp, comp_coeff, init_dist) %>% distinct() %>%
    arrange(init_dist, type, comp_coeff, spp)
-
-inds$ind <- 1:24
 
 #Rearrange so species 1, then species 2
 inds <- inds %>% arrange(init_dist, type, spp, comp_coeff)
@@ -79,7 +77,6 @@ the_data %>% filter(init_dist == 'patchy', median_cpue != 0, comp_coeff == 0.5) 
 
 #####Figure out which things to compare
 #Look at Patchy and Normal Distribution for differences
-
 png(width = 11.29, height = 8.15, file = 'figs/hlfig6.png', units = 'in', res = 150)                   
 
 matlay <- matrix(c( 1,  2,  3, 0,  4,  5, 6,
