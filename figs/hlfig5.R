@@ -14,8 +14,18 @@
 #Old versions
 # load('output/twospp.1.1_100.Rdata')
 
-load('output/twospp1_newcc_50_6.Rdata')
-load('output/twospp2_newcc_50_6.Rdata')
+# load('output/twospp1_newcc_50_6.Rdata')
+# load('output/twospp2_newcc_50_6.Rdata')
+
+# load('output/twospp12_newcc_50.Rdata')
+# twospp12$c1_sum <- .2
+# save(twospp12, file = 'output/twospp12_newcc_50.Rdata' )
+load("output/twospp1_newcc_1000_001.Rdata")
+load("output/twospp2_newcc_1000_001.Rdata")
+# load('output/twospp12_newcc_50_0.01.Rdata')
+# load('output/twospp12_newcc_50_0.015.Rdata')
+# twospp12$c1_sum <- .1
+# save(twospp12, file = 'output/twospp12_newcc_50_0.01.Rdata' )
 
 twospp <- rbind(twospp1, twospp2 )
 
@@ -31,6 +41,8 @@ twospp %>% group_by(init_dist) %>% summarize(niters = length(unique(iter)),
 # twospp1000 %>% group_by(init_dist) %>% summarize(niters = length(unique(iter)),
 #   nindex = length(unique(index)))
 
+#----------------------------------------
+#Modify data frames
 #Add depletion calculation
 twospp$dep1 <- twospp$nfish1 / 2e5
 twospp$dep2 <- twospp$nfish2 / 2e5
