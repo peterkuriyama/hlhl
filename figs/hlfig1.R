@@ -1,25 +1,5 @@
 #--------------------------------------------------------------------------------------------
-#Figure 1
-
-#--------------------------------------------------------------------------------------------
-#Plot Arguments
-#REMOVE RIGHTSKEW
-shape_list4 <- subset(shape_list1, scen != 'rightskew')
-
-shape_list4$for_plot[2] <- 'Symmetric'
-
-#Figure 1. Show distributions of each sceanrio
-ctl1$nfish1 <- 60000
-
-#Make table of values for initial distributions
-letts <- c('a)', 'b)', 'c)', 'd)')
-
-inits <- lapply(1:nrow(shape_list4), FUN = function(ss){
-  ctl1$shapes <- c(shape_list4[ss, 2], shape_list4[ss, 3])
-  temp <- initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
-  return(temp)
-})
-
+#Table of values
 fish1s <- seq(20000, 200000, 20000)
 inits_list <- vector('list', length(fish1s))
 
@@ -58,6 +38,30 @@ names(table1) <- paste0(toupper(substr(names(table1), 1, 1)),
 write.csv(table1, 'output/table1.csv', row.names = FALSE)
 
 #--------------------------------------------------------------------------------------------
+#Figure 1
+
+#--------------------------------------------------------------------------------------------
+#Plot Arguments
+#REMOVE RIGHTSKEW
+shape_list4 <- subset(shape_list1, scen != 'rightskew')
+
+shape_list4$for_plot[2] <- 'Symmetric'
+
+#Figure 1. Show distributions of each sceanrio
+ctl1$nfish1 <- 60000
+
+#Make table of values for initial distributions
+letts <- c('a)', 'b)', 'c)', 'd)')
+
+inits <- lapply(1:nrow(shape_list4), FUN = function(ss){
+  ctl1$shapes <- c(shape_list4[ss, 2], shape_list4[ss, 3])
+  temp <- initialize_population(ctl = ctl1, nfish = ctl1$nfish1)
+  return(temp)
+})
+
+
+
+#--------------------------------------------------------------------------------------------
 #Figure
 #Should probably be a one column figure
 png(width = 7, height = 7, units = 'in', res = 150, file = 'figs/hlfig1.png')
@@ -87,6 +91,32 @@ mtext(side = 2, "Proportion of sites", outer = T, cex = 1.5, line = 3)
 
 dev.off()
 
+#--------------------------------------------------------------------------------------------
+#Figure for presentation
+twos <- c(2, 4)
 
+png(width = 8, height = 4.5, units = 'in', res = 150, file = 'figs/hlfig1_pres.png')
+par(mfrow = c(1, 2), mar = c(0, 0, 0, 0), oma = c(4, 5, .5, 1), mgp = c(0, .7, 0))
 
+for(ii in twos){
+  temp <- inits[[ii]]
+  hist(temp, breaks = seq(0, 2270, 5), main = shape_list1[ii, 'scen'], freq = FALSE, 
+    xlim = c(0, 300), axes = F, ann = F, ylim = c(0, .14), yaxs = 'i', xaxs = 'i', col = 'gray')
+  box()
+  # mtext(letts[ii], side = 3, line = -1.7, adj = 0.01, cex = 1.25)
+  mtext(shape_list4[ii, 'for_plot'], side = 3, line = -1.7, adj = .95, cex = 1.25)
+  # mtext(paste0('mean = ', round(mean(temp), digits = 0)), side = 3, line = -3, adj = .95)
+  mtext(paste0('median = ', round(median(temp), digits = 0)), side = 3, line = -3, adj = .95)
+  mtext(paste0('range = ', range(temp)[1], ', ', range(temp)[2]), side = 3, line = -4, adj = .95)
+  # if(ii == 2) axis(side = 2, at = seq(0, 0.12, by = .02), labels = seq(0, 0.12, by = .02), las = 2, 
+  #   cex.axis = 1.2)
+  if(ii == 2){
+    axis(side = 2, at = seq(0, 0.12, by = .02), labels = seq(0, 0.12, by = .02), las = 2, cex.axis = 1.2)
+    axis(side = 1, at = seq(0, 250, by = 50), cex.axis = 1.2)
+  } 
+  if(ii == 4) axis(side = 1, cex.axis = 1.2)
+}
+mtext(side = 1, "Number of fish", outer = T, cex = 1.5, line = 2.5)
+mtext(side = 2, "Proportion of sites", outer = T, cex = 1.5, line = 3)
+dev.off()
 
