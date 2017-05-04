@@ -37,6 +37,17 @@ plot3 %>% filter(cpue95 < 0) %>% group_by(nsites, init_dist, type) %>%
 #Figure 3 - Probability of increase or decrease
 #Power of the survey. all from depletion 1 to .1
 #-----------------------------------------------------------------------------
+#Add color to indicate significance
+plot3$color <- 'black'
+
+#Add open points to nonsignificant values
+#Open circle is 21, filled 19
+#Open triangle is 24, filled 17
+plot3$point <- 21
+plot3[which(plot3$type == "random"), 'point'] <- 24
+
+plot3[which(plot3$cpue95 < 0 & plot3$type == 'preferential'), 'point'] <- 19
+plot3[which(plot3$cpue95 < 0 & plot3$type == 'random'), 'point'] <- 17
 
 png(width = 10, height = 10, units = 'in', res = 150, file = 'figs/hlfig3.png')
 
@@ -47,6 +58,7 @@ for(ii in 1:16){
   temp_inds <- inds[ii, ]
   temp <- plot3 %>% filter(nsites == temp_inds$nsites, init_dist == temp_inds$init_dist)
 
+  #Color non-significant values gray
   temp$dep <- as.numeric(as.character(temp$dep))  
   temp$dep_adj <- temp$delta_dep
   
@@ -70,17 +82,19 @@ for(ii in 1:16){
   if(ii > 12) mtext(side = 4, unique(temp_inds$init_dist_plot), line = .6)
   
   #Plot points and segments 
-  points(prefs$dep_adj, prefs$med_cpue, pch = 19, cex = 1.2)
-  segments(x0 = prefs$dep_adj, y0 = prefs$med_cpue, y1 = prefs$cpue95)
-  segments(x0 = prefs$dep_adj, y0 = prefs$cpue5, y1 = prefs$med_cpue)
+  segments(x0 = prefs$dep_adj, y0 = prefs$med_cpue, y1 = prefs$cpue95, col = prefs$color)
+  segments(x0 = prefs$dep_adj, y0 = prefs$cpue5, y1 = prefs$med_cpue, col = prefs$color)
+  points(prefs$dep_adj, prefs$med_cpue, pch = prefs$point, cex = 1.2, col = prefs$color, bg = 'white')
   
-  points(rands$dep_adj, rands$med_cpue, pch = 17, cex = 1.2)
-  segments(x0 = rands$dep_adj, y0 = rands$med_cpue, y1 = rands$cpue95, lty = 1)
-  segments(x0 = rands$dep_adj, y0 = rands$cpue5, y1 = rands$med_cpue, lty = 1)
+  segments(x0 = rands$dep_adj, y0 = rands$med_cpue, y1 = rands$cpue95, lty = 1, col = rands$color)
+  segments(x0 = rands$dep_adj, y0 = rands$cpue5, y1 = rands$med_cpue, lty = 1, col = rands$color)
+  points(rands$dep_adj, rands$med_cpue, pch = rands$point, cex = 1.2, col = rands$color, bg = 'white')
+  
   mtext(side = 3, adj = .02, fig2_letts[ii], line = -1.5)
 
   #add anchor point
-  points(0, 0, pch = 21, cex = 2, bg = 'gray')
+  points(0, 0, pch = 23, cex = 2, bg = 'white')
+  # points(0, 0, pch = 21, cex = 2, bg = 'gray')
 }
 
 mtext(side = 1, "Decrease from Unfished", outer = T, line = 2.7, cex = 1.4)
