@@ -1,3 +1,7 @@
+
+shape_list4 <- subset(shape_list1, scen != 'rightskew')
+
+shape_list4$for_plot[2] <- 'Symmetric'
 #--------------------------------------------------------------------------------------------
 #Table of values
 fish1s <- seq(20000, 200000, 20000)
@@ -43,9 +47,7 @@ write.csv(table1, 'output/table1.csv', row.names = FALSE)
 #--------------------------------------------------------------------------------------------
 #Plot Arguments
 #REMOVE RIGHTSKEW
-shape_list4 <- subset(shape_list1, scen != 'rightskew')
 
-shape_list4$for_plot[2] <- 'Symmetric'
 
 #Figure 1. Show distributions of each sceanrio
 ctl1$nfish1 <- 60000
