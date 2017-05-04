@@ -121,6 +121,7 @@ par(mfrow = c(2, 3), mar = c(0, 0, 0, 0), oma = c(4, 4.5, 2, 2), xpd = T,
   mgp = c(0, .5, 0))
 
 for(ii in 1:6){
+  
   temp <- subset(plot5, ind == ii)
 
   temp1 <- subset(temp, spp == 'spp1')
@@ -133,7 +134,12 @@ for(ii in 1:6){
   
   #Add points
   points(temp1$prop1, temp1$median_cpue, pch = 19, cex = 1.2)
+  # segments(x0 = temp1$prop1, y0 = temp1$median_cpue, y1 = temp1$quant95)
+  # segments(x0 = temp1$prop1, y0 = temp1$quant5, y1 = temp1$median_cpue)
+  
   points(temp2$prop1, temp2$median_cpue, pch = 19, col = 'gray', cex = 1.2)
+  # segments(x0 = temp2$prop1, y0 = temp2$median_cpue, y1 = temp2$quant95, col = 'gray')
+  # segments(x0 = temp2$prop1, y0 = temp2$quant5, y1 = temp2$median_cpue, col = 'gray')
 
   #Add Text
   mtext(side = 3, adj = 0.02, fig5_letts[ii], line = -1.5, cex = 1.1)
@@ -150,7 +156,57 @@ for(ii in 1:6){
     pch = 19, bty = 'n', cex = 1.3)
 }
 
-mtext(side = 1, outer = T, "Proportion species 1", line = 2.5, cex = 1.2)
+mtext(side = 1, outer = T, "Proportion of species 1", line = 2.5, cex = 1.2)
+mtext(side = 2, outer = T, "Median CPUE", line = 2.5, cex = 1.2)
+# mtext(side = 3, outer = T, "Patchy Distribution", line = 2, cex = 1.4)
+
+dev.off()
+
+
+#-----------------------------------------------------------------------------
+#With uncertainty
+png(width = 7.45, height = 6, units = 'in', res = 150, file = 'figs/hlfig5_uncertainty.png')
+
+par(mfrow = c(2, 3), mar = c(0, 0, 0, 0), oma = c(4, 4.5, 2, 2), xpd = T, 
+  mgp = c(0, .5, 0))
+
+for(ii in 1:6){
+  
+  temp <- subset(plot5, ind == ii)
+
+  temp1 <- subset(temp, spp == 'spp1')
+  temp2 <- subset(temp, spp == 'spp2')
+
+  #Plot empty plot
+  plot(temp$prop1, temp$median_cpue, type = 'n', axes = F, ann = F, ylim = c(0, 1),
+    xlim = c(0, 1.05))
+  box()
+  
+  #Add points
+  points(temp1$prop1, temp1$median_cpue, pch = 19, cex = 1.2)
+  segments(x0 = temp1$prop1, y0 = temp1$median_cpue, y1 = temp1$quant95)
+  segments(x0 = temp1$prop1, y0 = temp1$quant5, y1 = temp1$median_cpue)
+  
+  points(temp2$prop1, temp2$median_cpue, pch = 19, col = 'gray', cex = 1.2)
+  segments(x0 = temp2$prop1, y0 = temp2$median_cpue, y1 = temp2$quant95, col = 'gray')
+  segments(x0 = temp2$prop1, y0 = temp2$quant5, y1 = temp2$median_cpue, col = 'gray')
+
+  #Add Text
+  mtext(side = 3, adj = 0.02, fig5_letts[ii], line = -1.5, cex = 1.1)
+  # if(ii < 4) mtext(side = 3, unique(temp1$comp_coeff))
+  # if(ii < 4) mtext(side = 3, paste0('comp. = ', unique(temp1$comp_coeff)))
+  if(ii < 4) mtext(side = 3, comp_captions[ii])
+  if(ii == 3) mtext(side = 4, "Preferential", line = .3)
+  if(ii == 6) mtext(side = 4, "Random", line = .3)
+  
+  #Add Axes
+  if(ii %% 3 == 1) axis(side = 2, las = 2, cex.axis = 1.2)
+  if(ii > 3) axis(side = 1, cex.axis = 1.2)
+  if(ii == 1) legend('bottomright', c('Species 1', 'Species 2'), col = c('black', 'gray'), 
+    pch = 19, bty = 'n', cex = 1.3)
+}
+
+mtext(side = 1, outer = T, "Proportion of species 1", line = 2.5, cex = 1.2)
 mtext(side = 2, outer = T, "Median CPUE", line = 2.5, cex = 1.2)
 # mtext(side = 3, outer = T, "Patchy Distribution", line = 2, cex = 1.4)
 
