@@ -44,7 +44,6 @@ p1 <- p1 %>% arrange(tot, dep1, dep2)
 # med_mat <- rotate(med_mat)
 # filled.contour2(x = seq(0, 100, 10), y = seq(0, 100, 10), z = med_mat)
 # filled.contour2(x = seq(0, 1, 0.1), y = seq(0, 1, 0.1), z = med_mat)
-
 inds <- rbind(p6, n6) %>% select(type, spp, comp_coeff, init_dist) %>% distinct() %>%
    arrange(init_dist, type, comp_coeff, spp)
 
@@ -85,8 +84,10 @@ matlay <- matrix(c( 1,  2,  3, 0,  4,  5, 6,
                    13, 14, 15, 0, 16, 17, 18,
                    19, 20, 21, 0, 22, 23, 24), ncol = 7, byrow = TRUE)
 
-whites <- c(2, 3, 4, 5, 8, 9, 10, 11, 14, 15, 16, 17)
-blacks <- which(1:24 %in% whites == FALSE)
+# whites <- c(2, 3, 4, 5, 8, 9, 10, 11, 14, 15, 16, 17)
+whites <- 0
+# blacks <- which(1:24 %in% whites == FALSE)
+blacks <- 1:24
                    
 layout(matlay, heights = c(1, 1, 0.2, 1, 1), widths = c(1, 1, 1, 0.1, 1, 1, 1))
 par(mar = c(0.0, 0.5, 0.9, 0.3), oma = c(4, 4, 5, 2), mgp = c(.6, .5, 0))
@@ -125,7 +126,7 @@ for(jj in 1:24){
     # text(103, 103, fig6_letts[jj], cex = 1.3, col = 'white')
   } 
   if(jj %in% blacks){
-    contour(x, y, mm1, levels = mylevels, add = T, labcex = 1)
+    contour(x, y, mm1, levels = mylevels, add = T, labcex = 1, lwd = .5)
   } 
   
   #------------------
