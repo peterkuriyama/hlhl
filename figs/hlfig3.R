@@ -93,7 +93,7 @@ for(ii in 1:16){
   mtext(side = 3, adj = .02, fig2_letts[ii], line = -1.5)
 
   #add anchor point
-  points(0, 0, pch = 23, cex = 2, bg = 'white')
+  points(0, 0, pch = 23, cex = 2, bg = 'gray50', col = 'gray50')
   # points(0, 0, pch = 21, cex = 2, bg = 'gray')
 }
 
