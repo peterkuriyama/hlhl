@@ -17,6 +17,13 @@ downs$x_dep <- downs$start_dep - downs$delta_dep
 
 downs$x_dep_lab <- paste0('-', downs$delta_dep)
 
+#add colors depending on
+ups$bg <- 'black'
+ups[which(ups$cpue5 <= 0), 'bg'] <- 'white'
+
+downs$bg <- 'black'
+downs[which(downs$cpue95 >= 0), 'bg'] <- 'white'
+
 plot4 <- rbind(ups, downs)
 
 #See at what decrease does the survey not overlap with 0
@@ -41,12 +48,15 @@ ab4 <- plot4 %>% group_by(nsites, init_dist, type) %>% summarize(sigup = max(dep
 1 - sum(is.infinite(ab4$sigdown)) / nrow(ab4)
 ab4 %>% filter(init_dist == 'patchy')
 
-
-
 #-----------------------------------------------------------------------------
 #Figure 4 - Probability of increase or decrease
 #Starting at some level and going up and down
 #-----------------------------------------------------------------------------
+plot4$point <- 21
+plot4[which(plot4$type == "random"), 'point'] <- 24
+
+plot4[which(plot4$cpue95 < 0 & plot4$type == 'preferential'), 'point'] <- 19
+plot4[which(plot4$cpue95 < 0 & plot4$type == 'random'), 'point'] <- 17
 
 png(width = 10, height = 10, units = 'in', res = 150, file = 'figs/hlfig4.png')
 
@@ -80,15 +90,18 @@ for(ii in 1:16){
   if(ii > 12) mtext(side = 4, unique(temp_inds$init_dist_plot), line = .6)
   
   #Plot points and segments 
-  points(prefs$dep_adj, prefs$med_cpue, pch = 19)
   segments(x0 = prefs$dep_adj, y0 = prefs$med_cpue, y1 = prefs$cpue95)
   segments(x0 = prefs$dep_adj, y0 = prefs$cpue5, y1 = prefs$med_cpue)
+  points(prefs$dep_adj, prefs$med_cpue, pch = prefs$point, bg = prefs$bg)
   
-  points(rands$dep_adj, rands$med_cpue, pch = 17)
   segments(x0 = rands$dep_adj, y0 = rands$med_cpue, y1 = rands$cpue95, lty = 1)
   segments(x0 = rands$dep_adj, y0 = rands$cpue5, y1 = rands$med_cpue, lty = 1)
+  points(rands$dep_adj, rands$med_cpue, pch = rands$point, bg = rands$bg)
+  
   mtext(side = 3, adj = .02, fig2_letts[ii], line = -1.5)
-  points(x = .5, y = 0, pch = 21, cex = 2, bg = 'white') #add anchor point
+  
+  #Add anchor point
+  points(x = .5, y = 0, pch = 23, cex = 2, bg = 'gray50', col = 'gray50') #add anchor point
 }
 
 mtext(side = 1, "Change from 0.5", outer = T, line = 3, cex = 2)
