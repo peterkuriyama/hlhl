@@ -11,6 +11,17 @@ n6 <- plot6 %>% filter(init_dist == 'normdist')
 p6 <- plot6 %>% filter(init_dist == 'patchy')
 u6 <- plot6 %>% filter(init_dist == 'uniform')
 
+#----------------------------------------
+#Abstract numbers for patchy only
+head(p6)
+p6 %>% filter(type == 'pref', comp_coeff == 0.3, dep2 %in% c(.2, .7), dep1 == .9, spp == 'spp1') -> temp
+range(temp$median_cpue)
+range(subset(temp, spp == "spp1")$median_cpue)
+
+
+
+#----------------------------------------
+
 the_data <- rbind(p6, n6)
 
 # add in 0, 0 for scenario in the data

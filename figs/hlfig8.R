@@ -6,9 +6,10 @@
 #Calculate total cpue, bocaccio cpue, vermilion cpue
 dat[grep("Vermilion", dat$ComName), 'ComName'] <- "Vermilion"
 
-dat %>% group_by(SiteName, Year) %>% mutate(nhooks = sum(SurvHook), totfish = sum(SurvFish)) %>%
-  group_by(SiteName, Year, ComName) %>% mutate(nfish = sum(SurvFish)) %>% 
-  select(nhooks, totfish, nfish) %>% as.data.frame %>% distinct() -> plot8
+plot8 <- dat %>% group_by(SiteName, Year) %>% mutate(nhooks = sum(SurvHook), 
+           totfish = sum(SurvFish)) %>% 
+           group_by(SiteName, Year, ComName) %>% mutate(nfish = sum(SurvFish)) %>% 
+           select(nhooks, totfish, nfish) %>% as.data.frame %>% distinct() 
 
 #Change vermilion comname to vermilion
 plot8 <- plot8 %>% filter(ComName %in% c('Bocaccio', 'Vermilion')) %>% 
@@ -23,9 +24,19 @@ plot8$cpue_tot <- plot8$totfish / plot8$nhooks
 plot8$cpue_boca <- plot8$boca / plot8$nhooks
 plot8$cpue_verm <- plot8$verm / plot8$nhooks
 
-ggplot(plot8, aes(x = cpue_boca, y = cpue_verm)) + 
-  geom_point(aes(size = cpue_tot), alpha = .2) + 
-  facet_wrap(~ Year) + theme_bw()
+#CPUE Trend
+plot8_cpue <- plot8 %>% group_by(Year) %>% 
+  summarize(mean_boca = mean(cpue_boca), mean_verm = mean(cpue_verm),
+    sd_boca =  sd(cpue_boca, na.rm = T), sd_verm = sd(cpue_verm),
+    cv_boca = sd_boca / mean_boca, cv_verm = sd_verm / mean_verm) %>% as.data.frame()
+hist(plot8_cpue$cv_boca)
+hist(plot8_cpue$cv_verm)
+ggplot(plot8_cpue, aes(x = Year)) + geom_line(aes(y = cpue_boca))
+
+
+# ggplot(plot8, aes(x = cpue_boca, y = cpue_verm)) + 
+#   geom_point(aes(size = cpue_tot), alpha = .2) + 
+#   facet_wrap(~ Year) + theme_bw()
 
 png(width = 8, height = 7, units = 'in', res = 150, file = 'figs/hlfig8.png')
 
@@ -63,24 +74,29 @@ for(ii in 1:length(yrz)){
   #Add Axes
   if(ii %in% c(1, 5, 9)) axis(side = 2, at = c(0, .2, .4, .6, .8), las = 2, 
     cex.axis = 1.2, labels = c("0", "0.2", "0.4", "0.6", "0.8"))
-  if(ii >= 8) axis(side = 1, at = c(0, .2, .4, .6, .8), cex.axis = 1.2, 
+  if(ii == 8) axis(side = 1, at = c(0, .2, .4, .6, .8), cex.axis = 1.2, tck = .02,
+    labels = F)
+  if(ii >= 9) axis(side = 1, at = c(0, .2, .4, .6, .8), cex.axis = 1.2, 
     labels = c("0", "0.2", "0.4", "0.6", "0.8"))
 }
+
+#Add in cpue plot8
+plot(plot8$Year, plot8$cpue_boca, xlim = c(2003.5, 2014.5), type = 'n', axes = F,
+  ylim = c(0, .95))
+points(plot8_cpue$Year, plot8_cpue$mean_boca, type = 'o', pch = 19, lty = 2)
+points(plot8_cpue$Year, plot8_cpue$mean_verm, type = 'o', pch = 17)
+mtext("l) Unstandardized CPUE*", side = 3, line = -1.5, adj = .15, cex = .9)
+box()
+axis(side = 1, at = c(2004, 2008, 2012, 2016), labels = c("'04", "'08", "'12", "'16"),
+  cex.axis = 1.2)
+axis(side = 2, tck = .02, labels = FALSE)
+legend(x = 2010, y = .4, c('bocaccio', 'vermilion'), pch = c(19, 17), bty = 'n' )
+mtext("Year", side = 1, line = 2, cex = .9)
 
 mtext("Bocaccio CPUE", side = 1, outer = T, cex = 1.2, line = 2.2)
 mtext("Vermilion CPUE", side = 2, outer = T, cex = 1.2, line = 2.2)
 
-
 dev.off()
-
-
-
-
-
-
-
-
-
 
 
 # cpues <- dat %>% group_by(SiteName, Year) %>% summarize(cpue = sum(SurvFish) / length(NumBoc))

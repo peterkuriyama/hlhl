@@ -104,9 +104,174 @@ for(ii in 1:16){
   points(x = .5, y = 0, pch = 23, cex = 2, bg = 'gray50', col = 'gray50') #add anchor point
 }
 
-mtext(side = 1, "Change from 0.5", outer = T, line = 3, cex = 2)
-mtext(side = 2, "Change in CPUE", outer = T, line = 3, cex = 2)
+mtext(side = 1, "Change from 0.5", outer = T, line = 3, cex = 1.4)
+mtext(side = 2, "Change in CPUE", outer = T, line = 3, cex = 1.4)
 
 dev.off()
 #At what depletion levels will ability to detect a change be significant?
 #Results will be what number of 
+
+
+
+
+#-----------------------------------------------------------------------------
+#Figures for presentation
+#just one plot
+png(width = 7, height = 7, units = 'in', res = 150, file = 'figs/hlfig4_pres1.png')  
+  temp_inds <- inds[4, ]
+  temp <- plot4 %>% filter(nsites == temp_inds$nsites, init_dist == temp_inds$init_dist)
+
+  # temp$dep <- as.numeric(as.character(temp$dep))  
+  temp$dep_adj <- temp$x_dep
+  
+  prefs <- subset(temp, type == 'preferential')
+  prefs$dep_adj <- prefs$dep_adj + delta
+  # prefs$dep_adj_flipped <- 1 - prefs$dep_adj  
+  
+  rands <- subset(temp, type == 'random')
+  rands$dep_adj <- rands$dep_adj - delta
+
+  plot(temp$dep_adj, temp$med_cpue, type = 'n', ylim = c(-.6, .5), ann = FALSE, 
+    axes = FALSE, xlim = c(-delta, 1 + delta))
+  
+  abline(h = 0, lty = 2)
+  # abline(v = .5, lty = 2)
+  box()
+
+  #Add Axes
+  axis(side = 1, at = c(.1, .3, .5, .7, .9), labels = c("-0.4", "-0.2", "0", "0.2", "0.4"),
+    cex.axis = 1.2)
+  if(ii == 1) legend('bottomright', pch = c(19, 17), legend = c('preferential', 'random' ), bty = 'n',
+    cex = 1.3)
+  axis(side = 2, cex.axis = 1.2, las = 2)
+
+  # #Plot points and segments 
+  # points(prefs$med_cpue, prefs$dep_adj, pch = 19, cex = 1.2)
+  # segments(y0 = prefs$dep_adj, x0 = prefs$med_cpue, x1 = prefs$cpue95)
+  # segments(y0 = prefs$dep_adj, x0 = prefs$cpue5, x1 = prefs$med_cpue)
+  
+  # points(rands$med_cpue, rands$dep_adj, pch = 17, cex = 1.2)
+  # segments(y0 = rands$dep_adj, x0 = rands$med_cpue, x1 = rands$cpue95, lty = 1)
+  # segments(y0 = rands$dep_adj, x0 = rands$cpue5, x1 = rands$med_cpue, lty = 1)
+  # mtext(side = 3, adj = .02, fig2_letts[ii], line = -1.5)
+  points(y = 0, x = .5, pch = 23, cex = 2, bg = 'white') #add anchor point
+
+mtext(side = 1, "Change in CPUE", line = 3, cex = 1.4)
+mtext(side = 2, "Change from 0.5", line = 2.75, cex = 1.4)
+dev.off()
+
+
+png(width = 7, height = 7, units = 'in', res = 150, file = 'figs/hlfig4_pres2.png')  
+  temp_inds <- inds[4, ]
+  temp <- plot4 %>% filter(nsites == temp_inds$nsites, init_dist == temp_inds$init_dist)
+
+  # temp$dep <- as.numeric(as.character(temp$dep))  
+  temp$dep_adj <- temp$x_dep
+  
+  prefs <- subset(temp, type == 'preferential')
+  prefs$dep_adj <- prefs$dep_adj + delta
+  # prefs$dep_adj_flipped <- 1 - prefs$dep_adj  
+  
+  rands <- subset(temp, type == 'random')
+  rands$dep_adj <- rands$dep_adj - delta
+
+  plot(temp$dep_adj, temp$med_cpue, type = 'n', ylim = c(-.6, .5), ann = FALSE, 
+    axes = FALSE, xlim = c(-delta, 1 + delta))
+  abline(h = 0, lty = 2)
+  # plot(temp$med_cpue, temp$dep_adj, type = 'n', xlim = c(-.6, .5), ann = FALSE, 
+  #   axes = FALSE, ylim = c(.05, .95))
+  # abline(v = 0, lty = 2)
+  # abline(v = .5, lty = 2)
+  box()
+
+  #Add Axes
+  axis(side = 1, at = c(.1, .3, .5, .7, .9), labels = c("-0.4", "-0.2", "0", "0.2", "0.4"),
+    cex.axis = 1.2)
+  if(ii == 1) legend('bottomright', pch = c(19, 17), legend = c('preferential', 'random' ), bty = 'n',
+    cex = 1.3)
+  axis(side = 2, cex.axis = 1.2, las = 2)
+
+  #Add Axes
+  # axis(side = 2, at = c(.1, .3, .5, .7, .9), labels = c("-0.4", "-0.2", "0", "0.2", "0.4"), las = 2,
+  #   cex.axis = 1.2)
+  # if(ii == 1) legend('bottomright', pch = c(19, 17), legend = c('preferential', 'random' ), bty = 'n',
+  #   cex = 1.3)
+  # axis(side = 1, cex.axis = 1.2)
+
+  # #Plot points and segments 
+  segments(x0 = prefs$dep_adj, y0 = prefs$med_cpue, y1 = prefs$cpue95)
+  segments(x0 = prefs$dep_adj, y0 = prefs$cpue5, y1 = prefs$med_cpue)
+  points(prefs$dep_adj, prefs$med_cpue, pch = prefs$point, bg = prefs$bg)
+  
+  segments(x0 = rands$dep_adj, y0 = rands$med_cpue, y1 = rands$cpue95, lty = 1)
+  segments(x0 = rands$dep_adj, y0 = rands$cpue5, y1 = rands$med_cpue, lty = 1)
+  points(rands$dep_adj, rands$med_cpue, pch = rands$point, bg = rands$bg)
+  
+  points(x = .5, y = 0, pch = 23, cex = 2, bg = 'white') #add anchor point
+
+mtext(side = 1, "Change in CPUE", line = 3, cex = 1.4)
+mtext(side = 2, "Change from 0.5", line = 2.75, cex = 1.4)
+dev.off()
+
+
+
+#Figure for presentation
+png(width = 14, height = 5, units = 'in', res = 150, file = 'figs/hlfig4_pres3.png')
+par(mfcol = c(1, 4), mar = c(0, 0, 0, 0), oma = c(4.5, 6, 3, 2), xpd = T, 
+  mgp = c(0, .5, 0))
+
+for(ii in c(4, 8, 12, 16)){
+  temp_inds <- inds[ii, ]
+  temp <- plot4 %>% filter(nsites == temp_inds$nsites, init_dist == temp_inds$init_dist)
+
+  # temp$dep <- as.numeric(as.character(temp$dep))  
+  temp$dep_adj <- temp$x_dep
+  
+  prefs <- subset(temp, type == 'preferential')
+  prefs$dep_adj <- prefs$dep_adj + delta
+  # prefs$dep_adj_flipped <- 1 - prefs$dep_adj  
+  
+  rands <- subset(temp, type == 'random')
+  rands$dep_adj <- rands$dep_adj - delta
+
+  
+  plot(temp$dep_adj, temp$med_cpue, type = 'n', ylim = c(-.6, .5), ann = FALSE, 
+    axes = FALSE, xlim = c(-delta, 1 + delta))
+  abline(h = 0, lty = 2)
+  # plot(temp$med_cpue, temp$dep_adj, type = 'n', xlim = c(-.6, .5), ann = FALSE, 
+  #   axes = FALSE, ylim = c(.05, .95))
+  # abline(v = 0, lty = 2)
+  # abline(v = .5, lty = 2)
+  box()
+
+  #Add Axes
+  axis(side = 1, at = c(.1, .3, .5, .7, .9), labels = c("-0.4", "-0.2", "0", "0.2", "0.4"),
+    cex.axis = 1.2)
+  if(ii == 1) legend('bottomright', pch = c(19, 17), legend = c('preferential', 'random' ), bty = 'n',
+    cex = 1.3)
+  if(ii == 4) axis(side = 2, cex.axis = 1.2, las = 2)
+
+  #Add Axes
+  # axis(side = 2, at = c(.1, .3, .5, .7, .9), labels = c("-0.4", "-0.2", "0", "0.2", "0.4"), las = 2,
+  #   cex.axis = 1.2)
+  # if(ii == 1) legend('bottomright', pch = c(19, 17), legend = c('preferential', 'random' ), bty = 'n',
+  #   cex = 1.3)
+  # axis(side = 1, cex.axis = 1.2)
+
+  # #Plot points and segments 
+  segments(x0 = prefs$dep_adj, y0 = prefs$med_cpue, y1 = prefs$cpue95)
+  segments(x0 = prefs$dep_adj, y0 = prefs$cpue5, y1 = prefs$med_cpue)
+  points(prefs$dep_adj, prefs$med_cpue, pch = prefs$point, bg = prefs$bg)
+  
+  segments(x0 = rands$dep_adj, y0 = rands$med_cpue, y1 = rands$cpue95, lty = 1)
+  segments(x0 = rands$dep_adj, y0 = rands$cpue5, y1 = rands$med_cpue, lty = 1)
+  points(rands$dep_adj, rands$med_cpue, pch = rands$point, bg = rands$bg)
+  points(x = .5, y = 0, pch = 23, cex = 2, bg = 'white') #add anchor point
+
+}
+
+mtext(side = 1, "Change in CPUE", outer = T, line = 3, cex = 1.4)
+mtext(side = 2, "Change from 0.5", outer = T, line = 3, cex = 1.4)
+dev.off()
+
+

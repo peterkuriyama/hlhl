@@ -22,9 +22,9 @@
 #----------------------------------------
 #Load the data if run already
 
-# load("output/onespp1.Rdata") #has 5, 10, 30, 50, 100 nsites samples
-# onespp1 <- onespp
-# load("output/onespp20.Rdata")
+# # load("output/onespp1.Rdata") #has 5, 10, 30, 50, 100 nsites samples
+# # onespp1 <- onespp
+# # load("output/onespp20.Rdata")
 load('output/onespp20_1000.Rdata')
 load('output/onespp_1000.Rdata')
 
@@ -110,11 +110,28 @@ plot2 %>% group_by(nsites, init_dist, type) %>% summarize(ss = sum(resid^2)) %>%
   arrange(init_dist, type) %>% group_by(init_dist, type)  %>% summarize(mean(ss))
 
 #--------------------------------------------------------------------------------------------
+#load data with beta_fits added already
+
+load('output/plot2.Rdata')
+to_plot <- plot2
+
+#--------------------------------------------------------------------------------------------
+#Abstract Results
+
+abst <- plot2 %>% filter(dep %in% c(0.1, 0.5), init_dist_plot == "Patchy") %>% 
+  dcast(nsites + type + init_dist ~ dep, value.var = 'med_cpue') 
+abst$ddiff <- abst[, 5] - abst[, 4]
+abst %>% group_by(type) %>% summarize(min_ddiff = min(ddiff), max_ddiff = max(ddiff))
+
+  group_by(type)
+
+#--------------------------------------------------------------------------------------------
 png(width = 10, height = 10, units = 'in', res = 150, file = 'figs/hlfig2.png')
 
 par(mfrow = c(4, 4), mar = c(0, 0, 0, 0), oma = c(4, 6, 3, 2), mgp = c(0, .5, 0))
 
 for(ii in 1:16){
+  
   temp <- subset(to_plot, ind == ii)
   temp$dep <- as.numeric(as.character(temp$dep))
     
@@ -125,14 +142,23 @@ for(ii in 1:16){
     
   rands <- subset(temp, type == 'random')
   rands$dep_adj <- rands$dep_adj + delta
-
+  
+  #Add in hyperstability coefficients
+  pref_beta <- temp %>% filter(type == 'preferential') %>% select(beta) %>%
+    unique
+  pref_beta <- round(pref_beta, digits = 2)
+  rand_beta <- temp %>% filter(type == 'random') %>% select(beta) %>%
+    unique
+  rand_beta <- round(rand_beta, digits = 2)
+  
   plot(temp$dep_adj, temp$med_cpue, type = 'n', ylim = c(0, 1.05), ann = FALSE, 
     axes = FALSE, xlim = c(-delta, 1 + .05))
   box()
 
   #Add Axes
-  if(ii == 1) legend('bottomright', pch = c(19, 17), legend = c('preferential', 'random' ), 
-    cex = 1.3, bty = 'n')
+  if(ii == 1) legend('bottomright', pch = c(19, 17), 
+    legend = c(paste0('preferential; ', pref_beta), 
+      paste0('random; ',rand_beta)), cex = 1.3, bty = 'n')
   if(ii %% 4 == 1) axis(side = 2, las = 2, cex.axis = 1.2)
   if(ii < 5) mtext(side = 3, unique(temp$nsites))
   if(ii > 12) axis(side = 1, cex.axis = 1.2)
@@ -147,6 +173,12 @@ for(ii in 1:16){
   segments(x0 = rands$dep_adj, y0 = rands$med_cpue, y1 = rands$q95, lty = 1)
   segments(x0 = rands$dep_adj, y0 = rands$q5, y1 = rands$med_cpue, lty = 1)
   mtext(side = 3, adj = .02, fig1_letts[ii], line = -1.5)
+
+  #add in coefficient text
+  if(ii != 1){
+    legend('bottomright', pch = c(19, 17), legend = c(pref_beta,
+      rand_beta), bty = 'n', cex = 1.3) 
+  }
 }
 
 mtext(side = 1, "Relative Abundance", outer = T, line = 2.8, cex = 1.4)

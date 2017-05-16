@@ -87,7 +87,7 @@ twospp %>% filter(comp_coeff == 0.3, spp == 'spp1', type == 'pref',
 #----------------------------------------
 #Summary results
 #Range of median CPUE values
-plot5 %>% filter(init_dist == 'patchy') %>% group_by(comp_coeff, type) %>% 
+plot5 %>% filter(init_dist == 'patchy') %>% group_by(comp_coeff, type, spp) %>% 
   summarize(min_cpue = min(median_cpue), max_cpue = max(median_cpue)) %>% 
   arrange(type, comp_coeff)
 

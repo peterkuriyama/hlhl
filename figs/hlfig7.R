@@ -44,8 +44,6 @@ range(yranges)
 letts7 <- paste0(letters[1:22], ")")
 letts7 <- paste(letts7, yrz)
 
-
-hists_all <- 
 #------------------------------------------------
 png(file = 'figs/hlfig7.png', width = 6.5, height = 8.5, units = 'in', res = 150)
 
