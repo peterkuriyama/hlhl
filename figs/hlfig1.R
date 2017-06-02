@@ -26,21 +26,32 @@ for(ff in 1:length(fish1s)){
   inits2$scen <- shape_list4$scen
 
   inits_list[[ff]] <- inits2
-
 }
 
 inits_list <- ldply(inits_list)
 
 inits_list$summ <- paste(inits_list$mins, round(inits_list$meds, digits = 0), inits_list$maxs, sep = " - ")
 inits_list$abundance <- inits_list$nfish / max(inits_list$nfish)
+inits_list$meds <- round(inits_list$meds, digits = 0)
+inits_list$rng <- paste(inits_list$mins, inits_list$maxs, sep = " - ")
+inits_list$rng <- paste0("(", inits_list$rng, ")")
+inits_list$rng <- paste(inits_list$meds, inits_list$rng)
 
-table1 <- inits_list %>% select(abundance, nfish, scen, summ)
-table1 <- table1 %>% dcast(abundance + nfish ~ scen, value.var = 'summ')
-table1 <- table1 %>% select(abundance, nfish, leftskew, normdist, uniform, patchy)
-names(table1) <- paste0(toupper(substr(names(table1), 1, 1)), 
-  substr(names(table1), 2, nchar(names(table1))))
-write.csv(table1, 'output/table1.csv', row.names = FALSE)
+table1 <- inits_list %>% select(abundance, nfish, scen, meds, rng)
 
+
+table11 <- table1 %>% dcast(abundance + nfish ~ scen, value.var = 'meds')
+# table1 <- table1 %>% select(abundance, nfish, leftskew, normdist, uniform, patchy)
+names(table11) <- paste0(toupper(substr(names(table11), 1, 1)), 
+  substr(names(table11), 2, nchar(names(table11))))
+write.csv(table11, 'output/table1_1.csv', row.names = FALSE)
+
+
+
+table12 <- table1 %>% dcast(abundance + nfish ~ scen, value.var = 'rng')
+names(table12) <- paste0(toupper(substr(names(table12), 1, 1)), 
+  substr(names(table12), 2, nchar(names(table12))))
+write.csv(table12, 'output/table1_2.csv', row.names = FALSE)
 #--------------------------------------------------------------------------------------------
 #Figure 1
 
@@ -62,7 +73,6 @@ inits <- lapply(1:nrow(shape_list4), FUN = function(ss){
 })
 
 
-
 #--------------------------------------------------------------------------------------------
 #Figure
 #Should probably be a one column figure
@@ -73,7 +83,7 @@ par(mfrow = c(2, 2), mar = c(0, 0, 0, 0), oma = c(4, 5, .5, 1), mgp = c(0, .7, 0
 for(ii in 1:length(inits)){
   temp <- inits[[ii]]
   hist(temp, breaks = seq(0, 2270, 5), main = shape_list1[ii, 'scen'], freq = FALSE, 
-    xlim = c(0, 300), axes = F, ann = F, ylim = c(0, .14), yaxs = 'i', xaxs = 'i')
+    xlim = c(0, 300), axes = F, ann = F, ylim = c(0, .14), yaxs = 'i', xaxs = 'i', col = 'gray')
   box()
   mtext(letts[ii], side = 3, line = -1.7, adj = 0.01, cex = 1.25)
   mtext(shape_list4[ii, 'for_plot'], side = 3, line = -1.7, adj = .95, cex = 1.25)
