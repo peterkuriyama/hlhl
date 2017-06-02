@@ -36,7 +36,6 @@ zero20$nsites <- 20
 
 onespp <- rbind(onespp, zero20)
 
-
 #Calculate mean, variance, and cv of each value
 # onespp <- onespp %>% group_by(nsites, init_dist, nfish1, spp, type) %>% 
 #   mutate(mean_cpue = mean(cpue), sd_cpue = sd(cpue), cv_cpue = sd_cpue / mean_cpue) %>%
@@ -95,7 +94,8 @@ to_plot %>% filter(init_dist == 'patchy' & nsites == 100) %>% select(type, qrang
 #Leftskew and normal distribution
 plot2 %>% dcast(nsites + dep + init_dist ~ type, value.var = 'med_cpue') %>% 
   filter(init_dist %in% c('leftskew', 'normdist')) %>% 
-  mutate(diff = round(preferential - random, digits = 3)) %>% range(diff)
+  mutate(diff = round(preferential - random, digits = 3)) %>% select(diff) %>% 
+  summarize(min(diff), max(diff))
 
 plot2 %>% filter(med_cpue != 0) %>% dcast(nsites + dep + init_dist ~ type, value.var = 'med_cpue') %>% 
   filter(init_dist %in% c('uniform')) %>% 
@@ -110,6 +110,25 @@ plot2 %>% group_by(nsites, init_dist, type) %>% summarize(ss = sum(resid^2)) %>%
   arrange(init_dist, type) %>% group_by(init_dist, type)  %>% summarize(mean(ss))
 
 #--------------------------------------------------------------------------------------------
+#create table of variability 
+to_plot$qrange <- round(to_plot$qrange, digits = 2)
+
+table3 <- to_plot
+table3$Type <- paste0(toupper(substr(table3$type, 1, 1)), substr(table3$type, 2, nchar(table3$type)) )
+
+table3 %>% dcast(init_dist_plot + Type + nsites ~ dep, value.var = 'qrange') %>%
+  arrange(init_dist_plot, Type, nsites) %>% write.csv("output/table3.csv", row.names = F)
+
+#One way
+to_plot %>% dcast(init_dist + type ~ nsites + dep, value.var = "qrange") %>%
+  arrange(init_dist) %>% write.csv('output/table3_1.csv', row.names = F)
+
+#Another way
+to_plot %>% dcast(init_dist + type ~ nsites + dep, value.var = "qrange") %>%
+  arrange(init_dist) %>% write.csv('output/table3_1.csv', row.names = F)
+
+
+#--------------------------------------------------------------------------------------------
 #load data with beta_fits added already
 
 load('output/plot2.Rdata')
@@ -122,8 +141,6 @@ abst <- plot2 %>% filter(dep %in% c(0.1, 0.5), init_dist_plot == "Patchy") %>%
   dcast(nsites + type + init_dist ~ dep, value.var = 'med_cpue') 
 abst$ddiff <- abst[, 5] - abst[, 4]
 abst %>% group_by(type) %>% summarize(min_ddiff = min(ddiff), max_ddiff = max(ddiff))
-
-  group_by(type)
 
 #--------------------------------------------------------------------------------------------
 png(width = 10, height = 10, units = 'in', res = 150, file = 'figs/hlfig2.png')
@@ -157,8 +174,10 @@ for(ii in 1:16){
 
   #Add Axes
   if(ii == 1) legend('bottomright', pch = c(19, 17), 
-    legend = c(paste0('preferential; ', pref_beta), 
-      paste0('random; ',rand_beta)), cex = 1.3, bty = 'n')
+    legend = c('preferential', 'random'), cex = 1.3, bty = 'n')
+  # if(ii == 1) legend('bottomright', pch = c(19, 17), 
+  #   legend = c(paste0('preferential; ', pref_beta), 
+  #     paste0('random; ',rand_beta)), cex = 1.3, bty = 'n')
   if(ii %% 4 == 1) axis(side = 2, las = 2, cex.axis = 1.2)
   if(ii < 5) mtext(side = 3, unique(temp$nsites))
   if(ii > 12) axis(side = 1, cex.axis = 1.2)
@@ -175,10 +194,10 @@ for(ii in 1:16){
   mtext(side = 3, adj = .02, fig1_letts[ii], line = -1.5)
 
   #add in coefficient text
-  if(ii != 1){
-    legend('bottomright', pch = c(19, 17), legend = c(pref_beta,
-      rand_beta), bty = 'n', cex = 1.3) 
-  }
+  # if(ii != 1){
+  #   legend('bottomright', pch = c(19, 17), legend = c(pref_beta,
+  #     rand_beta), bty = 'n', cex = 1.3) 
+  # }
 }
 
 mtext(side = 1, "Relative Abundance", outer = T, line = 2.8, cex = 1.4)
