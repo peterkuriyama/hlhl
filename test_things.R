@@ -74,6 +74,12 @@ source('figs/hlfig7.R')
 #Figure 8
 source('figs/hlfig8.R')
 
+#Figure 9
+source('figs/hlfig9.R')
+
+#Figure 10
+source('figs/hlfig10.R')
+
 #-----------------------------------------------------------------------------
 #Plot of ranges for uncertainties in fig. 2
 to_plot$unc <- to_plot$q95 - to_plot$q5
