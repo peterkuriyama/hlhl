@@ -21,7 +21,6 @@ range(subset(temp, spp == "spp1")$median_cpue)
 
 
 #----------------------------------------
-
 the_data <- rbind(p6, n6)
 
 # add in 0, 0 for scenario in the data
@@ -76,8 +75,8 @@ the_data %>% filter(type == 'pref', init_dist == 'normdist', median_cpue != 0) %
     arrange(comp_coeff)
 
 #Ranges for patchy surveys
-the_data %>% filter(init_dist == 'patchy', median_cpue != 0, comp_coeff == 0.5) %>%
-   group_by(spp, type, comp_coeff) %>% summarize(mincpue = min(median_cpue),
+the_data %>% filter(init_dist == 'patchy', median_cpue != 0) %>%
+   group_by(type, comp_coeff) %>% summarize(mincpue = min(median_cpue),
     maxcpue = max(median_cpue)) %>% arrange(comp_coeff, type)
 
 #-----------------------------------------------------------------------------
@@ -101,7 +100,7 @@ whites <- 0
 blacks <- 1:24
                    
 layout(matlay, heights = c(1, 1, 0.2, 1, 1), widths = c(1, 1, 1, 0.1, 1, 1, 1))
-par(mar = c(0.0, 0.5, 0.9, 0.3), oma = c(4, 4, 5, 2), mgp = c(.6, .5, 0))
+par(mar = c(0.0, 0.5, 0, 0.3), oma = c(4, 4, 5.5, 2), mgp = c(.6, .5, 0))
 fig6_letts <- paste0(letters[1:24], ")")
 
 for(jj in 1:24){
@@ -112,6 +111,12 @@ for(jj in 1:24){
   #tp for temp plot 
   tp <- the_data %>% filter(type == temp$type, spp == temp$spp, comp_coeff == temp$comp_coeff,
     init_dist == temp$init_dist)
+
+  # add_in <- tp[1, ]
+  # add_in$dep1 <- 0
+  # add_in$dep2 <- 0
+
+  # tp <- rbind(tp, add_in)
 
   tp <- tp %>% arrange(dep1, dep2)  
   # tp$tot <- tp$dep1 + tp$dep2
@@ -143,22 +148,25 @@ for(jj in 1:24){
   #------------------
   #Add axes 
   if(jj %% 6 == 1){
-    axis(side = 2, las = 2, at = c(0, 20, 40, 60, 80, 100), labels = c(0, .2, .4, .6, .8, 1), cex.axis = 1.2)
+    axis(side = 2, las = 2, at = c(0, 40, 80), labels = c(0, .4, .8), cex.axis = 1.4)
+    # axis(side = 2, las = 2, at = c(0, 20, 40, 60, 80, 100), labels = c(0, .2, .4, .6, .8, 1), cex.axis = 1.2)
   } 
 
-  if(jj > 18) axis(side = 1, at = c(0, 20, 40, 60, 80, 100), labels = c(0, .2, .4, .6, .8, 1), cex.axis = 1.2)
+  # if(jj > 18) axis(side = 1, at = c(0, 20, 40, 60, 80, 100), labels = c(0, .2, .4, .6, .8, 1), cex.axis = 1.2)
+    if(jj > 18) axis(side = 1, at = c(0, 40, 80), labels = c(0, .4, .8), cex.axis = 1.4)
+
 
   #Add Text
   # if(jj < 7 & jj %% 2 == 1) mtext(side = 3, "Species 1", adj = 0, line = .01)
   # if(jj < 7 & jj %% 2 == 0) mtext(side = 3, "Species 2", adj = 0, line = .05)
   if(jj %in% c(6, 18)) mtext(side = 4, "Preferential", line = .5)
   if(jj %in% c(12, 24)) mtext(side = 4, "Random", line = .5)
-  if(jj == 1) mtext(side = 3, "Species 1", adj = 0, line = 1.5, cex = 1.05)
-  if(jj == 4) mtext(side = 3, "Species 2", adj = 0, line = 1.5, cex = 1.05)
+  if(jj == 1) mtext(side = 3, "Species 1", adj = 0, line = 1.3, cex = 1.2)
+  if(jj == 4) mtext(side = 3, "Species 2", adj = 0, line = 1.3, cex = 1.2)
 
-  if(jj %in% c(1, 4)) mtext(side = 3, comp_captions[1], adj = 0, cex = 1.05)
-  if(jj %in% c(2, 5)) mtext(side = 3, comp_captions[2], adj = 0, cex = 1.05)
-  if(jj %in% c(3, 6)) mtext(side = 3, comp_captions[3], adj = 0, cex = 1.05)
+  if(jj %in% c(1, 4)) mtext(side = 3, comp_captions[1], adj = 0, cex = .95)
+  if(jj %in% c(2, 5)) mtext(side = 3, comp_captions[2], adj = 0, cex = .95)
+  if(jj %in% c(3, 6)) mtext(side = 3, comp_captions[3], adj = 0, cex = .95)
   # if(jj < 7) mtext(side = 3, paste0('comp. = ', unique(tp$comp_coeff)), adj = 0, cex = 1.05)
 
   #Add Letters
@@ -175,8 +183,8 @@ for(jj in 1:24){
 #Add outside text
 mtext(side = 1, "Species 1 relative abundance", outer = T, line = 2.3, cex = 1.4)
 mtext(side = 2, "Species 2 relative abundance", outer = T, line = 2, cex = 1.4)
-mtext(side = 3, "Symmetric", outer = T, line = 2.7, cex = 1.4, adj = .005)
-mtext(side = 3, "Patchy", outer = T, line = -27.5, cex = 1.4, adj = .005)
+mtext(side = 3, "Symmetric", outer = T, line = 3, cex = 1.4, adj = .005)
+mtext(side = 3, "Patchy", outer = T, line = -27.1, cex = 1.4, adj = .005)
 
 #Do this as 8.5 x 7 inch png?
 dev.off()
