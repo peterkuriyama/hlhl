@@ -37,10 +37,38 @@ ggplot(plot8_cpue, aes(x = Year)) + geom_line(aes(y = cpue_boca))
 # ggplot(plot8, aes(x = cpue_boca, y = cpue_verm)) + 
 #   geom_point(aes(size = cpue_tot), alpha = .2) + 
 #   facet_wrap(~ Year) + theme_bw()
+#--------------------------------------------------------------------------------------------
+png(width = 7, height = 7, units = 'in', res = 150, file = 'figs/hlfig8.png')
 
-png(width = 8, height = 7, units = 'in', res = 150, file = 'figs/hlfig8.png')
+par(mgp = c(1, .5, 0))
+plot(plot8$Year, plot8$cpue_boca, xlim = c(2003.5, 2014.5), type = 'n', axes = F,
+  ylim = c(0, .2), ann = F)
+points(plot8_cpue$Year, plot8_cpue$mean_boca, type = 'o', pch = 17, lty = 2)
+points(plot8_cpue$Year, plot8_cpue$mean_verm, type = 'o', pch = 19)
+# mtext("l) Unstandardized CPUE*", side = 3, line = -1.5, adj = .15, cex = .9)
+box()
+axis(side = 1, at = c(2004, 2008, 2012, 2016), labels = c("'04", "'08", "'12", "'16"),
+  cex.axis = 1)
+axis(side = 2, las = 2)
+legend('bottomright', c('bocaccio', 'vermilion'), pch = c(17, 19), bty = 'n' )
+# legend(x = 2012, y = .03, c('bocaccio', 'vermilion'), pch = c(19, 17), bty = 'n' )
+mtext("Year", side = 1, line = 2, cex = 1.2)
+mtext("Unstandardized CPUE", side = 2, line = 2.5, cex = 1.2)
 
-par(mfrow = c(3, 4),mar = c(0, 0, 0, 0), oma = c(3.5, 5, 2, 1), mgp = c(1, .5, 0),
+dev.off()
+
+round(range(plot8_cpue$mean_boca), digits = 2)
+round(range(plot8_cpue$mean_verm), digits = 2)
+range(diff(plot8_cpue$mean_boca))
+range(diff(plot8_cpue$mean_verm))
+# mtext("Bocaccio CPUE", side = 1, outer = T, cex = 1.2, line = 2.2)
+# mtext("Vermilion CPUE", side = 2, outer = T, cex = 1.2, line = 2.2)
+
+#--------------------------------------------------------------------------------------------
+#multiplot with 
+png(width = 8, height = 7, units = 'in', res = 150, file = 'figs/hlfig8_multi.png')
+
+par(mfrow = c(3, 4),mar = c(0, 0, 0, 0), oma = c(3.5, 5, 2, 2.5), mgp = c(1, .5, 0),
   xpd = T)
 for(ii in 1:length(yrz)){
   tp8 <- plot8 %>% filter(Year == yrz[[ii]])
@@ -82,15 +110,16 @@ for(ii in 1:length(yrz)){
 
 #Add in cpue plot8
 plot(plot8$Year, plot8$cpue_boca, xlim = c(2003.5, 2014.5), type = 'n', axes = F,
-  ylim = c(0, .95))
+  ylim = c(0, .2))
 points(plot8_cpue$Year, plot8_cpue$mean_boca, type = 'o', pch = 19, lty = 2)
 points(plot8_cpue$Year, plot8_cpue$mean_verm, type = 'o', pch = 17)
 mtext("l) Unstandardized CPUE*", side = 3, line = -1.5, adj = .15, cex = .9)
 box()
 axis(side = 1, at = c(2004, 2008, 2012, 2016), labels = c("'04", "'08", "'12", "'16"),
   cex.axis = 1.2)
-axis(side = 2, tck = .02, labels = FALSE)
-legend(x = 2010, y = .4, c('bocaccio', 'vermilion'), pch = c(19, 17), bty = 'n' )
+axis(side = 4, las = 2)
+legend('bottomright', c('bocaccio', 'vermilion'), pch = c(19, 17), bty = 'n' )
+# legend(x = 2012, y = .03, c('bocaccio', 'vermilion'), pch = c(19, 17), bty = 'n' )
 mtext("Year", side = 1, line = 2, cex = .9)
 
 mtext("Bocaccio CPUE", side = 1, outer = T, cex = 1.2, line = 2.2)
