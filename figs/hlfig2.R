@@ -43,9 +43,14 @@ onespp <- rbind(onespp, zero20)
 
 onespp$nsites <- as.numeric(as.character(onespp$nsites))
 
+#----------------------------------------
+#Add in means to check differences between means and medians
 to_plot <- onespp %>% group_by(nsites, dep, init_dist, spp, type) %>% summarize(med_cpue = median(cpue),
-  q5 = quantile(cpue, .05), q95 = quantile(cpue, .95)) %>% as.data.frame
+  q5 = quantile(cpue, .05), q95 = quantile(cpue, .95), mean_cpue = mean(cpue)) %>% as.data.frame
 
+hist(to_plot$mean_cpue - to_plot$med_cpue)
+
+#----------------------------------------
 #Convert init_dist to a factor to order then conert back to character
 to_plot$init_dist <- factor(to_plot$init_dist, levels = c('leftskew', 'normdist',
   'uniform', 'patchy', 'rightskew'))
