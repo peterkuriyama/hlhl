@@ -104,6 +104,24 @@ table2 <- table2 %>% arrange(init_dist_plot, nsites)
 table2$pref <- paste0(table2$prefq, " - ", table2$prefbeta)
 table2$rand <- paste0(table2$randq, " - ", table2$randbeta)
 
+table21 <- table2 %>% select(nsites, init_dist_plot, prefq, prefbeta) %>% 
+  melt(id.vars = c('nsites', 'init_dist_plot'))
+table21$type <- 'Preferential'
+
+table22 <- table2 %>% select(nsites, init_dist_plot, randq, randbeta) %>% 
+  melt(id.vars = c('nsites', 'init_dist_plot'))
+table22$type <- 'Random'
+
+table2 <- rbind(table21, table22)
+table2$variable2 <- c(rep("q", 16), rep('beta', 16))
+
+table2 %>% filter(variable2 == "q") %>% dcast(init_dist_plot + type ~ nsites, value.var = 'value') %>%
+  write.csv('output/table21.csv', row.names = FALSE)
+
+table2 %>% filter(variable2 == "beta") %>% dcast(init_dist_plot + type ~ nsites, value.var = 'value') %>%
+  write.csv('output/table22.csv', row.names = FALSE)
+
+
 table2 %>% select(nsites, init_dist_plot, pref, rand) %>% melt(id.vars = c("nsites", "init_dist_plot"))
 
 table2 <- rbind(dcast(table2, init_dist_plot ~ nsites, value.var = "pref"),
