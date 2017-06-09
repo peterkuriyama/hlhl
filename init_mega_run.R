@@ -86,23 +86,44 @@ ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05,
       location = data.frame(vessel = 1, x = 1, y = 1), numrow = 30, numcol = 30,
       shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)    
 
+
 #--------------------------------------------------------------------------------------------
-#Build grid of things to loop over
+#Functions to create to_loop values
+#Function to that returns rounded numbers of fish1 at evenly spaced proportions
+calc_fish1_prop <- function(nfish2, prop = seq(0, .9, .1)){
+  fishes <- prop * nfish2 / (1 - prop)
+  fishes <- round(fishes, digits = 0)
+  return(fishes)
+}
+
+#Function to create to_loop data frame
+create_to_loop <- function(fishes1, fishes2, comp_coeffs = c(.3, .5, .6),
+  shape_rows = c(3, 5), nsites = 50){
+
+  to_loop <- expand.grid(fishes1, fishes2, comp_coeffs, shape_rows, c('pref', 'rand'))
+  names(to_loop) <- c('nfish1', 'nfish2', 'comp_coeff', 
+    'shape_list_row', 'type')
+  to_loop$nsites <- nsites
+  to_loop$c1_sum <- .01
+  return(to_loop)
+}
+
+#--------------------------------------------------------------------------------------------
+#0 - 200,000 in increments of 20,000
 fishes1 <- seq(0, 200000, by = 20000)
 fishes2 <- seq(0, 200000, by = 20000)
-comp_coeffs <- c(.3, .5, .7) #Competition in favor of species 1
-shape_rows <- c(3, 5) #Normal and patchy distributions
-nsites <- 50
 
-#Build the grid of things to loop over
-to_loop <- expand.grid(fishes1, fishes2, comp_coeffs,
-  shape_rows, c('pref', 'rand'))
-names(to_loop) <- c('nfish1', 'nfish2', 'comp_coeff', 
-  'shape_list_row', 'type')
-to_loop$nsites <- nsites
-
-#Have probabilities sum to .02
-to_loop$c1_sum <- .01
-
+to_loop <- create_to_loop(fishes1 = fishes1, fishes2 = fishes2)
 #remove the rows with 0 and 0 for numbers of fish
 to_loop <- to_loop[-which(to_loop$nfish1 == 0 & to_loop$nfish2 == 0), ]
+
+#--------------------------------------------------------------------------------------------
+#Hold fishes2 constant, and evaluate at values of fishes1
+#such that proportion of species 1 is evenly spaced
+
+to_loop1 <- create_to_loop(fishes2 = 60000, fishes1 = calc_fish1_prop(60000))
+to_loop2 <- create_to_loop(fishes2 = 80000, fishes1 = calc_fish1_prop(80000))
+to_loop3 <- create_to_loop(fishes2 = 100000, fishes1 = calc_fish1_prop(100000))
+
+to_loop <- rbind(to_loop1, to_loop2, to_loop3)
+
