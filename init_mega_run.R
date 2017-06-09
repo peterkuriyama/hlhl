@@ -125,9 +125,17 @@ to_loop1 <- create_to_loop(fishes2 = 60000, fishes1 = calc_fish1_prop(60000))
 to_loop2 <- create_to_loop(fishes2 = 80000, fishes1 = calc_fish1_prop(80000))
 to_loop3 <- create_to_loop(fishes2 = 100000, fishes1 = calc_fish1_prop(100000))
 
-to_loop <- rbind(to_loop1, to_loop2, to_loop3)
+to_loop <- rbind(create_to_loop(fishes2 = 60000, fishes1 = calc_fish1_prop(60000)),
+                 create_to_loop(fishes2 = 80000, fishes1 = calc_fish1_prop(80000)),
+                 create_to_loop(fishes2 = 100000, fishes1 = calc_fish1_prop(100000)),
+                 create_to_loop(fishes2 = 0, fishes1 = calc_fish1_prop(60000)),
+                 create_to_loop(fishes2 = 0, fishes1 = calc_fish1_prop(80000)),
+                 create_to_loop(fishes2 = 0, fishes1 = calc_fish1_prop(100000)))
+
+# to_loop <- rbind(to_loop1, to_loop2, to_loop3)
 
 
 #--------------------------------------------------------------------------------------------
-create_to_loop(fishes2 = 0, fishes1 = calc_fish1_prop(100000))
+
+
 
