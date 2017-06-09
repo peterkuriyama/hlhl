@@ -97,7 +97,7 @@ calc_fish1_prop <- function(nfish2, prop = seq(0, .9, .1)){
 }
 
 #Function to create to_loop data frame
-create_to_loop <- function(fishes1, fishes2, comp_coeffs = c(.3, .5, .6),
+create_to_loop <- function(fishes1, fishes2, comp_coeffs = c(.3, .5, .7),
   shape_rows = c(3, 5), nsites = 50){
 
   to_loop <- expand.grid(fishes1, fishes2, comp_coeffs, shape_rows, c('pref', 'rand'))
@@ -126,4 +126,8 @@ to_loop2 <- create_to_loop(fishes2 = 80000, fishes1 = calc_fish1_prop(80000))
 to_loop3 <- create_to_loop(fishes2 = 100000, fishes1 = calc_fish1_prop(100000))
 
 to_loop <- rbind(to_loop1, to_loop2, to_loop3)
+
+
+#--------------------------------------------------------------------------------------------
+create_to_loop(fishes2 = 0, fishes1 = calc_fish1_prop(100000))
 
