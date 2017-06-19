@@ -84,7 +84,8 @@ ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05,
       nfish1 = 100000,
       nfish2 = 0, prob1 = .01, prob2 = .01, nyear = 1, scope = 0, seed = 1,
       location = data.frame(vessel = 1, x = 1, y = 1), numrow = 30, numcol = 30,
-      shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1)    
+      shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1, 
+      nhooks = 1)   
 
 
 #--------------------------------------------------------------------------------------------
@@ -109,6 +110,14 @@ create_to_loop <- function(fishes1, fishes2, comp_coeffs = c(.3, .5, .7),
 }
 
 #--------------------------------------------------------------------------------------------
+#To loop Key
+# 1 - leftskew
+# 2 - rightskew
+# 3 - normdist
+# 4 - uniform
+# 5 - patchy
+
+#--------------------------------------------------------------------------------------------
 #0 - 200,000 in increments of 20,000
 fishes1 <- seq(0, 200000, by = 20000)
 fishes2 <- seq(0, 200000, by = 20000)
@@ -116,6 +125,14 @@ fishes2 <- seq(0, 200000, by = 20000)
 to_loop <- create_to_loop(fishes1 = fishes1, fishes2 = fishes2)
 #remove the rows with 0 and 0 for numbers of fish
 to_loop <- to_loop[-which(to_loop$nfish1 == 0 & to_loop$nfish2 == 0), ]
+
+#--------------------------------------------------------------------------------------------
+#Only do 
+to_loop <- create_to_loop(fishes1 = fishes1, fishes2 = fishes2, shape_rows = 4)
+to_loop <- to_loop[-which(to_loop$nfish1 == 0 & to_loop$nfish2 == 0), ]
+
+to_loop1 <- subset(to_loop, shape_list_row == 4)
+
 
 #--------------------------------------------------------------------------------------------
 #Hold fishes2 constant, and evaluate at values of fishes1
