@@ -54,7 +54,6 @@ conduct_survey <- function(init_area, ...){
     }    
   }
 
-
   #manipulate samples  
   samples <- ldply(drop_samples)
   names(samples)[1] <- 'year'

@@ -14,7 +14,7 @@ fixed_parallel <- function(index, ctl1, to_loop = to_loop, change_these){
   shape_list1$for_plot <- c('Left Skew', 'Right Skew', 'Normal', 'Uniform', 'Patchy')
   ctl_temp <- ctl1
   tt <- to_loop[index, ]
-
+  
   #--------------------------------------------------------------------
   #Modify ctl_temp based on names of to_loop
   for(cc in 1:length(change_these)){
@@ -52,8 +52,14 @@ fixed_parallel <- function(index, ctl1, to_loop = to_loop, change_these){
   #--------------------------------------------------------------------
   #Run the simulation with the locations 
   #Only keep the stuff for plot
-  outs <- run_scenario(ctl_start = ctl_temp, loop_over = locs, add_index = TRUE,
-                       par_func = 'change_two', to_change = 'location')[[3]]
+  outs1 <- run_scenario(ctl_start = ctl_temp, loop_over = locs, add_index = TRUE,
+                       par_func = 'change_two', to_change = 'location')
+
+  out_site <- outs1[[2]]
+  outs <- outs1[[3]]
+
+  # outs <- run_scenario(ctl_start = ctl_temp, loop_over = locs, add_index = TRUE,
+  #                      par_func = 'change_two', to_change = 'location')[[3]]
 
   #Format the results to have the right information for plots
   outs$init_dist <- shape_list1[tt$shape_list_row, 'scen']
@@ -71,6 +77,6 @@ fixed_parallel <- function(index, ctl1, to_loop = to_loop, change_these){
   outs <- outs %>% filter(year == 1) #Filter results to only keep year 1 results
   outs$location <- NULL
 
-  return(outs)
+  return(list(outs = outs, site_cpue = out_site))
 
 }

@@ -38,7 +38,6 @@ fish_population <- function(fish_area, ...){
   #Add on samples for each drop into location data frame  
   add_ons <- as.data.frame(matrix(999, nrow = nrow(location), ncol = ndrops, byrow = FALSE))
   names(add_ons) <- paste0('drop', 1:ndrops)
-
   location <- cbind(location, add_ons)
   location_angler <- vector('list', length = nrow(location))
 

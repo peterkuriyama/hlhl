@@ -20,7 +20,7 @@ fish_pop_loop <- function(fish_area, loc_row, nhooks, nangs, prob1, prob2, comp_
 
     tot_fish <- fish1 + fish2
     nsamps <- nhooks * nangs
-
+    
     #Store numbers of fish caught
     temp_fish12 <- data.frame(nsamps = 1:nsamps, fish1 = rep(999, nsamps),
       fish2 = rep(999, nsamps))
