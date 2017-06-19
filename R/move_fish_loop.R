@@ -71,8 +71,9 @@ move_fish_loop <- function(location, ff, scope){
   nfish_moved$unq <- paste(nfish_moved$x, nfish_moved$y)
   
   #Join based on each unique location
-  nfish_moved1 <- nfish_moved %>% group_by(unq) %>% mutate(nmoving = sum(moving)) %>%
-    filter(row_number(unq) == 1) %>% as.data.frame
+  nfish_moved1 <- nfish_moved %>% group_by(unq) %>% mutate(nmoving = sum(moving)) %>% 
+    distinct(unq, .keep_all = T) %>% as.data.frame
+  
   nfish_moved1$moving <- nfish_moved1$nmoving
   
   #Update the number of fish  
