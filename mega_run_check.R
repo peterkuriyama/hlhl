@@ -39,7 +39,9 @@ twospp <- foreach(ii = to_run,
 }
 
 #Close clusters
-stopImplicitCluster()
+stopCluster(clusters)
+
+# stopImplicitCluster()
 
 #Record run time
 run_time <- Sys.time() - start_time
