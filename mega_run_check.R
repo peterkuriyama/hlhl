@@ -17,7 +17,7 @@ tots <- split(tot, ceiling(seq_along(tot) / (nrow(to_loop) / ((nrow(to_loop) / n
 
 #Specify Index for each computer
 #-----------------
-run_this_ind <- 1
+run_this_ind <- 1:2
 
 #-----------------
 
@@ -41,12 +41,14 @@ twospp <- foreach(ii = to_run,
 #Close clusters
 stopCluster(clusters)
 
-# stopImplicitCluster()
-
 #Record run time
 run_time <- Sys.time() - start_time
 
 #Format output
+
+site_cpues <- lapply(twospp, FUN = function(x) x[[2]])
+twospp <- lapply(twospp, FUN = function(x) x[[1]])
+
 twospp <- ldply(twospp)  
 
 if(length(run_this_ind) > 1) run_this_ind <- paste(run_this_ind, collapse = "")
