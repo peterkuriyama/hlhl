@@ -11,7 +11,7 @@ head(twospp1)
 
 #Now run big runs
 #Number of repetitions is important
-nreps <- 1000
+nreps <- 1000 
 
 #Adjust number of reps
 to_loop$nreps <- nreps
@@ -36,7 +36,6 @@ run_this_ind
 tot <- 1:nrow(to_loop)
 tots <- split(tot, ceiling(seq_along(tot) / (nrow(to_loop) / 2)))
 
-
 if(length(run_this_ind) == 1) to_run <- tots[[run_this_ind]]
 if(length(run_this_ind) > 1){
   to_run <- unlist(tots[run_this_ind])
@@ -55,12 +54,15 @@ twospp <- foreach(ii = to_run,
 }
 
 #Close clusters
-stopImplicitCluster()
+stopCluster(clusters)
 
 #Record run time
 run_time <- Sys.time() - start_time
 
 #Format output
+site_cpues <- lapply(twospp, FUN = function(x) x[[2]])
+twospp <- lapply(twospp, FUN = function(x) x[[1]])
+
 twospp <- ldply(twospp)  
 
 if(length(run_this_ind) > 1) run_this_ind <- paste(run_this_ind, collapse = "")
