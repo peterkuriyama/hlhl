@@ -85,7 +85,7 @@ ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05,
       nfish2 = 0, prob1 = .01, prob2 = .01, nyear = 1, scope = 0, seed = 1,
       location = data.frame(vessel = 1, x = 1, y = 1), numrow = 30, numcol = 30,
       shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1, 
-      nhooks = 1)   
+      nhooks = 5)   
 
 
 #--------------------------------------------------------------------------------------------
