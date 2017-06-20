@@ -87,7 +87,6 @@ ctl1 <- make_ctl(distribute = 'beta', mortality = 0, move_out_prob = .05,
       shapes = c(.1, .1) , max_prob = 0, min_prob = 0, comp_coeff = .5, niters = 1, 
       nhooks = 5)   
 
-
 #--------------------------------------------------------------------------------------------
 #Functions to create to_loop values
 #Function to that returns rounded numbers of fish1 at evenly spaced proportions
@@ -132,7 +131,7 @@ to_loop <- create_to_loop(fishes1 = fishes1, fishes2 = fishes2, shape_rows = 4)
 to_loop <- to_loop[-which(to_loop$nfish1 == 0 & to_loop$nfish2 == 0), ]
 
 to_loop1 <- subset(to_loop, shape_list_row == 4)
-
+to_loop <- to_loop1
 
 #--------------------------------------------------------------------------------------------
 #Hold fishes2 constant, and evaluate at values of fishes1
