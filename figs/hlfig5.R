@@ -1,6 +1,7 @@
-
 #----------------------------------------
 #Figure 5
+
+comp_captions <- c('Spp2 more aggressive', 'Equally aggressive', "Spp1 more aggresive")
 
 # load("output/twospp1_50sens.Rdata")
 #Two spp things run in "mega_run.R"
@@ -20,14 +21,54 @@
 # load('output/twospp12_newcc_50.Rdata')
 # twospp12$c1_sum <- .2
 # save(twospp12, file = 'output/twospp12_newcc_50.Rdata' )
-load("output/twospp1_newcc_1000_001.Rdata")
-load("output/twospp2_newcc_1000_001.Rdata")
+# load("output/twospp1_newcc_1000_001.Rdata")
+# load("output/twospp2_newcc_1000_001.Rdata")
+
 # load('output/twospp12_newcc_50_0.01.Rdata')
 # load('output/twospp12_newcc_50_0.015.Rdata')
 # twospp12$c1_sum <- .1
 # save(twospp12, file = 'output/twospp12_newcc_50_0.01.Rdata' )
 
-twospp <- rbind(twospp1, twospp2 )
+#Load the evenly spaced ones
+load("output/twospp_even616.Rdata")
+load("output/twospp_even616_2.Rdata")
+
+#twospp2 dimensions are effed up
+# twospp2[, 1]
+t1 <- t(twospp2)
+t1 <- as.data.frame(t1)
+names(t1) <- names(tt)
+row.names(t1) <- NULL
+t1 <- t1[-1, ]
+
+#Combine the two data frames
+twospp <- rbind(tt, t1)
+
+#Convert all the columns from factors to characters
+twospp[, 1] <- as.numeric(as.character(twospp[, 1]))
+twospp[, 2] <- as.numeric(as.character(twospp[, 2]))
+twospp[, 4] <- as.numeric(as.character(twospp[, 4]))
+twospp[, 5] <- as.numeric(as.character(twospp[, 5]))
+twospp[, 6] <- as.numeric(as.character(twospp[, 6]))
+twospp[, 7] <- as.numeric(as.character(twospp[, 7]))
+twospp[, 8] <- as.numeric(as.character(twospp[, 8]))
+twospp[, 9] <- as.numeric(as.character(twospp[, 9]))
+twospp[, 13] <- as.numeric(as.character(twospp[, 13]))
+twospp[, 14] <- as.numeric(as.character(twospp[, 14]))
+twospp[, 15] <- as.numeric(as.character(twospp[, 15]))
+twospp[, 16] <- as.numeric(as.character(twospp[, 16]))
+twospp[, 17] <- as.numeric(as.character(twospp[, 17]))
+
+#character columns
+twospp[, 3] <- as.character(twospp[, 3])
+twospp[, 10] <- as.character(twospp[, 10])
+twospp[, 11] <- as.character(twospp[, 11])
+twospp[, 12] <- as.character(twospp[, 12])
+row.names(twospp) <- NULL
+twospp$init_dist <- tolower(twospp$for_plot)
+
+#Numeric things
+# twospp <- rbind(twospp1, twospp2)
 
 #Check number of iterations for each
 twospp %>% group_by(init_dist) %>% summarize(niters = length(unique(iter)), 
@@ -43,22 +84,53 @@ twospp %>% group_by(init_dist) %>% summarize(niters = length(unique(iter)),
 
 #----------------------------------------
 #Modify data frames
-#Add depletion calculation
-twospp$dep1 <- twospp$nfish1 / 2e5
-twospp$dep2 <- twospp$nfish2 / 2e5
+
+#Numbers of fish
+max(twospp$nfish1)
+max(twospp$nfish2)
+
+#Add depletion calculation, specific to the scenario
+twospp$dep1 <- twospp$nfish1 / 9e5
+twospp$dep2 <- twospp$nfish2 / 1e5
+
+unique(twospp$dep1)[order(unique(twospp$dep1))]
+unique(twospp$dep2)[order(unique(twospp$dep2))]
+
+twospp$prop1 <- twospp$nfish1 / (twospp$nfish1 + twospp$nfish2)
+ggplot(twospp, ae)
+
+twospp$prop1 <- round(twospp$prop1, digits = 2)
+
+for_plot <- twospp %>% group_by(init_dist, spp, prop1, comp_coeff, type) %>% 
+  summarize(med_cpue = median(cpue), q5 = quantile(cpue, .05),
+    q95 = quantile(cpue, .95)) %>% as.data.frame
+
+# for_plot$perc1 <- for_plot$nfish1 / (for_plot$nfish1 + for_plot$nfish2)
+
+#Sketch it in ggplot
+for_plot %>% filter(init_dist == 'patchy') %>%
+  ggplot() + geom_point(aes(x = prop1, y = med_cpue, colour = spp)) + 
+  geom_segment(aes(x = prop1, xend = prop1, y = med_cpue, yend = q95, colour = spp)) +
+  geom_segment(aes(x = prop1, xend = prop1, y = q5, yend = med_cpue, colour = spp)) +
+  facet_wrap(~ type + comp_coeff)
+
+# for_plot %>% filter(init_dist == 'patchy', prop1 > .05,
+#  prop1 <= .1, 
+#   comp_coeff == .3, spp == 'spp2') %>% as.data.frame 
 
 #----------------------------------------
 #Filter to have only one case
-one_case <- twospp %>% filter(nfish2 == 60000)
+one_case <- twospp %>% filter(nfish2 == 60000, init_dist == 'patchy')
 one_case <- one_case %>% filter(init_dist == 'patchy')
+
 one_case$prop1 <- one_case$nfish1 / (one_case$nfish1 + one_case$nfish2)
-one_case$dep_end <- one_case$nfish_total / 2e5
+# one_case$dep_end <- one_case$nfish_total / 2e5
 
 spp1 <- one_case %>% filter(spp == "spp1")
-spp1$dep_start <- spp1$nfish1 / 2e5
+spp1$dep_start <- spp1$nfish1 / 540000
 
 spp2 <- one_case %>% filter(spp == "spp2")
-spp2$dep_start <- spp2$nfish2 / 2e5
+spp2$dep_start <- spp2$nfish2 / 200000
 
 one_case <- rbind(spp1, spp2)
 
@@ -73,6 +145,8 @@ one_case1 <- one_case %>% group_by(spp, init_dist, type, comp_coeff, prop1) %>% 
     med, q5, q95, nvals, mean_dep, mare) %>% 
   as.data.frame
 
+# ggplot(one_case1) + geom_point(aes(x = mean_dep, y = med, colour = spp)) + 
+#   facet_wrap(~ type + init_dist + comp_coeff)
 
 one_case1 %>%
   ggplot() + geom_point(aes(x = prop1, y = med, group = spp, colour = spp)) +
@@ -84,21 +158,36 @@ one_case1 %>%
 
 fig5_letts <- paste0(letters[1:6], ")")
 inds1 <- one_case1 %>% select(comp_coeff, type) %>% distinct() %>% arrange(type)
-#Wait for final run to evaluate the randoms
 
+#Wait for final run to evaluate the randoms
 inds1$ind <- 1:6
 one_case1 <- inner_join(one_case1, inds1, by = c("comp_coeff", "type"))
 
-#Add new figure 
+one_case1$squares <- (one_case1$med - one_case1$mean_dep) ^ 2
+one_case1 %>% group_by(spp, type, comp_coeff) %>% summarize(ss = sum(squares)) %>%
+  dcast(type + spp~ comp_coeff, value.var = 'ss')
 
+one_case1 %>% group_by(spp, type, comp_coeff) %>% summarize(max_cpue = max(med)) %>%
+  dcast(type + spp ~ comp_coeff, value.var = 'max_cpue')
+
+#Range of values
+#----------------------------------------
+nospp1 <- twospp %>% filter(nfish1 == 0, nfish2 == 60000)
+nospp1_avgs <- nospp1 %>% group_by(spp, init_dist, type, comp_coeff) %>% summarize(cpue = mean(cpue)) %>%
+  filter(spp == 'spp2', init_dist == 'patchy')
+
+twospp %>% filter(nfish2 == 60000) %>% distinct(nfish1)
+
+#----------------------------------------
 png(width = 7.45, height = 6, units = 'in', res = 150, file = 'figs/hlfig5.png')
 
 par(mfrow = c(2, 3), mar = c(0, 0, 0, 0), oma = c(4, 4.5, 2, 2), xpd = T, 
   mgp = c(0, .5, 0))
 
 for(ii in 1:6){
-  
   temp <- subset(one_case1, ind == ii)
+  nospp1_temp <- nospp1_avgs %>% filter(type == unique(temp$type) & 
+    comp_coeff == unique(temp$comp_coeff))
 
   temp1 <- subset(temp, spp == 'spp1')
   temp1$prop1 <- temp1$prop1 + .03
@@ -106,12 +195,13 @@ for(ii in 1:6){
 
   #Plot empty plot
   plot(temp$prop1, temp$median_cpue, type = 'n', axes = F, ann = F, ylim = c(0, 1),
-    xlim = c(0, .85))
+    xlim = c(0, .95))
   box()
 
   #Add the truth
   lines(temp1$prop1, temp1$mean_dep, lty = 2, lwd = 1)
   lines(temp2$prop1, temp2$mean_dep, lty = 2, col = 'gray', lwd = 1)
+  abline(h = nospp1_temp$cpue, lty = 2, col = 'gray', lwd = 2)
   
   #Add points
   points(temp1$prop1, temp1$med, pch = 19, cex = 1.2)
@@ -134,14 +224,11 @@ for(ii in 1:6){
   if(ii %% 3 == 1) axis(side = 2, las = 2, cex.axis = 1)
   if(ii > 3) axis(side = 1, cex.axis = 1)
   
-  if(ii == 1) legend(x = 0.05, y = 1.05, 
-    c(paste0("Species1; ", round(unique(temp1$mare), digits = 2)),
-      paste0("Species2; ", round(unique(temp2$mare), digits = 2))), col = c('black', 'gray'), 
+  if(ii == 1) legend("bottomright",
+    c(paste0("Species1"),
+      paste0("Species2")), col = c('black', 'gray'), 
     pch = 19, bty = 'n', cex = 1)
-  if(ii != 1) legend(x = 0.05, y = 1.05, 
-    c(paste0(round(unique(temp1$mare), digits = 2)),
-      paste0(round(unique(temp2$mare), digits = 2))), col = c('black', 'gray'), 
-    pch = 19, bty = 'n', cex = 1)
+  
 }
 
 mtext(side = 1, outer = T, "Proportion of species 1", line = 2.2, cex = 1)
@@ -194,7 +281,7 @@ thing <- inner_join(thing, inds5, by = c("comp_coeff", "type"))
 #Include uncertainty
 
 #Comp captions
-comp_captions <- c('Spp2 more aggressive', 'Equally aggresive', "Spp1 more aggresive")
+comp_captions <- c('Spp2 more aggressive', 'Equally aggressive', "Spp1 more aggressive")
 
 # png(width = 7.45, height = 6, units = 'in', res = 150, file = 'figs/hlfig5.png')
 
