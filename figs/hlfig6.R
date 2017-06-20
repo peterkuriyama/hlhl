@@ -40,11 +40,11 @@ the_data %>% filter(spp == 'spp1', init_dist == 'normdist', type == 'pref',
 
 #ggplot
 #contours
-ggplot(the_data, aes(x = dep1, y = dep2, z = median_cpue)) + geom_contour() + 
-  facet_wrap(~ type + init_dist + spp + comp_coeff, ncol = 6)
-#tiles
-ggplot(the_data, aes(x = dep1, y = dep2, fill = median_cpue)) + geom_tile() + 
-  facet_wrap(~ type + init_dist + spp + comp_coeff, ncol = 6)
+# ggplot(the_data, aes(x = dep1, y = dep2, z = median_cpue)) + geom_contour() + 
+#   facet_wrap(~ type + init_dist + spp + comp_coeff, ncol = 6)
+# #tiles
+# ggplot(the_data, aes(x = dep1, y = dep2, fill = median_cpue)) + geom_tile() + 
+#   facet_wrap(~ type + init_dist + spp + comp_coeff, ncol = 6)
 
 p1 <- p1 %>% order(dep1, dep2)
 p1$tot <- p1$dep1 + p1$dep2
@@ -78,6 +78,12 @@ the_data %>% filter(type == 'pref', init_dist == 'normdist', median_cpue != 0) %
 the_data %>% filter(init_dist == 'patchy', median_cpue != 0) %>%
    group_by(type, comp_coeff) %>% summarize(mincpue = min(median_cpue),
     maxcpue = max(median_cpue)) %>% arrange(comp_coeff, type)
+
+#-----------------------------------------------------------------------------
+#Values for abstract
+the_data %>% filter(comp_coeff == .3, dep1 == .9, dep2 %in% c(.2, .7), spp == 'spp1',
+  init_dist == 'patchy')
+
 
 #-----------------------------------------------------------------------------
 #Figure 6 - Two Species Contour Plots
