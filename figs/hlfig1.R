@@ -1,6 +1,5 @@
 
 shape_list4 <- subset(shape_list1, scen != 'rightskew')
-
 shape_list4$for_plot[2] <- 'Symmetric'
 #--------------------------------------------------------------------------------------------
 #Table of values
@@ -72,34 +71,109 @@ inits <- lapply(1:nrow(shape_list4), FUN = function(ss){
   return(temp)
 })
 
-
 #--------------------------------------------------------------------------------------------
 #Figure
 #Should probably be a one column figure
-png(width = 7, height = 7, units = 'in', res = 150, file = 'figs/hlfig1.png')
+#Add in matrices to visualize
+inn <- lapply(1:4, FUN = function(x) melt(inits[[x]]))
+names(inn) <- seq(1:4)
+inn <- ldply(inn)
+inn <- plyr::rename(inn, c(".id" = "ind", "Var1" = "x", 'Var2' = "y"))
 
-par(mfrow = c(2, 2), mar = c(0, 0, 0, 0), oma = c(4, 5, .5, 1), mgp = c(0, .7, 0))
+#Add a column for values that are scaled lower
+inn$low_value <- inn$value
 
-for(ii in 1:length(inits)){
-  temp <- inits[[ii]]
-  hist(temp, breaks = seq(0, 2270, 5), main = shape_list1[ii, 'scen'], freq = FALSE, 
-    xlim = c(0, 300), axes = F, ann = F, ylim = c(0, .14), yaxs = 'i', xaxs = 'i', col = 'gray')
-  box()
-  mtext(letts[ii], side = 3, line = -1.7, adj = 0.01, cex = 1.25)
-  mtext(shape_list4[ii, 'for_plot'], side = 3, line = -1.7, adj = .95, cex = 1.25)
-  # mtext(paste0('mean = ', round(mean(temp), digits = 0)), side = 3, line = -3, adj = .95)
-  mtext(paste0('median = ', round(median(temp), digits = 0)), side = 3, line = -3, adj = .95)
-  mtext(paste0('range = ', range(temp)[1], ', ', range(temp)[2]), side = 3, line = -4, adj = .95)
-  if(ii == 1) axis(side = 2, at = seq(0, 0.12, by = .02), labels = seq(0, 0.12, by = .02), las = 2, 
-    cex.axis = 1.2)
-  if(ii == 3){
-    axis(side = 2, at = seq(0, 0.12, by = .02), labels = seq(0, 0.12, by = .02), las = 2, cex.axis = 1.2)
-    axis(side = 1, at = seq(0, 250, by = 50), cex.axis = 1.2)
-  } 
-  if(ii == 4) axis(side = 1, cex.axis = 1.2)
+max_value <- 200
+inn[which(inn$low_value > max_value), 'low_value'] <- max_value
+
+#Scale colors to provide more contrast rather than white and black
+inn$scaled_value <- round(inn$low_value / max(inn$low_value) * 100, digits = 0)
+
+greys <- paste0('grey', 100 - inn$scaled_value)
+inn$greys <- rgb(t(col2rgb(greys)), maxColorValue = 255)
+
+letts <- letts[c(1, 1, 2, 2, 3, 3, 4, 4)]
+shape_list4 <- shape_list4[c(1, 1, 2, 2, 3, 3, 4, 4), ]
+
+# greys <- paste0('grey', 100 - (test5$tot_fish_prop * 100))
+
+fig1_list <- list(two = inits[[1]],
+                  one = subset(inn, ind == 1),                   
+                  four = inits[[2]],
+                  three = subset(inn, ind == 2),                  
+                  six = inits[[3]],
+                  five = subset(inn, ind == 3),                   
+                  eight = inits[[4]],
+                  seven = subset(inn, ind == 4))
+
+#Function for Color Bar on Plot
+color_bar <- function(lut, min, max=-min, nticks=11, ticks=seq(min, max, len=nticks), 
+  tick_labs, title='') {
+    scale = (length(lut)-1)/(max-min)
+
+    # dev.new(width=1.75, height=5)
+    plot(c(0,10), c(min,max), type='n', bty='n', xaxt='n', xlab='', yaxt='n', ylab=title, main='', 
+      cex.lab=1.5, mgp = c(0, .5, 0))
+    axis(2, at = ticks, labels = tick_labs, las=1)
+    for (i in 1:(length(lut)-1)) {
+     y = (i-1)/scale + min
+     rect(0,y,10,y+1/scale, col=lut[i], border=NA)
+    }
 }
-mtext(side = 1, "Number of fish", outer = T, cex = 1.5, line = 2.5)
-mtext(side = 2, "Proportion of sites", outer = T, cex = 1.5, line = 3)
+
+color_bar(lut = gg$greys, nticks = 5 , min = 0, max = 1, tick_labs = c("0", "50", 
+  "100", "150", ">=200"))
+
+gg <- inn %>% distinct(scaled_value, .keep_all = T) %>% arrange(scaled_value) %>% select(greys)
+inn %>% filter(scaled_value == 0 | scaled_value == 100) %>% group_by(scaled_value) %>%
+  summarize(dist_color = unique(greys))
+inn$scaled_value %>% f
+which(inn$scaled_value )
+
+png(width = 5, height = 9.2, units = 'in', res = 150, file = 'figs/hlfig1.png')
+pdf(width = 5, height = 9.2, file = 'figs/hlfig1.pdf')
+par(mfrow = c(4, 2), mar = c(0, 0, 0, 0), oma = c(4, 5, .5, 1), mgp = c(0, .7, 0))
+
+for(ii in 1:8){
+  temp <- fig1_list[[ii]]
+
+  if(ii %% 2 == 0){
+    plot(temp$x, temp$y, pch = 15, cex = 2.35, col = temp$greys, ann = FALSE, axes = FALSE)  
+    box()
+  }
+
+  if(ii %% 2 == 1){
+    hist(temp, breaks = seq(0, 2270, 5), main = shape_list1[ii, 'scen'], freq = FALSE, 
+      xlim = c(0, 300), axes = F, ann = F, ylim = c(0, .14), yaxs = 'i', xaxs = 'i', col = 'gray')
+    box()
+    mtext(letts[ii], side = 3, line = -1.7, adj = 0.01, cex = 1)
+    mtext(shape_list4[ii, 'for_plot'], side = 3, line = -1.7, adj = .95, cex = 1)
+    
+    mtext(paste0('median = ', round(median(temp), digits = 0)), side = 3, line = -3, adj = .95)
+    mtext(paste0('range = ', range(temp)[1], ', ', range(temp)[2]), side = 3, line = -4.2, adj = .95)
+    
+    axis(side = 2, at = seq(0, 0.12, by = .02), labels = seq(0, 0.12, by = .02), las = 2, 
+      cex.axis = 1.2)
+    # if(ii == 3){
+    #   axis(side = 2, at = seq(0, 0.12, by = .02), labels = seq(0, 0.12, by = .02), las = 2, cex.axis = 1.2)
+    #   axis(side = 1, at = seq(0, 250, by = 50), cex.axis = 1.2)
+    # } 
+    if(ii == 7){
+      axis(side = 1, cex.axis = 1.2)
+      mtext(side = 1, "Number of fish", outer = F, cex = 1.2, line = 2.5)
+      #Need to add color bar to bottom right of this figure
+    } 
+  }
+}
+
+#Add scale bar for the plots on the right
+par(fig = c(.45, 0.49, 0.03, .15), new = T)  
+      color_bar(lut = gg$greys, nticks = 5 , min = 0, max = 1, tick_labs = c("0", "50", 
+        "100", "150", ">=200"))
+
+mtext(side = 2, "Proportion of sites", outer = T, cex = 1.2, line = 3)
+
+# png(width = 7, height = 7, units = 'in', res = 150, file = 'figs/hlfig1_old.png')
 
 dev.off()
 
