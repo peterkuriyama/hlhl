@@ -1,9 +1,14 @@
 #----------------------------------------
 #Figure 6
+load("output/twospp1_newcc_1000_001.Rdata")
+load("output/twospp2_newcc_1000_001.Rdata")
+
+twospp <- rbind(twospp1, twospp2)
+twospp$dep1 <- twospp$nfish1 / 2e5
+twospp$dep2 <- twospp$nfish2 / 2e5
 
 plot6 <- twospp %>% group_by(spp, comp_coeff, init_dist, for_plot, type, nsites, dep1, dep2) %>%
   summarize(median_cpue = median(cpue), sd_cpue = sd(cpue)) %>% as.data.frame
-
 
 #Filter Data for each distribution
 ls6 <- plot6 %>% filter(init_dist == 'leftskew')
@@ -17,9 +22,6 @@ head(p6)
 p6 %>% filter(type == 'pref', comp_coeff == 0.3, dep2 %in% c(.2, .7), dep1 == .9, spp == 'spp1') -> temp
 range(temp$median_cpue)
 range(subset(temp, spp == "spp1")$median_cpue)
-
-
-
 #----------------------------------------
 the_data <- rbind(p6, n6)
 
