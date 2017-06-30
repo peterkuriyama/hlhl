@@ -46,7 +46,6 @@ names(table11) <- paste0(toupper(substr(names(table11), 1, 1)),
 write.csv(table11, 'output/table1_1.csv', row.names = FALSE)
 
 
-
 table12 <- table1 %>% dcast(abundance + nfish ~ scen, value.var = 'rng')
 names(table12) <- paste0(toupper(substr(names(table12), 1, 1)), 
   substr(names(table12), 2, nchar(names(table12))))
@@ -57,7 +56,6 @@ write.csv(table12, 'output/table1_2.csv', row.names = FALSE)
 #--------------------------------------------------------------------------------------------
 #Plot Arguments
 #REMOVE RIGHTSKEW
-
 
 #Figure 1. Show distributions of each sceanrio
 ctl1$nfish1 <- 60000
@@ -95,8 +93,6 @@ inn$greys <- rgb(t(col2rgb(greys)), maxColorValue = 255)
 letts <- letts[c(1, 1, 2, 2, 3, 3, 4, 4)]
 shape_list4 <- shape_list4[c(1, 1, 2, 2, 3, 3, 4, 4), ]
 
-# greys <- paste0('grey', 100 - (test5$tot_fish_prop * 100))
-
 fig1_list <- list(two = inits[[1]],
                   one = subset(inn, ind == 1),                   
                   four = inits[[2]],
@@ -121,17 +117,14 @@ color_bar <- function(lut, min, max=-min, nticks=11, ticks=seq(min, max, len=nti
     }
 }
 
-color_bar(lut = gg$greys, nticks = 5 , min = 0, max = 1, tick_labs = c("0", "50", 
-  "100", "150", ">=200"))
-
 gg <- inn %>% distinct(scaled_value, .keep_all = T) %>% arrange(scaled_value) %>% select(greys)
-inn %>% filter(scaled_value == 0 | scaled_value == 100) %>% group_by(scaled_value) %>%
-  summarize(dist_color = unique(greys))
-inn$scaled_value %>% f
-which(inn$scaled_value )
+# inn %>% filter(scaled_value == 0 | scaled_value == 100) %>% group_by(scaled_value) %>%
+#   summarize(dist_color = unique(greys))
+# inn$scaled_value %>% f
+# which(inn$scaled_value )
 
 png(width = 5, height = 9.2, units = 'in', res = 150, file = 'figs/hlfig1.png')
-pdf(width = 5, height = 9.2, file = 'figs/hlfig1.pdf')
+# pdf(width = 5, height = 9.2, file = 'figs/hlfig1.pdf')
 par(mfrow = c(4, 2), mar = c(0, 0, 0, 0), oma = c(4, 5, .5, 1), mgp = c(0, .7, 0))
 
 for(ii in 1:8){
