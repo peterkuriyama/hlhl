@@ -1,7 +1,7 @@
 #----------------------------------------
 #Figure 5
 
-comp_captions <- c('Spp2 more aggressive', 'Equally aggressive', "Spp1 more aggresive")
+comp_captions <- c('Spp2 more aggressive', 'Equally aggressive', "Spp1 more aggressive")
 
 # load("output/twospp1_50sens.Rdata")
 #Two spp things run in "mega_run.R"
@@ -88,17 +88,23 @@ twospp %>% group_by(init_dist) %>% summarize(niters = length(unique(iter)),
 #Numbers of fish
 max(twospp$nfish1)
 max(twospp$nfish2)
+unique(twospp$nfish1)
+unique(twospp$nfish2)
 
-#Add depletion calculation, specific to the scenario
-twospp$dep1 <- twospp$nfish1 / 9e5
-twospp$dep2 <- twospp$nfish2 / 1e5
+9e5 / (9e5 + 6e4)
+#Add depletion calculation, specific to the scenario, 
+# these have to be divided by the same numbers
 
-unique(twospp$dep1)[order(unique(twospp$dep1))]
-unique(twospp$dep2)[order(unique(twospp$dep2))]
+twospp %>% distinct(nfish1, nfish2, .keep_all = T) 
+
+#Ran multiple scenarios, but only want to keep the values with nfish2 == 6e4
+twospp <- twospp %>% filter(nfish2 == 6e4)
+max(twospp$nfish2)
+
+twospp$dep1 <- twospp$nfish1 / max(twospp$nfish1)
+twospp$dep2 <- twospp$nfish2 / max(twospp$nfish1)
 
 twospp$prop1 <- twospp$nfish1 / (twospp$nfish1 + twospp$nfish2)
-ggplot(twospp, ae)
-
 twospp$prop1 <- round(twospp$prop1, digits = 2)
 
 for_plot <- twospp %>% group_by(init_dist, spp, prop1, comp_coeff, type) %>% 
@@ -130,7 +136,7 @@ spp1 <- one_case %>% filter(spp == "spp1")
 spp1$dep_start <- spp1$nfish1 / 540000
 
 spp2 <- one_case %>% filter(spp == "spp2")
-spp2$dep_start <- spp2$nfish2 / 200000
+spp2$dep_start <- spp2$nfish2 / 540000
 
 one_case <- rbind(spp1, spp2)
 
@@ -232,7 +238,7 @@ for(ii in 1:6){
 }
 
 mtext(side = 1, outer = T, "Proportion of species 1", line = 2.2, cex = 1)
-mtext(side = 2, outer = T, "CPUE / relative abundance", line = 2.2, cex = 1)
+mtext(side = 2, outer = T, "CPUE or relative abundance", line = 2.2, cex = 1)
 
 dev.off()
 

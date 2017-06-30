@@ -48,6 +48,12 @@ ab4 <- plot4 %>% group_by(nsites, init_dist, type) %>% summarize(sigup = max(dep
 1 - sum(is.infinite(ab4$sigdown)) / nrow(ab4)
 ab4 %>% filter(init_dist == 'patchy')
 
+
+
+plot4 %>% filter(init_dist == 'patchy', dep == .1) %>% group_by(type) %>% summarize(mmin = min(med_cpue), 
+  mmax = max(med_cpue))
+
+
 #-----------------------------------------------------------------------------
 #Figure 4 - Probability of increase or decrease
 #Starting at some level and going up and down
@@ -79,14 +85,15 @@ for(ii in 1:16){
   plot(temp$dep_adj, temp$med_cpue, type = 'n', ylim = c(-.6, .4), ann = FALSE, 
     axes = FALSE, xlim = c(-delta, 1 + delta))
   abline(h = 0, lty = 2)
+  # lines(x = seq(0, 1, by = .1), y = seq(-.5, .5, by = .1), lty = 2, col = 'grey')
   # abline(v = .5, lty = 2)
   box()
 
   #Add Axes
   if(ii == 1) legend('bottomright', pch = c(19, 17), legend = c('preferential', 'random' ), bty = 'n')
   if(ii < 5) axis(side = 2, las = 2, cex.axis = 1.2, at = c(-.4, -.2, 0, .2, .4), 
-    labels = c(-0.4, -0.2, 0.0, 0.2, 0.4))
-  if(ii %% 4 == 0) axis(side = 1, at = c(.1, .3, .5, .7, .9), labels = c("-.4", "-.2", "0", "+.2", "+.4"),
+    labels = c("-0.4", "-0.2", "0", "0.2", "0.4"))
+  if(ii %% 4 == 0) axis(side = 1, at = c(.1, .3, .5, .7, .9), labels = c("-0.4", "-0.2", "0", "+0.2", "+0.4"),
     cex.axis = 1.2)
   if(ii %% 4 == 1) mtext(side = 3, unique(temp$nsites))
   if(ii > 12) mtext(side = 4, unique(temp_inds$init_dist_plot), line = .6)
@@ -180,6 +187,7 @@ png(width = 7, height = 7, units = 'in', res = 150, file = 'figs/hlfig4_pres2.pn
   plot(temp$dep_adj, temp$med_cpue, type = 'n', ylim = c(-.6, .5), ann = FALSE, 
     axes = FALSE, xlim = c(-delta, 1 + delta))
   abline(h = 0, lty = 2)
+  
   # plot(temp$med_cpue, temp$dep_adj, type = 'n', xlim = c(-.6, .5), ann = FALSE, 
   #   axes = FALSE, ylim = c(.05, .95))
   # abline(v = 0, lty = 2)
@@ -219,6 +227,7 @@ dev.off()
 
 #Figure for presentation
 png(width = 14, height = 5, units = 'in', res = 150, file = 'figs/hlfig4_pres3.png')
+
 par(mfcol = c(1, 4), mar = c(0, 0, 0, 0), oma = c(4.5, 6, 3, 2), xpd = T, 
   mgp = c(0, .5, 0))
 
@@ -240,6 +249,7 @@ for(ii in c(4, 8, 12, 16)){
   plot(temp$dep_adj, temp$med_cpue, type = 'n', ylim = c(-.6, .5), ann = FALSE, 
     axes = FALSE, xlim = c(-delta, 1 + delta))
   abline(h = 0, lty = 2)
+  
   # plot(temp$med_cpue, temp$dep_adj, type = 'n', xlim = c(-.6, .5), ann = FALSE, 
   #   axes = FALSE, ylim = c(.05, .95))
   # abline(v = 0, lty = 2)
@@ -265,6 +275,7 @@ for(ii in c(4, 8, 12, 16)){
   segments(x0 = prefs$dep_adj, y0 = prefs$cpue5, y1 = prefs$med_cpue)
   points(prefs$dep_adj, prefs$med_cpue, pch = prefs$point, bg = prefs$bg)
   
+
   segments(x0 = rands$dep_adj, y0 = rands$med_cpue, y1 = rands$cpue95, lty = 1)
   segments(x0 = rands$dep_adj, y0 = rands$cpue5, y1 = rands$med_cpue, lty = 1)
   points(rands$dep_adj, rands$med_cpue, pch = rands$point, bg = rands$bg)

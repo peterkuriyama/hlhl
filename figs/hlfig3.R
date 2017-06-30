@@ -97,7 +97,7 @@ for(ii in 1:16){
   # points(0, 0, pch = 21, cex = 2, bg = 'gray')
 }
 
-mtext(side = 1, "Decrease from Unfished", outer = T, line = 2.7, cex = 1.4)
+mtext(side = 1, "Decrease from unfished", outer = T, line = 2.7, cex = 1.4)
 mtext(side = 2, "Change in CPUE", outer = T, line = 3, cex = 1.4)
 
 dev.off()

@@ -86,9 +86,7 @@ to_plot %>% group_by(nsites, dep, init_dist) %>% summarize(diff = round(med_cpue
   as.data.frame  %>% arrange(init_dist) -> fig2_diffs
 
 # ggplot(fig2_diffs) + geom_point(aes(x = dep, y = diff, colour = nsites)) + facet_wrap(~ init_dist)
-
 fig2_diffs %>% filter(init_dist == 'patchy') %>% select(diff) %>% summarize(mean(diff))
-
 to_plot %>% group_by(nsites, dep, init_dist) %>% summarize
 
 plot2 <- to_plot
@@ -136,7 +134,8 @@ to_plot %>% dcast(init_dist + type ~ nsites + dep, value.var = "qrange") %>%
 #--------------------------------------------------------------------------------------------
 #load data with beta_fits added already
 
-load('output/plot2.Rdata')
+
+# load('output/plot2.Rdata')
 to_plot <- plot2
 
 #--------------------------------------------------------------------------------------------
@@ -166,16 +165,17 @@ for(ii in 1:16){
   rands$dep_adj <- rands$dep_adj + delta
   
   #Add in hyperstability coefficients
-  pref_beta <- temp %>% filter(type == 'preferential') %>% select(beta) %>%
-    unique
-  pref_beta <- round(pref_beta, digits = 2)
-  rand_beta <- temp %>% filter(type == 'random') %>% select(beta) %>%
-    unique
-  rand_beta <- round(rand_beta, digits = 2)
+  # pref_beta <- temp %>% filter(type == 'preferential') %>% select(beta) %>%
+  #   unique
+  # pref_beta <- round(pref_beta, digits = 2)
+  # rand_beta <- temp %>% filter(type == 'random') %>% select(beta) %>%
+  #   unique
+  # rand_beta <- round(rand_beta, digits = 2)
   
   plot(temp$dep_adj, temp$med_cpue, type = 'n', ylim = c(0, 1.05), ann = FALSE, 
     axes = FALSE, xlim = c(-delta, 1 + .05))
   box()
+  lines(temp$dep_adj, temp$dep_adj, lty = 2, col = 'grey')
 
   #Add Axes
   if(ii == 1) legend('bottomright', pch = c(19, 17), 
@@ -205,7 +205,7 @@ for(ii in 1:16){
   # }
 }
 
-mtext(side = 1, "Relative Abundance", outer = T, line = 2.8, cex = 1.4)
+mtext(side = 1, "Relative abundance", outer = T, line = 2.8, cex = 1.4)
 mtext(side = 2, "CPUE", outer = T, line = 3, cex = 1.4)
 
 dev.off()
