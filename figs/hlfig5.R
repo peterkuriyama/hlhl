@@ -29,9 +29,24 @@ comp_captions <- c('Spp2 more aggressive', 'Equally aggressive', "Spp1 more aggr
 # twospp12$c1_sum <- .1
 # save(twospp12, file = 'output/twospp12_newcc_50_0.01.Rdata' )
 
+load("output/twospp2_big_run_withnospp1.Rdata")
+tt2 <- twospp2
+tt2$init_dist <- as.character(tt2$init_dist)
+
 #Load the evenly spaced ones
 load("output/twospp_even616.Rdata")
 load("output/twospp_even616_2.Rdata")
+load("output/twospp12_newcc_100_001_date_2017-07-05.Rdata")
+
+twospp12 <- lapply(twospp12, function(x) x[[1]])
+twospp12 <- ldply(twospp12)
+
+unique(twospp12$init_dist)
+unique(twospp12$type)
+twospp12$init_dist <- as.character(twospp12$init_dist)
+twospp12$init_dist 
+str(twospp12)
+
 
 #twospp2 dimensions are effed up
 # twospp2[, 1]
@@ -67,11 +82,16 @@ twospp[, 12] <- as.character(twospp[, 12])
 row.names(twospp) <- NULL
 twospp$init_dist <- tolower(twospp$for_plot)
 
+# twospp12
+
+tt2[which(tt2$init_dist == 'normdist'), 'init_dist'] <- "normal"
+
+twospp_all <- rbind(twospp, tt2)
 #Numeric things
 # twospp <- rbind(twospp1, twospp2)
 
 #Check number of iterations for each
-twospp %>% group_by(init_dist) %>% summarize(niters = length(unique(iter)), 
+twospp_all %>% group_by(init_dist) %>% summarize(niters = length(unique(iter)), 
   nindex = length(unique(index)))
 
 # load('output/twospp12_1000.Rdata')
@@ -83,24 +103,41 @@ twospp %>% group_by(init_dist) %>% summarize(niters = length(unique(iter)),
 #   nindex = length(unique(index)))
 
 #----------------------------------------
-#Modify data frames
 
+twospp_all %>% distinct(nfish1, nfish2)
+
+dd <- twospp12 %>% filter(init_dist == 'patchy', comp_coeff == 0.3, type == 'pref',
+  nfish2 == 0, nfish1 == 540000, spp == 'spp1')
+hist(dd$cpue)
+
+twospp12 %>% filter(spp == 'spp1') %>% ggplot(aes(x = nfish1, y = median(cpue), colour = type)) + geom_point() + 
+  facet_wrap(~ init_dist )
+
+twospp12 %>% group_by(spp, nfish1, init_dist, type) %>% summarize(med_cpue = median(cpue)) %>%
+  as.data.frame %>% filter(spp == 'spp1') %>%
+  ggplot() + geom_point(aes(x = nfish1, y = med_cpue, colour = type)) + facet_wrap(~init_dist)
+
+twospp12 %>% filter(spp == 'spp1') %>% head
+
+#----------------------------------------
+#Modify data frames
+# twospp <- twospp %>% filter(nfish2 == 6e4)
+twospp <- twospp_all %>% filter(nfish2 %in% c(0, 6e4))
+twospp %>% distinct(nfish1, nfish2)
+# twospp <- twospp %>% filter(nfish2 == 1e5)
+
+#1 is preferential, 2 is random in type
+
+twospp[which(twospp$type == 1), 'type'] <- 'pref'
+twospp[which(twospp$type == 2), 'type'] <- 'rand'
 #Numbers of fish
 max(twospp$nfish1)
 max(twospp$nfish2)
-unique(twospp$nfish1)
-unique(twospp$nfish2)
 
-9e5 / (9e5 + 6e4)
 #Add depletion calculation, specific to the scenario, 
 # these have to be divided by the same numbers
 
-twospp %>% distinct(nfish1, nfish2, .keep_all = T) 
-
 #Ran multiple scenarios, but only want to keep the values with nfish2 == 6e4
-twospp <- twospp %>% filter(nfish2 == 6e4)
-max(twospp$nfish2)
-
 twospp$dep1 <- twospp$nfish1 / max(twospp$nfish1)
 twospp$dep2 <- twospp$nfish2 / max(twospp$nfish1)
 
@@ -110,8 +147,6 @@ twospp$prop1 <- round(twospp$prop1, digits = 2)
 for_plot <- twospp %>% group_by(init_dist, spp, prop1, comp_coeff, type) %>% 
   summarize(med_cpue = median(cpue), q5 = quantile(cpue, .05),
     q95 = quantile(cpue, .95)) %>% as.data.frame
-
-# for_plot$perc1 <- for_plot$nfish1 / (for_plot$nfish1 + for_plot$nfish2)
 
 #Sketch it in ggplot
 for_plot %>% filter(init_dist == 'patchy') %>%
@@ -126,48 +161,50 @@ for_plot %>% filter(init_dist == 'patchy') %>%
 
 #----------------------------------------
 #Filter to have only one case
-one_case <- twospp %>% filter(nfish2 == 60000, init_dist == 'patchy')
-one_case <- one_case %>% filter(init_dist == 'patchy')
+one_case <- twospp %>% filter(nfish2 %in% c(max(twospp$nfish2), 0), init_dist == 'patchy')
 
 one_case$prop1 <- one_case$nfish1 / (one_case$nfish1 + one_case$nfish2)
 # one_case$dep_end <- one_case$nfish_total / 2e5
 
 spp1 <- one_case %>% filter(spp == "spp1")
-spp1$dep_start <- spp1$nfish1 / 540000
+spp1$dep_start <- spp1$nfish1 / max(spp1$nfish1)
 
 spp2 <- one_case %>% filter(spp == "spp2")
-spp2$dep_start <- spp2$nfish2 / 540000
+spp2$dep_start <- spp2$nfish2 / max(spp1$nfish1)
 
 one_case <- rbind(spp1, spp2)
 
 #Add in error
 one_case$re <- (one_case$cpue - one_case$dep_start) / one_case$dep_start
 
+#Split one_case into twos cases, based on the number of spp2
+
 #Calculate medians and quantiles
-one_case1 <- one_case %>% group_by(spp, init_dist, type, comp_coeff, prop1) %>% mutate(
+one_case1 <- one_case %>% filter(nfish2 == 60000) %>% group_by(spp, init_dist, type, comp_coeff, nfish1, nfish2, prop1) %>% mutate(
   med = median(cpue), q5 = quantile(cpue, .05), q95 = quantile(cpue, .95), nvals = n(),
   mean_dep = mean(dep_start)) %>% group_by(spp, init_dist, type, comp_coeff) %>%
   mutate(mare = median(abs(re), na.rm = T)) %>% distinct(prop1,
     med, q5, q95, nvals, mean_dep, mare) %>% 
   as.data.frame
 
-# ggplot(one_case1) + geom_point(aes(x = mean_dep, y = med, colour = spp)) + 
-#   facet_wrap(~ type + init_dist + comp_coeff)
+one_case2 <- one_case %>% filter(nfish2 == 0, spp == 'spp1') %>% group_by(spp, init_dist, type, comp_coeff, nfish1,
+  nfish2) %>%
+  mutate(med = median(cpue), q5 = quantile(cpue, .05), q95 = quantile(cpue, .95), nvals = n(),
+    mean_dep = mean(dep_start)) %>% group_by(spp, init_dist, type, comp_coeff, nfish1, nfish2) %>%
+  mutate(mare = median(abs(re), na.rm = T)) %>% distinct(prop1,
+    med, q5, q95, nvals, mean_dep, mare) %>% 
+  as.data.frame
 
-one_case1 %>%
-  ggplot() + geom_point(aes(x = prop1, y = med, group = spp, colour = spp)) +
-  geom_line(aes(x = prop1, y = mean_dep, colour = spp)) + 
-  # geom_line(aes(x = prop1, y = mean_dep2)) + 
-  geom_segment(aes(x = prop1, xend = prop1, y = med, yend = q95, colour = spp)) +
-  geom_segment(aes(x = prop1, xend = prop1, y = q5, yend = med, colour = spp)) +
-  facet_wrap(~ type + init_dist + comp_coeff)
+one_case2$prop1 <- one_case2$nfish1 / max(one_case2$nfish1)
 
-fig5_letts <- paste0(letters[1:6], ")")
+one_case2 <- one_case2[, names(one_case1)] 
+
 inds1 <- one_case1 %>% select(comp_coeff, type) %>% distinct() %>% arrange(type)
 
 #Wait for final run to evaluate the randoms
 inds1$ind <- 1:6
 one_case1 <- inner_join(one_case1, inds1, by = c("comp_coeff", "type"))
+one_case2 <- left_join(one_case2, inds1, by = c("comp_coeff", "type"))
 
 one_case1$squares <- (one_case1$med - one_case1$mean_dep) ^ 2
 one_case1 %>% group_by(spp, type, comp_coeff) %>% summarize(ss = sum(squares)) %>%
@@ -182,9 +219,9 @@ nospp1 <- twospp %>% filter(nfish1 == 0, nfish2 == 60000)
 nospp1_avgs <- nospp1 %>% group_by(spp, init_dist, type, comp_coeff) %>% summarize(cpue = mean(cpue)) %>%
   filter(spp == 'spp2', init_dist == 'patchy')
 
-twospp %>% filter(nfish2 == 60000) %>% distinct(nfish1)
-
 #----------------------------------------
+fig5_letts <- paste0(letters[1:6], ")")
+
 png(width = 7.45, height = 6, units = 'in', res = 150, file = 'figs/hlfig5.png')
 
 par(mfrow = c(2, 3), mar = c(0, 0, 0, 0), oma = c(4, 4.5, 2, 2), xpd = T, 
@@ -199,16 +236,24 @@ for(ii in 1:6){
   temp1$prop1 <- temp1$prop1 + .03
   temp2 <- subset(temp, spp == 'spp2')
 
+  temp3 <- subset(one_case2, ind == ii)
+  add_in <- temp3[1, ]
+  add_in$prop1 <- 0
+  add_in$med <- 0
+  temp3 <- rbind(add_in, temp3)  
+  
+
   #Plot empty plot
   plot(temp$prop1, temp$median_cpue, type = 'n', axes = F, ann = F, ylim = c(0, 1),
     xlim = c(0, .95))
   box()
 
   #Add the truth
-  lines(temp1$prop1, temp1$mean_dep, lty = 2, lwd = 1)
-  lines(temp2$prop1, temp2$mean_dep, lty = 2, col = 'gray', lwd = 1)
+  # lines(temp1$prop1, temp1$mean_dep, lty = 2, lwd = 1)
+  # lines(temp2$prop1, temp2$mean_dep, lty = 2, col = 'gray', lwd = 1)
+  lines(temp3$prop1, temp3$med, lty = 2, col = 'black', lwd = 2)
   abline(h = nospp1_temp$cpue, lty = 2, col = 'gray', lwd = 2)
-  
+
   #Add points
   points(temp1$prop1, temp1$med, pch = 19, cex = 1.2)
   segments(x0 = temp1$prop1, y0 = temp1$med, y1 = temp1$q95)
@@ -237,8 +282,8 @@ for(ii in 1:6){
   
 }
 
-mtext(side = 1, outer = T, "Proportion of species 1", line = 2.2, cex = 1)
-mtext(side = 2, outer = T, "CPUE or relative abundance", line = 2.2, cex = 1)
+mtext(side = 1, outer = T, "Proportion of species 1 (pts.) or relative abundance (lines)", line = 2.2, cex = 1)
+mtext(side = 2, outer = T, "CPUE", line = 2.2, cex = 1)
 
 dev.off()
 

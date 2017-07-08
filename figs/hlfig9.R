@@ -50,30 +50,45 @@ hl_comp <- dat %>% group_by(Year, SiteName, DropNum, AngNum) %>% mutate(nfish = 
 #Now look at the bite time values
   group_by(ComName, nfish_species) %>%
   summarize(mean_fb = mean(TimeToFB, na.rm = T), 
-    fb5 = quantile(TimeToFB, .05, na.rm = T), fb95 = quantile(TimeToFB, .95, na.rm = T), nvals = n()) %>% 
+    fb5 = quantile(TimeToFB, .05, na.rm = T), fb95 = quantile(TimeToFB, .95, na.rm = T), nvals = n(),
+    sd = sd(TimeToFB, na.rm = T), se = sd / sqrt(nvals)) %>% 
   filter(nfish_species != 0 & nfish_species < 6) %>% as.data.frame
+
+hl_comp$se
 
 bocas <- hl_comp %>% filter(ComName == "Bocaccio")
 bocas$xx <- bocas$nfish_species - .1
 verms <- hl_comp %>% filter(ComName == 'Vermilion')
 verms$xx <- verms$nfish_species + .1
 
+dat %>% group_by(Year, )
 
-#Plot 7
-png(width = 7, height = 7, units = 'in', res = 150, file = 'figs/hlfig_bitetime.png')
+
+#Plot 9
+png(width = 7, height = 7, units = 'in', res = 150, file = 'figs/hlfig9.png')
+
 par(mgp = c(1, .5, 0))
-plot(hl_comp$nfish_species, hl_comp$fb95, xlim = c(.5, 5.5), ylim = c(0, 220), type = 'n',
+plot(hl_comp$nfish_species, hl_comp$fb95, xlim = c(.5, 5.5), ylim = c(0, 70), type = 'n',
   ann = F, axes = F, xaxs = 'i', yaxs = 'i')
 points(bocas$xx, bocas$mean_fb, pch = 17)
-segments(x0 = bocas$xx, x1 = bocas$xx, y0 = bocas$fb5, bocas$mean_fb)
-segments(x0 = bocas$xx, x1 = bocas$xx, y0 = bocas$mean_fb, bocas$fb95)
+
+# segments(x0 = bocas$xx, x1 = bocas$xx, y0 = bocas$fb5, bocas$mean_fb)
+# segments(x0 = bocas$xx, x1 = bocas$xx, y0 = bocas$mean_fb, bocas$fb95)
+segments(x0 = bocas$xx, x1 = bocas$xx, y0 = bocas$mean_fb - bocas$se, y1 = bocas$mean_fb)
+segments(x0 = bocas$xx, x1 = bocas$xx, y0 = bocas$mean_fb, y1 = bocas$mean_fb + bocas$se)
+
+#Vermilions
 points(verms$xx, verms$mean_fb, pch = 19)
-segments(x0 = verms$xx, x1 = verms$xx, y0 = verms$fb5, verms$mean_fb)
-segments(x0 = verms$xx, x1 = verms$xx, y0 = verms$mean_fb, verms$fb95)
+# segments(x0 = verms$xx, x1 = verms$xx, y0 = verms$fb5, verms$mean_fb)
+# segments(x0 = verms$xx, x1 = verms$xx, y0 = verms$mean_fb, verms$fb95)
+
+segments(x0 = verms$xx, x1 = verms$xx, y0 = verms$mean_fb - verms$se, y1 = verms$mean_fb)
+segments(x0 = verms$xx, x1 = verms$xx, y0 = verms$mean_fb, y1 = verms$mean_fb + verms$se)
+
 axis(side = 1, at = seq(1, 5, 1))
 axis(side = 2, las = 2)
 legend("topright", legend = c('bocaccio', 'vermilion'), bty = 'n', pch = c(17, 19))
 
 mtext(side = 1, "Number of fish", line = 1.5)  
-mtext(side = 2, "Time to first bite (sec)", line = 2)  
+mtext(side = 2, "Time to first bite (s)", line = 2)  
 dev.off()

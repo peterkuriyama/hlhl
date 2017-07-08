@@ -48,11 +48,8 @@ ab4 <- plot4 %>% group_by(nsites, init_dist, type) %>% summarize(sigup = max(dep
 1 - sum(is.infinite(ab4$sigdown)) / nrow(ab4)
 ab4 %>% filter(init_dist == 'patchy')
 
-
-
 plot4 %>% filter(init_dist == 'patchy', dep == .1) %>% group_by(type) %>% summarize(mmin = min(med_cpue), 
   mmax = max(med_cpue))
-
 
 #-----------------------------------------------------------------------------
 #Figure 4 - Probability of increase or decrease
@@ -90,7 +87,7 @@ for(ii in 1:16){
   box()
 
   #Add Axes
-  if(ii == 1) legend('bottomright', pch = c(19, 17), legend = c('preferential', 'random' ), bty = 'n')
+  if(ii == 1) legend('bottomright', pch = c(19, 17), legend = c('preferential', 'random' ), bty = 'n', cex = 1.4)
   if(ii < 5) axis(side = 2, las = 2, cex.axis = 1.2, at = c(-.4, -.2, 0, .2, .4), 
     labels = c("-0.4", "-0.2", "0", "0.2", "0.4"))
   if(ii %% 4 == 0) axis(side = 1, at = c(.1, .3, .5, .7, .9), labels = c("-0.4", "-0.2", "0", "+0.2", "+0.4"),

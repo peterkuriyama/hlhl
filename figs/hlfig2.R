@@ -133,7 +133,9 @@ to_plot %>% dcast(init_dist + type ~ nsites + dep, value.var = "qrange") %>%
 
 #--------------------------------------------------------------------------------------------
 #load data with beta_fits added already
-
+load('output/pfits.Rdata')
+load('output/ind_hyper_fits_minus_patchy.Rdata')
+fits <- rbind(all_fits, pfits)
 
 # load('output/plot2.Rdata')
 to_plot <- plot2
@@ -175,7 +177,7 @@ for(ii in 1:16){
   plot(temp$dep_adj, temp$med_cpue, type = 'n', ylim = c(0, 1.05), ann = FALSE, 
     axes = FALSE, xlim = c(-delta, 1 + .05))
   box()
-  lines(temp$dep_adj, temp$dep_adj, lty = 2, col = 'grey')
+  # lines(temp$dep_adj, temp$dep_adj, lty = 2, col = 'grey')
 
   #Add Axes
   if(ii == 1) legend('bottomright', pch = c(19, 17), 

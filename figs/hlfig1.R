@@ -125,7 +125,7 @@ gg <- inn %>% distinct(scaled_value, .keep_all = T) %>% arrange(scaled_value) %>
 
 png(width = 5, height = 9.2, units = 'in', res = 150, file = 'figs/hlfig1.png')
 # pdf(width = 5, height = 9.2, file = 'figs/hlfig1.pdf')
-par(mfrow = c(4, 2), mar = c(0, 0, 0, 0), oma = c(4, 5, .5, 1), mgp = c(0, .7, 0))
+par(mfrow = c(4, 2), mar = c(0, 0, 0, 0), oma = c(4, 5, .5, 1), mgp = c(0, .5, 0))
 
 for(ii in 1:8){
   temp <- fig1_list[[ii]]

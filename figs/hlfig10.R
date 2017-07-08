@@ -46,7 +46,7 @@ range(yranges)
 letts7 <- yrz
 
 #------------------------------------------------
-png(file = 'figs/hlfig7.png', width = 6.5, height = 8.5, units = 'in', res = 150)
+png(file = 'figs/hlfig10.png', width = 6.5, height = 8.5, units = 'in', res = 150)
 
 par(mfcol = c(11, 2), mar = c(0, 0, 0, 2), oma = c(3.5, 5, 1, 2), mgp = c(1, .5, 0))
 for(ii in 1:length(hists)){
