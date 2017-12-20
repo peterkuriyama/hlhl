@@ -48,7 +48,7 @@ onespp$nsites <- as.numeric(as.character(onespp$nsites))
 to_plot <- onespp %>% group_by(nsites, dep, init_dist, spp, type) %>% summarize(med_cpue = median(cpue),
   q5 = quantile(cpue, .05), q95 = quantile(cpue, .95), mean_cpue = mean(cpue)) %>% as.data.frame
 
-hist(to_plot$mean_cpue - to_plot$med_cpue)
+# hist(to_plot$mean_cpue - to_plot$med_cpue)
 
 #----------------------------------------
 #Convert init_dist to a factor to order then conert back to character
@@ -149,7 +149,27 @@ abst$ddiff <- abst[, 5] - abst[, 4]
 abst %>% group_by(type) %>% summarize(min_ddiff = min(ddiff), max_ddiff = max(ddiff))
 
 #--------------------------------------------------------------------------------------------
+# Add in Median absolute relative error
+#----------------------------------------
+#hlfig2 MARE calculations
+onespp$dep_numeric <- as.numeric(as.character(onespp$dep))
+onespp <- onespp %>% mutate(error = cpue - dep_numeric, rel_error = error / dep_numeric,
+    are = abs(rel_error)) 
+
+onespp_mare <- onespp %>% filter(is.na(are) == FALSE)
+
+#Onespp_mare values
+onespp_mare <- onespp_mare %>% group_by(nsites, init_dist, spp, type) %>%
+  summarize(min_are = min(are), med_are = median(are), max_are = max(are)) %>% 
+  as.data.frame
+
+to_plot <- left_join(to_plot, onespp_mare, by = c("nsites", "init_dist", 'spp', 'type'))
+
+#--------------------------------------------------------------------------------------------
 png(width = 10, height = 10, units = 'in', res = 150, file = 'figs/hlfig2.png')
+
+
+
 
 par(mfrow = c(4, 4), mar = c(0, 0, 0, 0), oma = c(4, 6, 3, 2), mgp = c(0, .5, 0))
 
@@ -174,18 +194,19 @@ for(ii in 1:16){
   #   unique
   # rand_beta <- round(rand_beta, digits = 2)
   
-  plot(temp$dep_adj, temp$med_cpue, type = 'n', ylim = c(0, 1.05), ann = FALSE, 
+  plot(temp$dep_adj, temp$med_cpue, type = 'n', ylim = c(0, 1.2), ann = FALSE, 
     axes = FALSE, xlim = c(-delta, 1 + .05))
   box()
   # lines(temp$dep_adj, temp$dep_adj, lty = 2, col = 'grey')
 
   #Add Axes
-  if(ii == 1) legend('bottomright', pch = c(19, 17), 
-    legend = c('preferential', 'random'), cex = 1.3, bty = 'n')
+  # if(ii == 1) legend('bottomright', pch = c(19, 17), 
+  #   legend = c('preferential', 'random'), cex = 1.3, bty = 'n')
   # if(ii == 1) legend('bottomright', pch = c(19, 17), 
   #   legend = c(paste0('preferential; ', pref_beta), 
   #     paste0('random; ',rand_beta)), cex = 1.3, bty = 'n')
-  if(ii %% 4 == 1) axis(side = 2, las = 2, cex.axis = 1.2)
+  if(ii %% 4 == 1) axis(side = 2, las = 2, cex.axis = 1.2, 
+    at = c(0, .2, .4, .6, .8, 1), labels = c("0.0", .2, .4, .6, .8, "1.0") )
   if(ii < 5) mtext(side = 3, unique(temp$nsites))
   if(ii > 12) axis(side = 1, cex.axis = 1.2)
   if(ii %% 4 == 0) mtext(side = 4, unique(temp$init_dist_plot), line = .6)
@@ -199,6 +220,34 @@ for(ii in 1:16){
   segments(x0 = rands$dep_adj, y0 = rands$med_cpue, y1 = rands$q95, lty = 1)
   segments(x0 = rands$dep_adj, y0 = rands$q5, y1 = rands$med_cpue, lty = 1)
   mtext(side = 3, adj = .02, fig1_letts[ii], line = -1.5)
+  
+
+  #add in 1:1 line
+  abline(a = 0, b = 1, lty = 2, col = 'gray', lwd = 2)
+
+  #Add in median absolute relative error
+  mares <- temp %>% distinct(type, min_are, med_are, max_are)
+  mares[, 2:4] <- round(mares[, 2:4] * 100, digits = 0)
+  #Only include the median relative error values
+  mares$caption <- paste0("MARE=", mares$med_are)
+
+  # mares$caption <- paste0("med=", mares$med_are, "; ", "min=", mares$min_are,  ", ",
+  #   "max=",mares$max_are)
+  
+  if(ii == 1){
+    leg1 <- c(paste0('preferential; ', subset(mares, type == 'preferential')$caption),
+              paste0('random; ', subset(mares, type == 'random')$caption))
+    legend(x = .02, y = 1.3, pch = c(19, 17), 
+      legend = leg1, cex = 1.3, bty = 'n')
+  } 
+
+  if(ii != 1){
+    legend(x = .02, y = 1.3, pch = c(19, 17), 
+      legend = mares$caption, cex = 1.3, bty = 'n')
+  }
+  #Preferential first
+  # mtext(side = 3, adj = .1, line = -1.5, subset(mares, type == 'preferential')$caption)
+  # mtext(side = 3, adj = .1, line = -2.5, subset(mares, type == 'random')$caption)
 
   #add in coefficient text
   # if(ii != 1){
@@ -209,6 +258,7 @@ for(ii in 1:16){
 
 mtext(side = 1, "Relative abundance", outer = T, line = 2.8, cex = 1.4)
 mtext(side = 2, "CPUE", outer = T, line = 3, cex = 1.4)
+
 
 dev.off()
 
