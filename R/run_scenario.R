@@ -22,7 +22,7 @@
 run_scenario <- function(ctl_start, loop_over, ncores = 1, to_change, add_index = FALSE, par_func){  
   #--------------------------------------------------------------------------------
   #Run the function in parallel
-
+# browser()
   #Create list of ctls that based on inputs
   #If loop over is a vector or a list, replace to_change in ctl_temp with different
   #notation
@@ -133,8 +133,7 @@ run_scenario <- function(ctl_start, loop_over, ncores = 1, to_change, add_index 
   for_plot <- ldply(plot_list)
   names(for_plot)[1] <- to_change
 
-
-  print(Sys.time() - start_time)
+  # print(Sys.time() - start_time)
   #--------------------------------------------------------------------------------
   #Now return everything
   return(list(fish_melt = fish_melt, loc_out = loc_out, for_plot = for_plot))
