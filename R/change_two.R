@@ -62,7 +62,11 @@ change_two <- function(thing1, thing2, name1, name2, ctl, ncores = 6,
     if(sys == 'Windows'){
       registerDoParallel(ncores)
 
-      thing1_outs <- foreach(index = 1:length(ctl_list1), 
+index <- 1
+run_scenario(ctl_start = ctl_list1[[index]], loop_over = thing2, to_change = name2,
+             par_func = par_func, add_index = index2)
+
+thing1_outs <- foreach(index = 1:length(ctl_list1), 
         .packages = c('plyr', 'dplyr', 'reshape2')) %dopar%
         run_scenario(ctl_start = ctl_list1[[index]], loop_over = thing2, to_change = name2,
           par_func = par_func, add_index = index2)

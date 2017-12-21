@@ -20,6 +20,8 @@
 #' @export
 
 run_scenario <- function(ctl_start, loop_over, ncores = 1, to_change, add_index = FALSE, par_func){  
+
+    
   #--------------------------------------------------------------------------------
   #Run the function in parallel
 # browser()

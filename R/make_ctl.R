@@ -82,7 +82,6 @@ make_ctl <- function(numrow = 10, numcol = 10, nfish1 = 10000, #initial number o
   shapes = NA,
   niters = 1,
   par_func = 'change_two'
-
   )
 {
   control <- list(numrow = numrow, numcol = numcol, nfish1 = nfish1, nfish2 = nfish2, prob1 = prob1, 
