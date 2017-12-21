@@ -19,7 +19,7 @@ run_sampled_locs <- function(thing1, name1, nreps, nsites_vec,
   outs1 <- lapply(nsites_vec, FUN = function(nn){
     run_locs(shape_list = shape_list, loc_scenario = 'rand',
       ncores = ncores, ctl_o = ctl_o, thing1 = thing1, name1 = name1,
-      nreps = nreps, nsites = nn)
+      nreps = nreps, nsites = nn, par_func = ctl_o$par_func)
   })
 
   names(outs1) <- as.character(nsites_vec)
@@ -31,7 +31,7 @@ run_sampled_locs <- function(thing1, name1, nreps, nsites_vec,
   outs2 <- lapply(nsites_vec, FUN = function(nn){
     run_locs(shape_list = shape_list, loc_scenario = 'pref',
       ncores = ncores, ctl_o = ctl_o, thing1 = thing1, name1 = name1,
-      nreps = nreps, nsites = nn)
+      nreps = nreps, nsites = nn, par_func = ctl_o$par_func)
   })
 
   names(outs2) <- as.character(nsites_vec)
