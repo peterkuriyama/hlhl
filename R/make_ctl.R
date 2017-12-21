@@ -40,6 +40,7 @@
 #' @param delta Difference between center of hotspot and surrounding cells
 #' @param shapes Shape Parameters for beta distribution in initialize_population
 #' @param niters Number of iterations to run for each scenario
+#' @param par_func
 #' @examples
 #' make_ctl(p0 = .2)
 
@@ -79,7 +80,8 @@ make_ctl <- function(numrow = 10, numcol = 10, nfish1 = 10000, #initial number o
   hs_scope = NA, 
   delta = NA,
   shapes = NA,
-  niters = 1
+  niters = 1,
+  par_func = 'change_two'
 
   )
 {
@@ -92,7 +94,7 @@ make_ctl <- function(numrow = 10, numcol = 10, nfish1 = 10000, #initial number o
     cpue_method = cpue_method, mortality = mortality, movement_function = movement_function,
     max_prob = max_prob, min_prob = min_prob, comp_coeff = comp_coeff, rec_rate = rec_rate,
     rec_years = rec_years, hs_loc = hs_loc, hs_scope = hs_scope, delta = delta, shapes = shapes,
-    niters = niters)
+    niters = niters, par_func = par_func)
 
   return(control)
 
