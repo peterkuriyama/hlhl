@@ -158,6 +158,14 @@ onespp <- onespp %>% mutate(error = cpue - dep_numeric, rel_error = error / dep_
 
 onespp_mare <- onespp %>% filter(is.na(are) == FALSE)
 
+onespp_mare %>% group_by(location, nsites, init_dist, spp, type) %>%
+  summarize(avg_are = mean(are)) %>% group_by(nsites, init_dist, spp, type) %>%
+  summarize(med_are = median(avg_are)) %>% filter(init_dist == 'patchy') %>%
+  dcast(type ~ nsites, value.var = "med_are")
+
+onespp_m
+
+
 #Onespp_mare values
 onespp_mare <- onespp_mare %>% group_by(nsites, init_dist, spp, type) %>%
   summarize(min_are = min(are), med_are = median(are), max_are = max(are)) %>% 
@@ -167,9 +175,6 @@ to_plot <- left_join(to_plot, onespp_mare, by = c("nsites", "init_dist", 'spp', 
 
 #--------------------------------------------------------------------------------------------
 png(width = 10, height = 10, units = 'in', res = 150, file = 'figs/hlfig2.png')
-
-
-
 
 par(mfrow = c(4, 4), mar = c(0, 0, 0, 0), oma = c(4, 6, 3, 2), mgp = c(0, .5, 0))
 
@@ -229,7 +234,7 @@ for(ii in 1:16){
   mares <- temp %>% distinct(type, min_are, med_are, max_are)
   mares[, 2:4] <- round(mares[, 2:4] * 100, digits = 0)
   #Only include the median relative error values
-  mares$caption <- paste0("MARE=", mares$med_are)
+  mares$caption <- paste0("mare=", mares$med_are)
 
   # mares$caption <- paste0("med=", mares$med_are, "; ", "min=", mares$min_are,  ", ",
   #   "max=",mares$max_are)
@@ -238,12 +243,12 @@ for(ii in 1:16){
     leg1 <- c(paste0('preferential; ', subset(mares, type == 'preferential')$caption),
               paste0('random; ', subset(mares, type == 'random')$caption))
     legend(x = .02, y = 1.3, pch = c(19, 17), 
-      legend = leg1, cex = 1.3, bty = 'n')
+      legend = leg1, cex = 1.3, bty = 'n', x.intersp = .5)
   } 
 
   if(ii != 1){
     legend(x = .02, y = 1.3, pch = c(19, 17), 
-      legend = mares$caption, cex = 1.3, bty = 'n')
+      legend = mares$caption, cex = 1.3, bty = 'n', x.intersp = .5)
   }
   #Preferential first
   # mtext(side = 3, adj = .1, line = -1.5, subset(mares, type == 'preferential')$caption)
@@ -261,6 +266,10 @@ mtext(side = 2, "CPUE", outer = T, line = 3, cex = 1.4)
 
 
 dev.off()
+
+
+
+
 
 
 #--------------------------------------------------------------------------------------------
@@ -379,6 +388,8 @@ mtext(side = 1, "Relative Abundance", line = 2.5, cex = 1.4, outer = T)
 mtext(side = 2, "CPUE", line = 2.55, cex = 1.4, outer = T)
 
 dev.off()
+
+
 
 #--------------------------------------------------------------------------------------------
 
