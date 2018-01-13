@@ -158,18 +158,14 @@ onespp <- onespp %>% mutate(error = cpue - dep_numeric, rel_error = error / dep_
 
 onespp_mare <- onespp %>% filter(is.na(are) == FALSE)
 
-onespp_mare %>% group_by(location, nsites, init_dist, spp, type) %>%
+onespp_mare <- onespp_mare %>% group_by(location, nsites, init_dist, spp, type) %>%
   summarize(avg_are = mean(are)) %>% group_by(nsites, init_dist, spp, type) %>%
-  summarize(med_are = median(avg_are)) %>% filter(init_dist == 'patchy') %>%
-  dcast(type ~ nsites, value.var = "med_are")
+  summarize(med_are = median(avg_are)) 
 
-onespp_m
-
-
-#Onespp_mare values
-onespp_mare <- onespp_mare %>% group_by(nsites, init_dist, spp, type) %>%
-  summarize(min_are = min(are), med_are = median(are), max_are = max(are)) %>% 
-  as.data.frame
+#Old calculations, onespp_mare values
+# onespp_mare <- onespp_mare %>% group_by(nsites, init_dist, spp, type) %>%
+#   summarize(min_are = min(are), med_are = median(are), max_are = max(are)) %>% 
+#   as.data.frame
 
 to_plot <- left_join(to_plot, onespp_mare, by = c("nsites", "init_dist", 'spp', 'type'))
 
@@ -226,13 +222,12 @@ for(ii in 1:16){
   segments(x0 = rands$dep_adj, y0 = rands$q5, y1 = rands$med_cpue, lty = 1)
   mtext(side = 3, adj = .02, fig1_letts[ii], line = -1.5)
   
-
   #add in 1:1 line
   abline(a = 0, b = 1, lty = 2, col = 'gray', lwd = 2)
 
   #Add in median absolute relative error
-  mares <- temp %>% distinct(type, min_are, med_are, max_are)
-  mares[, 2:4] <- round(mares[, 2:4] * 100, digits = 0)
+  mares <- temp %>% distinct(type, med_are)
+  mares[, 2] <- round(mares[, 2] * 100, digits = 0)
   #Only include the median relative error values
   mares$caption <- paste0("mare=", mares$med_are)
 
