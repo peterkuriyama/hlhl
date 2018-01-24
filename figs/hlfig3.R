@@ -63,10 +63,12 @@ for(ii in 1:16){
   temp$dep_adj <- temp$delta_dep
   
   prefs <- subset(temp, type == 'preferential')
-  prefs$dep_adj <- prefs$dep_adj - delta
+  # prefs$dep_adj <- prefs$dep_adj - delta
+  prefs$dep_adj <- prefs$dep - delta
   
   rands <- subset(temp, type == 'random')
-  rands$dep_adj <- rands$dep_adj + delta
+  # rands$dep_adj <- rands$dep_adj + delta
+  rands$dep_adj <- rands$dep + delta
 
   plot(temp$dep_adj, temp$med_cpue, type = 'n', ylim = c(-.85, .45), ann = FALSE, 
     axes = FALSE, xlim = c(-delta, 1 + delta))
@@ -74,10 +76,11 @@ for(ii in 1:16){
   box()
 
   #Add Axes
-  if(ii == 1) legend('bottomleft', pch = c(19, 17), legend = c('preferential', 'random' ), bty = 'n',
+  if(ii == 1) legend('bottomright', pch = c(19, 17), legend = c('preferential', 'random' ), bty = 'n',
     cex = 1.3)
   if(ii < 5) axis(side = 2, las = 2, cex.axis = 1.2)
-  if(ii %% 4 == 0) axis(side = 1, cex.axis = 1.2)
+  if(ii %% 4 == 0) axis(side = 1, cex.axis = 1.2, at = c(0, .2, .4, .6, .8, 1),
+    labels = rev(c('0.0', '0.2', '0.4', '0.6', '0.8', '1.0')))
   if(ii %% 4 == 1) mtext(side = 3, unique(temp$nsites))
   if(ii > 12) mtext(side = 4, unique(temp_inds$init_dist_plot), line = .6)
   
@@ -93,7 +96,7 @@ for(ii in 1:16){
   mtext(side = 3, adj = .02, fig2_letts[ii], line = -1.5)
 
   #add anchor point
-  points(0, 0, pch = 23, cex = 2, bg = 'gray50', col = 'gray50')
+  points(1, 0, pch = 23, cex = 2, bg = 'gray50', col = 'gray50')
   # points(0, 0, pch = 21, cex = 2, bg = 'gray')
 }
 
