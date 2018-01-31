@@ -10,6 +10,7 @@ library(devtools)
 library(plyr)
 library(dplyr)
 library(reshape2)
+library(tidyr)
 library(ggplot2)
 library(doParallel)
 library(parallel)
@@ -17,9 +18,10 @@ library(foreach)
 library(stringr)
 library(sendmailR)
 
+
 #Specify results directory
 results_dir <- "C://Users//Peter//Dropbox//phd//research//hlsimulator//output"
-
+setwd("/Users/peterkuriyama/Dropbox/phd/research/hlsimulator")
 #--------------------------------------------------------------------------------------------
 #Update directory
 
@@ -65,7 +67,7 @@ if(Sys.info()['sysname'] == 'Windows' & nncores > 11){
 #May need to track depletion by drop at some points, this is in conduct_survey
 #--------------------------------------------------------------------------------------------
 #From github straight
-# install_github('peterkuriyama/hlsimulator')
+install_github('peterkuriyama/hlsimulator')
 library(hlsimulator)
 
 #----------------------------------------------------------------------------------------
@@ -85,6 +87,7 @@ shape_list1$for_plot <- c('Left Skew', 'Right Skew', 'Symmetric', 'Uniform', 'Pa
 #Keep the same prob1 and prob2
 
 #Specify Number of hooks
+num_hooks <- 40 # num_hooks * 150
 num_hooks <- 10 # num_hooks * 150
 hook_run <- num_hooks * 15
 
@@ -142,7 +145,7 @@ to_loop <- to_loop[-which(to_loop$nfish1 == 0 & to_loop$nfish2 == 0), ]
 file.remove(paste0(results_dir, '//',  'twospp1_newcc_check_5.Rdata'))
 
 #For testing the new comp coefficient curves
-nreps <- 500
+nreps <- 1000
 
 #Adjust number of reps
 to_loop$nreps <- nreps
@@ -201,17 +204,54 @@ onespp <- twospp
 filename <- paste0("onespp", "_", hook_run, "_hooks") #for new competition coefficient
 
 #Save output in U drive
-save(list = onespp, file = paste0(results_dir, "//" , paste0(filename, nreps, '.Rdata')))
+save(onespp, file = paste0(results_dir, "//" , paste0(filename, nreps, '.Rdata')))
 
 #--------------------------------------------------------------------------------------------
 #process the data
 
+# load('output/onespp_150_hooks500.Rdata')
+# onespp <- onespp_150_hooks
+load('output/onespp_150_hooks1000.Rdata')
+onespp$nhooks <- 150
 
-#For 150 hooks
-load('output/onespp_150_hooks500.Rdata')
-onespp <- onespp_150_hooks
+onespp_hooks <- onespp
+
+load('output/onespp_600_hooks1000.Rdata')
+onespp$nhooks <- 600
+onespp_hooks <- rbind(onespp_hooks, onespp)
+
+#Rename the data frame
+onespp <- onespp_hooks
+
 onespp <- onespp %>% filter(spp == 'spp1')
+onespp$location <- onespp$iter
 onespp$dep <- onespp$nfish_orig / 200000
+
+#Add zeroes in for sloope calculations
+temp <- onespp[1, ]
+temp$dep <- 0
+temp$cpue <- 0
+
+onespp <- rbind(onespp, temp)
+oo <- onespp %>% complete(dep, nesting(iter, init_dist, type, nsites, nhooks), 
+  fill = list(cpue = 0) ) %>% 
+  as.data.frame
+
+#Redo the index
+oo <- oo %>% group_by(iter, init_dist, type, nsites, nhooks) %>% mutate(index = row_number()) %>% 
+  as.data.frame 
+
+onespp <- oo
+
+#Need to document this part better!
+xx <- calc_mare_slopes(input = oo)
+
+#Make three diagnostic plots
+onespp %>% ggplot(aes(x = dep, y = cpue)) + geom_point() + 
+  geom_abline(slope = 1) + 
+  facet_wrap(~ type) 
+
+
 
 
 #
