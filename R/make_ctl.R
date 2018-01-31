@@ -40,7 +40,8 @@
 #' @param delta Difference between center of hotspot and surrounding cells
 #' @param shapes Shape Parameters for beta distribution in initialize_population
 #' @param niters Number of iterations to run for each scenario
-#' @param par_func
+#' @param par_func parameter function to parallelize
+
 #' @examples
 #' make_ctl(p0 = .2)
 

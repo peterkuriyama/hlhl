@@ -13,7 +13,7 @@ make_ctl(numrow = 10, numcol = 10, nfish1 = 10000, nfish2 = 0,
   cpue_method = "average", mortality, movement_function = move_fish_none,
   max_prob = 0.1, min_prob = 0.1, comp_coeff = NA, rec_rate = NA,
   rec_years = NA, hs_loc = NA, hs_scope = NA, delta = NA, shapes = NA,
-  niters = 1)
+  niters = 1, par_func = "change_two")
 }
 \arguments{
 \item{numrow}{Number of rows in matrix}
@@ -87,6 +87,8 @@ options are 'average', '75hooks' to aggregate by hooks, and 'weighted_average' i
 \item{shapes}{Shape Parameters for beta distribution in initialize_population}
 
 \item{niters}{Number of iterations to run for each scenario}
+
+\item{par_func}{parameter function to parallelize}
 }
 \description{
 Define arguments for hook and line simulations
