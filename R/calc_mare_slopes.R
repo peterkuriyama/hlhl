@@ -5,7 +5,7 @@
 #' @param input Input, should have cpue of zero at depletion of zero and nhooks column
 
 calc_mare_slopes <- function(input){
-browser()
+# browser()
   #Calculate mare values
   input$dep_numeric <- as.numeric(as.character(input$dep))
   input <- input %>% mutate(error = cpue - dep_numeric, rel_error = error / dep_numeric,
