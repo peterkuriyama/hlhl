@@ -4,6 +4,7 @@
 
 #' @param input Input, should have cpue of zero at depletion of zero and nhooks column
 
+#' @export
 calc_mare_slopes <- function(input){
 # browser()
   #Calculate mare values
