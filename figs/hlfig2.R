@@ -170,6 +170,9 @@ onespp_mare <- onespp_mare %>% group_by(location, nsites, init_dist, spp, type) 
 to_plot <- left_join(to_plot, onespp_mare, by = c("nsites", "init_dist", 'spp', 'type'))
 
 #--------------------------------------------------------------------------------------------
+
+
+#--------------------------------------------------------------------------------------------
 png(width = 10, height = 10, units = 'in', res = 150, file = 'figs/hlfig2.png')
 
 par(mfrow = c(4, 4), mar = c(0, 0, 0, 0), oma = c(4, 6, 3, 2), mgp = c(0, .5, 0))
@@ -235,7 +238,7 @@ for(ii in 1:16){
   #   "max=",mares$max_are)
   
   if(ii == 1){
-    leg1 <- c(paste0('preferential; ', subset(mares, type == 'preferential')$caption),
+    leg1 <- c(paste0('size-based; ', subset(mares, type == 'preferential')$caption),
               paste0('random; ', subset(mares, type == 'random')$caption))
     legend(x = .02, y = 1.3, pch = c(19, 17), 
       legend = leg1, cex = 1.3, bty = 'n', x.intersp = .5)
