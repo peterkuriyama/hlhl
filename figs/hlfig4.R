@@ -87,12 +87,12 @@ for(ii in 1:16){
   box()
 
   #Add Axes
-  if(ii == 1) legend('bottomright', pch = c(19, 17), legend = c('preferential', 'random' ), bty = 'n', cex = 1.4)
+  if(ii == 1) legend('bottomright', pch = c(19, 17), legend = c('density-based', 'random' ), bty = 'n', cex = 1.3)
   if(ii < 5) axis(side = 2, las = 2, cex.axis = 1.2, at = c(-.4, -.2, 0, .2, .4), 
     labels = c("-0.4", "-0.2", "0", "0.2", "0.4"))
   if(ii %% 4 == 0) axis(side = 1, at = c(.1, .3, .5, .7, .9), labels = c("-0.4", "-0.2", "0", "+0.2", "+0.4"),
     cex.axis = 1.2)
-  if(ii %% 4 == 1) mtext(side = 3, unique(temp$nsites))
+  if(ii %% 4 == 1) mtext(side = 3, paste0(unique(temp$nsites), " sites"))
   if(ii > 12) mtext(side = 4, unique(temp_inds$init_dist_plot), line = .6)
   
   #Plot points and segments 
