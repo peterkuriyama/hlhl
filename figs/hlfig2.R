@@ -211,7 +211,7 @@ for(ii in 1:16){
   #     paste0('random; ',rand_beta)), cex = 1.3, bty = 'n')
   if(ii %% 4 == 1) axis(side = 2, las = 2, cex.axis = 1.2, 
     at = c(0, .2, .4, .6, .8, 1), labels = c("0.0", .2, .4, .6, .8, "1.0") )
-  if(ii < 5) mtext(side = 3, unique(temp$nsites))
+  if(ii < 5) mtext(side = 3, paste0(unique(temp$nsites), " sites"))
   if(ii > 12) axis(side = 1, cex.axis = 1.2)
   if(ii %% 4 == 0) mtext(side = 4, unique(temp$init_dist_plot), line = .6)
     
@@ -231,14 +231,16 @@ for(ii in 1:16){
   #Add in median absolute relative error
   mares <- temp %>% distinct(type, med_are)
   mares[, 2] <- round(mares[, 2] * 100, digits = 0)
+  
   #Only include the median relative error values
-  mares$caption <- paste0("mare=", mares$med_are)
+  mares$caption <- paste0("MARE=", mares$med_are)
+  # mares$caption <- ""
 
   # mares$caption <- paste0("med=", mares$med_are, "; ", "min=", mares$min_are,  ", ",
   #   "max=",mares$max_are)
   
   if(ii == 1){
-    leg1 <- c(paste0('size-based; ', subset(mares, type == 'preferential')$caption),
+    leg1 <- c(paste0('density-based; ', subset(mares, type == 'preferential')$caption),
               paste0('random; ', subset(mares, type == 'random')$caption))
     legend(x = .02, y = 1.3, pch = c(19, 17), 
       legend = leg1, cex = 1.3, bty = 'n', x.intersp = .5)
@@ -248,6 +250,7 @@ for(ii in 1:16){
     legend(x = .02, y = 1.3, pch = c(19, 17), 
       legend = mares$caption, cex = 1.3, bty = 'n', x.intersp = .5)
   }
+  
   #Preferential first
   # mtext(side = 3, adj = .1, line = -1.5, subset(mares, type == 'preferential')$caption)
   # mtext(side = 3, adj = .1, line = -2.5, subset(mares, type == 'random')$caption)
