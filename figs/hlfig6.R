@@ -17,6 +17,27 @@ p6 <- plot6 %>% filter(init_dist == 'patchy')
 u6 <- plot6 %>% filter(init_dist == 'uniform')
 
 #----------------------------------------
+#Plot fig 5 with fig 6 data
+twospp <- rbind(twospp1, twospp2)
+twospp$dep1 <- twospp$nfish1 / 2e5
+twospp$dep2 <- twospp$nfish2 / 2e5
+
+#Add in the 5/95 percentile and median cpue values
+twospp <- twospp %>% group_by(spp, type, comp_coeff) %>% 
+  mutate(q5 = quantile(cpue, .05), med_cpue = median(cpue),
+    q95 = quantile(cpue, .95)) %>% as.data.frame
+
+#For only 0.3 competition coefficient
+temp <- twospp %>% filter(nfish2 == 60000, comp_coeff == .3)
+
+spp1 <- temp %>% filter(spp == 'spp1')
+spp2 <- temp %>% filter(spp == 'spp2')
+
+
+
+
+
+#----------------------------------------
 #Abstract numbers for patchy only
 head(p6)
 p6 %>% filter(type == 'pref', comp_coeff == 0.3, dep2 %in% c(.2, .7), dep1 == .9, spp == 'spp1') -> temp
@@ -167,7 +188,7 @@ for(jj in 1:24){
   #Add Text
   # if(jj < 7 & jj %% 2 == 1) mtext(side = 3, "Species 1", adj = 0, line = .01)
   # if(jj < 7 & jj %% 2 == 0) mtext(side = 3, "Species 2", adj = 0, line = .05)
-  if(jj %in% c(6, 18)) mtext(side = 4, "Preferential", line = .5)
+  if(jj %in% c(6, 18)) mtext(side = 4, "Size-based", line = .5)
   if(jj %in% c(12, 24)) mtext(side = 4, "Random", line = .5)
   if(jj == 1) mtext(side = 3, "Species 1", adj = 0, line = 1.3, cex = 1.2)
   if(jj == 4) mtext(side = 3, "Species 2", adj = 0, line = 1.3, cex = 1.2)

@@ -1,9 +1,11 @@
 #Histograms of CPUE from the CA h&l survey
 
-load("/Users/peterkuriyama/School/Research/hook_and_line/data/Grand.2014.JF.dmp")
+load("/Users/peterkuriyama/Dropbox/phd/research/hook_and_line/data/Grand.2014.JF.dmp")
 # dat <- Grand.2014.JF
 # yrz <- unique(dat$Year)
 dat <- Grand.2014.JF
+
+
 
 #--------------------------------------------------------------------------------------------
 #Figure 7?
@@ -11,11 +13,13 @@ dat <- Grand.2014.JF
 #--------------------------------------------------------------------------------------------
 verm <- dat[grep("Vermilion", dat$ComName), ]
 boc <- dat %>% filter(ComName == 'Bocaccio')
+
+(sum(verm$SurvFish) + sum(boc$SurvFish)) / sum(dat$SurvFish)
+
 temp <- boc %>% filter(Year == 2013)
 
 #Bocaccio cohort figure
 yrz <- 2004:2014
-
 
 #--------------------------------------------------------------------------------------------
 #For all data
@@ -25,7 +29,7 @@ hists <- dat %>% group_by(SiteName, Year) %>% summarize(nhooks = sum(SurvHook), 
 
 for_hist_plot <- lapply(seq(2004, 2014), FUN = function(x){
   temp <- hists %>% filter(Year == x)
-  out <- hist(temp$cpue)
+  out <- hist(temp$cpue, plot = F)
 })
 
 # letts7 <- paste0(letters[1:22], ")")
@@ -39,10 +43,13 @@ for(ii in 1:length(yrz)){
   tt <- for_hist_plot[[ii]]
   tt$freq <- tt$counts / sum(tt$counts)
 
+  nsites <- hists %>% filter(Year == yrz[ii]) %>% distinct(SiteName) %>% nrow
+
   barplot(tt$freq, space = 0, xaxs = 'i', yaxs = 'i', ylim = c(0, .4), axes = F, ann = F)
   box()
-  
-  mtext(letts7[ii], side = 3, line = -1.6, adj = .02, cex = .9)
+
+  mtext(paste0(letts7[ii], "; ", nsites, ' sites'), 
+    side = 3, line = -1.6, adj = .02, cex = .9)
   
   #Add Axes
   if(ii %in% c(1, 5, 9)) axis(side = 2, at = c(0, .1, .2, .3), las = 2, 

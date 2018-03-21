@@ -4,7 +4,8 @@
 propfish1 <- seq(0, 1, by = .01)
 
 #.7
-prob7 <- data.frame(x = propfish1, y = prob7 <- 1 - exp(-2 * propfish1))
+# prob7 <- data.frame(x = propfish1, y = prob7 <- 1 - exp(-2 * propfish1))
+prob7 <- data.frame(x = propfish1, y = 1 - exp(-2 * propfish1))
 prob7$cc <- .7
 
 #.3

@@ -51,6 +51,33 @@ ab4 %>% filter(init_dist == 'patchy')
 plot4 %>% filter(init_dist == 'patchy', dep == .1) %>% group_by(type) %>% summarize(mmin = min(med_cpue), 
   mmax = max(med_cpue))
 
+#--------------------------------------------------------------------------------
+#resample the ups and downs
+set.seed(300)
+true_ups <- onespp %>% group_by(nsites, init_dist, type) %>% 
+  do({out <- sample_diffs(dep_fixed = .5, dep_vec = seq(.6, .9, by = .1), input = .)
+  }) %>% as.data.frame 
+
+#Subtract 1 from the detection rate of all of the true_ups
+true_ups$detection_rate <- 1 - true_ups$detection_rate
+
+true_downs <- onespp %>% group_by(nsites, init_dist, type) %>% 
+  do({out <- sample_diffs(dep_fixed = .5, dep_vec = seq(.1, .4, by = .1), input = .)
+  }) %>% as.data.frame 
+
+#Combine the two
+true_mids <- rbind(true_ups, true_downs)
+true_mids <- true_mids %>% filter(nsites %in% c(5, 20, 50, 100), init_dist != 'rightskew')
+
+true_mids %>% filter(detection_rate > .1, nsites == 100, init_dist != 'rightskew')
+true_mids$init_dist <- factor(true_mids$init_dist, levels = c("leftskew", 'normdist',
+                                                                 'uniform', 'patchy'))
+
+true_mids %>% filter(init_dist == 'patchy', detection_rate > .1)
+
+ggplot(true_mids) + geom_point(aes(x = dep, y = detection_rate, colour = type)) +
+  facet_grid(init_dist ~ nsites)
+ 
 #-----------------------------------------------------------------------------
 #Figure 4 - Probability of increase or decrease
 #Starting at some level and going up and down
@@ -81,7 +108,8 @@ for(ii in 1:16){
 
   plot(temp$dep_adj, temp$med_cpue, type = 'n', ylim = c(-.6, .4), ann = FALSE, 
     axes = FALSE, xlim = c(-delta, 1 + delta))
-  abline(h = 0, lty = 2)
+  abline(h = 0, lty = 2, col = 'black')
+  abline(a = -.5, b = 1, lty = 2, col = 'gray')
   # lines(x = seq(0, 1, by = .1), y = seq(-.5, .5, by = .1), lty = 2, col = 'grey')
   # abline(v = .5, lty = 2)
   box()

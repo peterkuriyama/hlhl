@@ -57,11 +57,11 @@ hl_comp <- dat %>% group_by(Year, SiteName, DropNum, AngNum) %>% mutate(nfish = 
 hl_comp$se
 
 bocas <- hl_comp %>% filter(ComName == "Bocaccio")
-bocas$xx <- bocas$nfish_species - .1
+# bocas$xx <- bocas$nfish_species - .1
+bocas$xx <- bocas$nfish_species
 verms <- hl_comp %>% filter(ComName == 'Vermilion')
-verms$xx <- verms$nfish_species + .1
-
-dat %>% group_by(Year, )
+# verms$xx <- verms$nfish_species + .1
+verms$xx <- verms$nfish_species 
 
 
 #Plot 9
@@ -91,4 +91,5 @@ legend("topright", legend = c('bocaccio', 'vermilion'), bty = 'n', pch = c(17, 1
 
 mtext(side = 1, "Number of fish", line = 1.5)  
 mtext(side = 2, "Time to first bite (s)", line = 2)  
+
 dev.off()

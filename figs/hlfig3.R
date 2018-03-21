@@ -5,6 +5,65 @@ plot3 <- onespp %>% group_by(nsites, init_dist, type) %>%
            do({out <- sample_change(dep_fixed = 1, dep_vec = seq(.1, .9, by = .1), input = .)
               }) %>% as.data.frame 
 
+
+#----------------------------------------
+#Table of how often the survey detected the true change in population
+nsamps <- 1000
+dep_fixed <- 1
+dep_vec <- seq(.1, .9, by = .1)
+# 
+input <- onespp
+# 
+# temp <- onespp
+
+sample_diffs <- function (nsamps = 1000, dep_fixed, dep_vec, input) 
+{
+  high <- input %>% filter(dep == dep_fixed)
+  
+  ss <- lapply(dep_vec, FUN = function(dd) {
+    # print(dd)
+      low <- input %>% filter(dep == dd)
+    s2 <- sample(high$cpue, size = nsamps, replace = TRUE)
+    s1 <- sample(low$cpue, size = nsamps, replace = TRUE)
+    diffs <- s1 - s2
+    
+    outs <- (length(which(diffs <= dd - dep_fixed)) / nsamps)
+    # diffs_out <- data.frame(dep = dd, detection_rate = diffs)
+    return(outs)
+  })
+  
+  names(ss) <- dep_vec
+  ss <- ldply(ss)
+  names(ss) <- c("dep", "detection_rate")
+  # names(ss) <- c("dep", "med_cpue", "cpue5", "cpue95")
+  ss$start_dep <- dep_fixed
+  ss$dep <- as.numeric(ss$dep)
+  ss$delta_dep <- ss$start_dep - ss$dep
+  return(ss)
+}
+
+# ss %>% filter(dep == 0.1) %>% ggplot() + geom_histogram(aes(x = detection_rate))
+# ss %>% filter(dep == 0.1) %>% ggplot() + 
+#   geom_point(aes(x = delta_dep, y = detection_rate ))
+
+true_change <- onespp %>% group_by(nsites, init_dist, type) %>% 
+  do({out <- sample_diffs(dep_fixed = 1, dep_vec = seq(.1, .9, by = .1), input = .)
+  }) %>% as.data.frame 
+
+true_change <- true_change %>% filter(nsites %in% c(5, 20, 50, 100), 
+  init_dist != "rightskew")
+
+true_change$init_dist <- factor(true_change$init_dist, levels = c("leftskew", 'normdist',
+                                                                 'uniform', 'patchy'))
+
+ggplot(true_change) + geom_point(aes(x = delta_dep, y = detection_rate, colour = type)) + 
+  facet_grid(init_dist ~ nsites)
+
+true_change %>% filter(detection_rate > .1) %>% arrange(nsites, init_dist, type)
+
+
+#----------------------------------------
+
 #hlfig3 sketch
 # png(width = 13, height = 9, units = 'in', res = 150, file = 'figs/hlfig3_sketch.png')           
 # ggplot(plot3, aes(x = delta_dep)) + geom_point(aes(y = med_cpue, colour = type)) + 
@@ -72,7 +131,8 @@ for(ii in 1:16){
 
   plot(temp$dep_adj, temp$med_cpue, type = 'n', ylim = c(-.85, .45), ann = FALSE, 
     axes = FALSE, xlim = c(-delta, 1 + delta))
-  abline(h = 0, lty = 2)
+  abline(h = 0, lty = 2, col = 'black')
+  abline(a = -1, b = 1, lty = 2, col = 'gray')
   box()
 
   #Add Axes

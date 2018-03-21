@@ -74,6 +74,7 @@ to_plot <- left_join(to_plot, nn, by = 'init_dist')
 #Calculate mean and 95% intervals at each level of depletion
 delta <- .02
 fig1_letts <- paste0(letters[1:16], ')')
+fig2_letts <- fig1_letts
 
 #Calculate results of interest for figure 2
 #Difference in means between preferential and random sampling

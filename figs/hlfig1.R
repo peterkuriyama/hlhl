@@ -40,6 +40,10 @@ table1 <- inits_list %>% select(abundance, nfish, scen, meds, rng)
 
 
 table11 <- table1 %>% dcast(abundance + nfish ~ scen, value.var = 'meds')
+
+#--------------------------------------------------------------------------------------------
+#Tables
+
 # table1 <- table1 %>% select(abundance, nfish, leftskew, normdist, uniform, patchy)
 names(table11) <- paste0(toupper(substr(names(table11), 1, 1)), 
   substr(names(table11), 2, nchar(names(table11))))
