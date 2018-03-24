@@ -28,7 +28,6 @@ fixed_parallel <- function(index, ctl1, to_loop = to_loop, change_these){
     ctl_temp$prob2 <- tt$c1_sum - ctl_temp$prob1
   }
   
-  
   ctl_temp$shapes <- c(shape_list1[tt$shape_list_row, 2], shape_list1[tt$shape_list_row, 3])
 
   #--------------------------------------------------------------------
@@ -54,6 +53,7 @@ fixed_parallel <- function(index, ctl1, to_loop = to_loop, change_these){
   
   #If only modifying two things
   if(sum(c('nfish1', 'nfish2', 'prop_moving', 'dep_type') %in% change_these) == 4){
+    # ctl_temp$seed <- index
     init_prop <- initialize_population(ctl = ctl_temp, nfish = ctl_temp$nfish1)
 
     for(jj in 1:tt$nreps){

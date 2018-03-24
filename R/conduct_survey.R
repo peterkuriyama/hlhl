@@ -45,6 +45,7 @@ conduct_survey <- function(init_area, ...){
   locs_with_fish <- which(the_init_area$value != 0)
 
   #----------------------------
+browser()  
   #Meaning that the fishing locations are in the best habitat  
   #Fish move into the fishing locations
   if(dep_type == 'increasing'){
