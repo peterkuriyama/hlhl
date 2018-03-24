@@ -152,6 +152,7 @@ onespp_depletion <- lapply(onespp_depletion, FUN = function(x) x[[1]])
 onespp_depletion <- ldply(onespp_depletion)  
 onespp_depletion$dep <- onespp_depletion$nfish1 / 200000
 
+write(onespp_depletion, file = "onespp_depletion.Rdata")
 #--------------------------------------------------------------------------------------------
 #Plot the results
 onespp_depletion %>% filter(spp == "spp1") %>% ggplot(aes(x = dep, y = cpue, colour = type)) + geom_point() + 
