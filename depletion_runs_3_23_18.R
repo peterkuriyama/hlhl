@@ -107,8 +107,8 @@ to_loop <- to_loop %>% filter(type == 'pref')
 #if dep_type == 'increasing'
 #if dep_type == 'decreasing' prop_moving moves the proportion of fish in 
 #the fished areas out
-prop_vec <- seq(.2, 0, length.out = 10)
-
+prop_vec <- seq(.15, 0, length.out = 8)
+prop_vec <- c(prop_vec, rep(0, 2))
 incs <- data.frame(nfish1 = fishes1, dep_type = 'increasing', 
   prop_moving = prop_vec)
 decs <- data.frame(nfish1 = fishes1, dep_type = 'decreasing', 
@@ -118,8 +118,7 @@ moving_props <- rbind(incs, decs)
 to_loop <- to_loop %>% left_join(moving_props, by = c('nfish1' , 'dep_type'))
 
 #Define number of reps
-to_loop$nreps <- 5
-
+to_loop$nreps <- 10
 #--------------------------------------------------------------------------------------------
 #Test run
 # onespp_depletion <- fixed_parallel(index = 5, ctl1 = ctl1, to_loop = to_loop,
