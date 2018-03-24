@@ -28,8 +28,9 @@ conduct_survey <- function(init_area, ...){
   #MOve fish in or out depending on the dep_type specification
   
   #Extract fishing locations
-  location <- list(...)$location
-
+  location <- list(...)$location  
+  prop_moving <- list(...)$prop_moving #Proportion of fish moving
+  
   #Extract the initial area to match locations with fishing locations
   the_init_area <- init_area[[1]]
   the_init_area <- melt(the_init_area)
@@ -43,8 +44,6 @@ conduct_survey <- function(init_area, ...){
   #which have fish also
   locs_with_fish <- which(the_init_area$value != 0)
 
-#Need to specify proportion of fish  
-prop_moving <- .1
   #----------------------------
   #Meaning that the fishing locations are in the best habitat  
   #Fish move into the fishing locations
