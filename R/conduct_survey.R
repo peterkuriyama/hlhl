@@ -48,6 +48,7 @@ conduct_survey <- function(init_area, ...){
   #Meaning that the fishing locations are in the best habitat  
   #Fish move into the fishing locations
   if(dep_type == 'increasing'){
+# print('moving fish in')    
     #-----Move fish out
     #Move fish from outside the fishing area into the fishing area
     fish_out <- the_init_area[-fished_locs, ]
@@ -60,6 +61,7 @@ conduct_survey <- function(init_area, ...){
 
     fish_samps <- melt(table(fish_samps))
     names(fish_samps) <- c('unq', 'fish_out')
+    fish_samps$unq <- as.character(fish_samps$unq)
     fish_out <- fish_out %>% left_join(fish_samps, by = 'unq') %>%
       replace_na(list(fish_out = 0))
     fish_out$updated_value <- fish_out$value - fish_out$fish_out
@@ -82,28 +84,47 @@ conduct_survey <- function(init_area, ...){
     #sort the data by x and y
     fish_updated <- fish_updated %>% arrange(y, x)
     init_area[[1]] <- matrix(fish_updated$updated_value, byrow = F, nrow = 30, ncol = 30)
-
-print(init_area[[1]][1:5, 1:5])
-
   }
 
-browser()
   #meaning that the fish in fishing locations are "depleted" or moved out
   if(dep_type == 'decreasing'){
+# print('moving fish out')
+    fish_out <- the_init_area[fished_locs, ]
 
+    #Sample the fish
+    nsamps <- round(sum(fish_out$value) * prop_moving)
+
+    fish_samps <- sample(x = rep(fish_out$unq, times = fish_out$value), 
+      nsamps, replace = FALSE)
+
+    fish_samps <- melt(table(fish_samps))
+    names(fish_samps) <- c('unq', 'fish_out')
+    fish_samps$unq <- as.character(fish_samps$unq)
+
+    fish_out <- fish_out %>% left_join(fish_samps, by = 'unq') %>%
+      replace_na(list(fish_out = 0))
+    fish_out$updated_value <- fish_out$value - fish_out$fish_out
+
+     #-----Move fish in
+    #Add the fish to fishing areas that already have fish 
+    fish_in <- the_init_area[-fished_locs, ]
+
+    fish_in_samps <- fish_in %>% select(unq) %>%
+      sample_n(size = nsamps, replace = T) %>% group_by(unq) %>% tally() %>%
+      as.data.frame()
+    names(fish_in_samps) <- c('unq', 'fish_in')
+    fish_in <- fish_in %>% left_join(fish_in_samps, by = 'unq') %>%
+      replace_na(list(fish_in = 0))
+    fish_in$updated_value <- fish_in$value + fish_in$fish_in
+
+    #-----Combine the in/out datasets and convert into a matrix for use
+    fish_updated <- rbind(fish_in %>% select(x, y, updated_value, unq),
+                          fish_out %>% select(x, y, updated_value, unq))
+    #sort the data by x and y
+    fish_updated <- fish_updated %>% arrange(y, x)
+    init_area[[1]] <- matrix(fish_updated$updated_value, byrow = F, nrow = 30, ncol = 30)
   }
-
-
-  # matrix(the_init_area$value, byrow = F, nrow = 30, ncol = 30)
-
-
-
-
-
-  #Add or remove fish from sample sites
-  
-
-
+# browser()
   #--------------------------------------------------------
   #Fish Area Once
   after_first <- fish_population(fish_area = init_area,...)
