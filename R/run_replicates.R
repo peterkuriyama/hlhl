@@ -37,7 +37,8 @@ run_replicates <- function(ctl_in){
   scope <- ctl_in$scope
   mortality <- ctl_in$mortality
   niters <- ctl_in$niters
-
+  dep_type <- ctl_in$depletion_type
+  
   #Create output list
   out_list <- vector('list', length = niters)
 
@@ -48,9 +49,9 @@ run_replicates <- function(ctl_in){
                                      comp_coeff = comp_coeff, numrow = numrow, numcol = numcol,
                                      rec_years = rec_years, rec_rate = rec_rate, nyear = nyear, 
                                      ndrops = ndrops, location = location, scope = scope, 
-                                     mortality = mortality)
+                                     mortality = mortality, dep_type = dep_type)
   }
-  
+
   #Parse output into dataframes
   #--------------------------------------------
   #1. First element of list

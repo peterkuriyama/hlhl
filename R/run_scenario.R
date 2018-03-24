@@ -24,7 +24,7 @@ run_scenario <- function(ctl_start, loop_over, ncores = 1, to_change, add_index 
     
   #--------------------------------------------------------------------------------
   #Run the function in parallel
-# browser()
+
   #Create list of ctls that based on inputs
   #If loop over is a vector or a list, replace to_change in ctl_temp with different
   #notation
@@ -76,13 +76,20 @@ run_scenario <- function(ctl_start, loop_over, ncores = 1, to_change, add_index 
     }
 
     if(sys == 'Windows'){
+      # cl <- makeCluster(ncores)
+      # registerDoParallel(cl)
+      # 
+      # out_list <- foreach::foreach(xx = 1:length(ctl_list),
+      #                              .packages = c("hlsimulator", 'dplyr', 'reshape2')) %dopar%
+      #     run_replicates(ctl_in = ctl_list[[xx]])
+      
+    
       cl <- makeCluster(getOption("cl.cores", ncores))
       aa <- clusterEvalQ(cl, library(hlsimulator))
-      aa <- clusterEvalQ(cl, library(plyr))
       aa <- clusterEvalQ(cl, library(dplyr))
+      aa <- clusterEvalQ(cl, library(plyr))
       aa <- clusterEvalQ(cl, library(reshape2))
       # dd <- clusterExport(cl, "ctl", envir = environment())
-        
       out_list <- parLapply(cl, ctl_list, function(xx) {
         out <- run_replicates(ctl_in = xx)
         return(out)
@@ -91,7 +98,6 @@ run_scenario <- function(ctl_start, loop_over, ncores = 1, to_change, add_index 
       stopCluster(cl)
     }
   }
-
   #--------------------------------------------------------------------------------
   #Dataframe to track changes in fish population
   

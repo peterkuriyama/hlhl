@@ -41,6 +41,7 @@
 #' @param shapes Shape Parameters for beta distribution in initialize_population
 #' @param niters Number of iterations to run for each scenario
 #' @param par_func parameter function to parallelize
+#' @param depletion_type Specify the type of depletion, increasing, decreasing or the default none
 
 #' @examples
 #' make_ctl(p0 = .2)
@@ -82,7 +83,8 @@ make_ctl <- function(numrow = 10, numcol = 10, nfish1 = 10000, #initial number o
   delta = NA,
   shapes = NA,
   niters = 1,
-  par_func = 'change_two'
+  par_func = 'change_two',
+  depletion_type = 'none'
   )
 {
   control <- list(numrow = numrow, numcol = numcol, nfish1 = nfish1, nfish2 = nfish2, prob1 = prob1, 
@@ -94,7 +96,7 @@ make_ctl <- function(numrow = 10, numcol = 10, nfish1 = 10000, #initial number o
     cpue_method = cpue_method, mortality = mortality, movement_function = movement_function,
     max_prob = max_prob, min_prob = min_prob, comp_coeff = comp_coeff, rec_rate = rec_rate,
     rec_years = rec_years, hs_loc = hs_loc, hs_scope = hs_scope, delta = delta, shapes = shapes,
-    niters = niters, par_func = par_func)
+    niters = niters, par_func = par_func, depletion_type = depletion_type)
 
   return(control)
 
