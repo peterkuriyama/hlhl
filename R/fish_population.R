@@ -90,8 +90,6 @@ fish_population <- function(fish_area, ...){
     samps_out_drop <- vector('list', length = ndrops)
     fish_area_drop <- samps_out_drop
 
-
-
     #Loop through drops and store catch  
     for(dd in 1:ndrops){
       for(ll in 1:nrow(location)){
