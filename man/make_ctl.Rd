@@ -13,7 +13,8 @@ make_ctl(numrow = 10, numcol = 10, nfish1 = 10000, nfish2 = 0,
   cpue_method = "average", mortality, movement_function = move_fish_none,
   max_prob = 0.1, min_prob = 0.1, comp_coeff = NA, rec_rate = NA,
   rec_years = NA, hs_loc = NA, hs_scope = NA, delta = NA, shapes = NA,
-  niters = 1, par_func = "change_two", depletion_type = "none")
+  niters = 1, par_func = "change_two", depletion_type = "none",
+  prop_moving = 0)
 }
 \arguments{
 \item{numrow}{Number of rows in matrix}
@@ -91,6 +92,8 @@ options are 'average', '75hooks' to aggregate by hooks, and 'weighted_average' i
 \item{par_func}{parameter function to parallelize}
 
 \item{depletion_type}{Specify the type of depletion, increasing, decreasing or the default none}
+
+\item{prop_moving}{Specify proportion of fish moving in or out of fishing locations}
 }
 \description{
 Define arguments for hook and line simulations
