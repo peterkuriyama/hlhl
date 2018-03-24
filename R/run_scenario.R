@@ -52,8 +52,6 @@ run_scenario <- function(ctl_start, loop_over, ncores = 1, to_change, add_index 
   #Run function as straight lapply if par_func == "change_two"
   #set start time
   start_time <- Sys.time()
-# lapply(ctl_list, FUN = function(xx) xx$depletion_type)
-
   if(par_func == "change_two"){
     out_list <- lapply(ctl_list, FUN = function(xx){
       out <- run_replicates(ctl_in = xx)

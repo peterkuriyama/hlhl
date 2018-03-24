@@ -37,7 +37,7 @@ run_replicates <- function(ctl_in){
   scope <- ctl_in$scope
   mortality <- ctl_in$mortality
   niters <- ctl_in$niters
-  dep_type <- ctl_in$depletion_type
+  dep_type <- ctl_in$dep_type
   prop_moving <- ctl_in$prop_moving
   
   #Create output list
