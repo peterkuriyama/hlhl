@@ -22,33 +22,46 @@ fixed_parallel <- function(index, ctl1, to_loop = to_loop, change_these){
     ctl_temp[change_these[cc]] <- tt[1, change_these[cc]]
   }
 
-  #Change prob1 and prob2
-  ctl_temp$prob1 <- tt$c1_sum * tt$comp_coeff
-  ctl_temp$prob2 <- tt$c1_sum - ctl_temp$prob1
-
+  if(sum(c('nfish1', 'nfish2', 'comp_coeff') %in% change_these) == 3){
+    #Change prob1 and prob2
+    ctl_temp$prob1 <- tt$c1_sum * tt$comp_coeff
+    ctl_temp$prob2 <- tt$c1_sum - ctl_temp$prob1
+  }
+  
+  
   ctl_temp$shapes <- c(shape_list1[tt$shape_list_row, 2], shape_list1[tt$shape_list_row, 3])
 
   #--------------------------------------------------------------------
   #Pick sites based on initial probabilites
   locs <- vector('list', length = tt$nreps)
 
-  #Pick sites based on total number of fish
-  # init1 <- initialize_population_prob(ctl = ctl_temp)
-  c1 <- ctl_temp$prob1 / (ctl_temp$prob1 + ctl_temp$prob2)
-
-  #add the two spp together
-  initspp1 <- initialize_population(ctl = ctl_temp, nfish = ctl_temp$nfish1)
-  initspp2 <- initialize_population(ctl = ctl_temp, nfish = ctl_temp$nfish2)
-
-  #Pick sites based on the combined number of fish species
-  init_prop <- initspp1 + initspp2
-  init_prop <- init_prop / sum(init_prop)
+  #For two species simulations
+  if(sum(c('nfish1', 'nfish2', 'comp_coeff') %in% change_these) == 3){
+    #Pick sites based on total number of fish
+    # init1 <- initialize_population_prob(ctl = ctl_temp)
+    c1 <- ctl_temp$prob1 / (ctl_temp$prob1 + ctl_temp$prob2)
   
-  for(jj in 1:tt$nreps){
-    locs[[jj]] <- pick_sites_prob(nsites = tt$nsites, samp_option = tt$type,
-      fish_mat = init_prop)
-  }
+    #add the two spp together
+    initspp1 <- initialize_population(ctl = ctl_temp, nfish = ctl_temp$nfish1)
+    initspp2 <- initialize_population(ctl = ctl_temp, nfish = ctl_temp$nfish2)
+  
+    #Pick sites based on the combined number of fish species
+    init_prop <- initspp1 + initspp2
+    init_prop <- init_prop / sum(init_prop)
+    
 
+  }
+  
+  #If only modifying two things
+  if(sum(c('nfish1', 'nfish2', 'prop_moving', 'dep_type') %in% change_these) == 4){
+    init_prop <- initialize_population(ctl = ctl_temp, nfish = ctl_temp$nfish1)
+
+    for(jj in 1:tt$nreps){
+      locs[[jj]] <- pick_sites_prob(nsites = tt$nsites, samp_option = tt$type,
+        fish_mat = init_prop)
+    }
+  }
+    
   #--------------------------------------------------------------------
   #Run the simulation with the locations 
   #Only keep the stuff for plot

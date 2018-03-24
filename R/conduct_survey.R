@@ -124,7 +124,7 @@ conduct_survey <- function(init_area, ...){
     fish_updated <- fish_updated %>% arrange(y, x)
     init_area[[1]] <- matrix(fish_updated$updated_value, byrow = F, nrow = 30, ncol = 30)
   }
-# browser()
+
   #--------------------------------------------------------
   #Fish Area Once
   after_first <- fish_population(fish_area = init_area,...)
