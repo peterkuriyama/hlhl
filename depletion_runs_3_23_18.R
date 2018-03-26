@@ -118,7 +118,7 @@ moving_props <- rbind(incs, decs)
 to_loop <- to_loop %>% left_join(moving_props, by = c('nfish1' , 'dep_type'))
 
 #Define number of reps
-to_loop$nreps <- 10
+to_loop$nreps <- 1000
 #--------------------------------------------------------------------------------------------
 #Test run
 # onespp_depletion <- fixed_parallel(index = 5, ctl1 = ctl1, to_loop = to_loop,
@@ -152,11 +152,12 @@ onespp_depletion <- lapply(onespp_depletion, FUN = function(x) x[[1]])
 onespp_depletion <- ldply(onespp_depletion)  
 onespp_depletion$dep <- onespp_depletion$nfish1 / 200000
 
-write(onespp_depletion, file = "output/onespp_depletion.Rdata")
+save(onespp_depletion, file = "output/onespp_depletion.Rdata")
 #--------------------------------------------------------------------------------------------
 #Plot the results
-onespp_depletion %>% filter(spp == "spp1") %>% ggplot(aes(x = dep, y = cpue, colour = type)) + geom_point() + 
-facet_grid(init_dist ~ nsites + dep_type) + 
+onespp_depletion %>% filter(spp == "spp1") %>% 
+  ggplot(aes(x = dep, y = cpue, colour = type)) + geom_point() + 
+  facet_grid(init_dist ~ nsites + dep_type) + ylim(c(0, 1)) +
   geom_abline(slope = 1, intercept = 0, lty = 2)
 # save(onespp, file = 'output/many_hooks_onespp.Rdata')
 #--------------------------------------------------------------------------------------------
