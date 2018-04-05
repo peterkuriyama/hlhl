@@ -55,12 +55,11 @@ slope_summ <- onespp_nozero %>% group_by(nsites, init_dist, type, dep_numeric) %
             q95 = quantile(diff_from_one, .95, na.rm = T)) %>%
   as.data.frame
 
-#Summarioze the slopes and plot
-slope_summ %>% filter(nsites %in% c(5, 20, 50, 100)) %>% ggplot() + 
-  geom_point(aes(x = dep_numeric, y = m5, colour = type)) + 
-  geom_hline(yintercept = 0, col = 'red') + 
-  facet_grid(init_dist ~ nsites)
-
+# #Summarioze the slopes and plot
+# slope_summ %>% filter(nsites %in% c(5, 20, 50, 100)) %>% ggplot() + 
+#   geom_point(aes(x = dep_numeric, y = m5, colour = type)) + 
+#   geom_hline(yintercept = 0, col = 'red') + 
+#   facet_grid(init_dist ~ nsites)
 
 #------------------------------------------------------------
 #Format to_plot and slope_summ
@@ -130,7 +129,7 @@ for(ii in 1:16){
   if(ii %% 4 == 0) mtext(side = 4, unique(temp$init_dist_plot), line = .6)
 
   #add in 1:1 line
-  abline(a = 0, b = 0, lty = 2, col = 'gray', lwd = 2)
+  abline(a = 0, b = 0, lty = 2, col = 'black', lwd = 3)
 
   #Plot points and segments 
   points(prefs$dep_adj, prefs$m5, pch = 19, cex = 1.2)
@@ -155,8 +154,11 @@ for(ii in 1:16){
   #   "max=",mares$max_are)
   
   if(ii == 1){
-    leg1 <- c(paste0('density-based', subset(mares, type == 'preferential')$caption),
-              paste0('random', subset(mares, type == 'random')$caption))
+# browser()    
+    leg1 <- c(('density-based'),
+              ('random'))
+    # leg1 <- c(paste0('density-based', subset(mares, type == 'preferential')$caption),
+    #           paste0('random', subset(mares, type == 'random')$caption))
     legend(x = .02, y = 4.4, pch = c(19, 17), 
       legend = leg1, cex = 1.3, bty = 'n', x.intersp = .5)
   } 

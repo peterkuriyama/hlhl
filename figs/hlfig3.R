@@ -131,8 +131,8 @@ for(ii in 1:16){
 
   plot(temp$dep_adj, temp$med_cpue, type = 'n', ylim = c(-.85, .45), ann = FALSE, 
     axes = FALSE, xlim = c(-delta, 1 + delta))
-  abline(h = 0, lty = 2, col = 'black')
-  abline(a = -1, b = 1, lty = 2, col = 'gray')
+  abline(h = 0, lty = 2, col = 'black', lwd = 3)
+  abline(a = -1, b = 1, lty = 2, col = 'gray', lwd = 3)
   box()
 
   #Add Axes

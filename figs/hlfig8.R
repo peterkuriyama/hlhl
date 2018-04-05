@@ -11,6 +11,36 @@ plot8 <- dat %>% group_by(SiteName, Year) %>% mutate(nhooks = sum(SurvHook),
            group_by(SiteName, Year, ComName) %>% mutate(nfish = sum(SurvFish)) %>% 
            select(nhooks, totfish, nfish) %>% as.data.frame %>% distinct() 
 
+#--------------------------------------------------------------------------------------------
+#Add in cpue bins to group sites with plots
+plot8$cpue <- plot8$totfish / plot8$nhooks
+
+sd_bins <- plot8 %>% distinct(SiteName, Year, cpue) %>% group_by(SiteName) %>%
+  summarize(sd_cpue = sd(cpue), mean_cpue = mean(cpue), cv_cpue = sd_cpue / mean_cpue) %>% 
+  arrange(desc(sd_cpue)) 
+sd_bins <- sd_bins %>% mutate(cpue_bin = cut(sd_cpue, breaks = c(0, .103, .151, .203,
+  .321)))
+
+plot8 <- plot8 %>% left_join(sd_bins, by = "SiteName")   
+
+plot8 %>% ggplot(aes(x = Year, y = cpue)) + geom_line(aes(group = SiteName)) + 
+  facet_wrap(~ cpue_bin)
+
+plot8 %>% distinct(SiteName, .keep_all = T) %>% 
+  ggplot(aes(x = cv_cpue)) + geom_histogram()
+
+
+plot8 %>% distinct(SiteName, Year, cpue) %>% group_by(SiteName) %>% 
+  summarize(min_cpue = min(cpue), max_cpue = max(cpue),
+    range = max_cpue - min_cpue) %>% arrange(desc(range))
+
+plot8 %>% distinct(SiteName, Year, cpue) %>% ggplot(aes(x = cpue)) +
+  geom_histogram() + facet_wrap(~ Year)
+
+
+ggplot(plot8, aes(x = Year, y = ))
+
+#--------------------------------------------------------------------------------------------
 #Change vermilion comname to vermilion
 plot8 <- plot8 %>% filter(ComName %in% c('Bocaccio', 'Vermilion')) %>% 
   dcast(SiteName + Year + nhooks + totfish ~ ComName, value.var = 'nfish')

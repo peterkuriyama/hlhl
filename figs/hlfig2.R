@@ -216,6 +216,9 @@ for(ii in 1:16){
   if(ii > 12) axis(side = 1, cex.axis = 1.2)
   if(ii %% 4 == 0) mtext(side = 4, unique(temp$init_dist_plot), line = .6)
     
+  #add in 1:1 line
+  abline(a = 0, b = 1, lty = 2, col = 'gray', lwd = 3)
+  
   #Plot points and segments 
   points(prefs$dep_adj, prefs$med_cpue, pch = 19, cex = 1.2)
   segments(x0 = prefs$dep_adj, y0 = prefs$med_cpue, y1 = prefs$q95)
@@ -226,9 +229,6 @@ for(ii in 1:16){
   segments(x0 = rands$dep_adj, y0 = rands$q5, y1 = rands$med_cpue, lty = 1)
   mtext(side = 3, adj = .02, fig1_letts[ii], line = -1.5)
   
-  #add in 1:1 line
-  abline(a = 0, b = 1, lty = 2, col = 'gray', lwd = 2)
-
   #Add in median absolute relative error
   mares <- temp %>% distinct(type, med_are)
   mares[, 2] <- round(mares[, 2] * 100, digits = 0)
@@ -268,11 +268,6 @@ mtext(side = 2, "CPUE", outer = T, line = 3, cex = 1.4)
 
 
 dev.off()
-
-
-
-
-
 
 #--------------------------------------------------------------------------------------------
 #Slow reveal

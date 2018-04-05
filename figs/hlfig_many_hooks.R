@@ -128,8 +128,8 @@ for(ii in 1:4){
   if(ii > 2) axis(side = 1, cex.axis = 1.2)
   
   #add in 1:1 line
-  if(ii %in% 1:2) abline(a = 0, b = 1, lty = 2, col = 'gray', lwd = 2)
-  if(ii %in% 3:4) abline(h = 0, lty = 2, col = 'gray', lwd = 2)    
+  if(ii %in% 1:2) abline(a = 0, b = 1, lty = 2, col = 'gray', lwd = 3)
+  if(ii %in% 3:4) abline(h = 0, lty = 2, col = 'black', lwd = 3)    
   
   #Plot points and segments 
   points(prefs$dep_adj, prefs$med_cpue, pch = 19, cex = 1.2)

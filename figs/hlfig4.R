@@ -75,8 +75,8 @@ true_mids$init_dist <- factor(true_mids$init_dist, levels = c("leftskew", 'normd
 
 true_mids %>% filter(init_dist == 'patchy', detection_rate > .1)
 
-ggplot(true_mids) + geom_point(aes(x = dep, y = detection_rate, colour = type)) +
-  facet_grid(init_dist ~ nsites)
+# ggplot(true_mids) + geom_point(aes(x = dep, y = detection_rate, colour = type)) +
+#   facet_grid(init_dist ~ nsites)
  
 #-----------------------------------------------------------------------------
 #Figure 4 - Probability of increase or decrease
@@ -87,6 +87,12 @@ plot4[which(plot4$type == "random"), 'point'] <- 24
 
 plot4[which(plot4$cpue95 < 0 & plot4$type == 'preferential'), 'point'] <- 19
 plot4[which(plot4$cpue95 < 0 & plot4$type == 'random'), 'point'] <- 17
+
+
+zz <- plot4 %>% filter(x_dep_lab == "-0.4", nsites == 50, init_dist == 'patchy') 
+
+%>% 
+  group_by(type) %>% summarize(minz = min(med_cpue), maxz = max(med_cpue))
 
 png(width = 10, height = 10, units = 'in', res = 150, file = 'figs/hlfig4.png')
 
@@ -108,8 +114,8 @@ for(ii in 1:16){
 
   plot(temp$dep_adj, temp$med_cpue, type = 'n', ylim = c(-.6, .4), ann = FALSE, 
     axes = FALSE, xlim = c(-delta, 1 + delta))
-  abline(h = 0, lty = 2, col = 'black')
-  abline(a = -.5, b = 1, lty = 2, col = 'gray')
+  abline(h = 0, lty = 2, col = 'black', lwd = 3)
+  abline(a = -.5, b = 1, lty = 2, col = 'gray', lwd = 3)
   # lines(x = seq(0, 1, by = .1), y = seq(-.5, .5, by = .1), lty = 2, col = 'grey')
   # abline(v = .5, lty = 2)
   box()
